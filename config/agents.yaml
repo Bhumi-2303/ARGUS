@@ -1,0 +1,61 @@
+data_intelligence:
+  enabled: true
+  model: "gemini-2.0-flash"
+  timeout: 300
+  max_retries: 3
+  tools:
+    - database
+    - filesystem
+  permissions:
+    - data:read
+    - data:write
+  memory_limit_mb: 512
+
+threat_analysis:
+  enabled: true
+  model: "gemini-2.0-flash"
+  timeout: 600
+  max_retries: 3
+  tools:
+    - mitre
+    - cve
+  permissions:
+    - threat:analyze
+    - data:read
+  memory_limit_mb: 1024
+
+knowledge_context:
+  enabled: true
+  model: "gemini-2.0-flash"
+  timeout: 300
+  max_retries: 3
+  tools:
+    - database
+  permissions:
+    - knowledge:read
+    - knowledge:write
+  memory_limit_mb: 512
+
+risk_prediction:
+  enabled: true
+  model: "gemini-2.0-flash"
+  timeout: 600
+  max_retries: 3
+  tools:
+    - database
+  permissions:
+    - risk:predict
+    - data:read
+  memory_limit_mb: 1024
+
+decision_support:
+  enabled: true
+  model: "gemini-2.0-flash"
+  timeout: 600
+  max_retries: 3
+  tools:
+    - api
+  permissions:
+    - decision:make
+    - data:read
+  memory_limit_mb: 512

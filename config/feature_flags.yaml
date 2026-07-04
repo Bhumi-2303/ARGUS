@@ -1,0 +1,16 @@
+flags:
+  adk_planning:
+    description: "Enable Google ADK planning for agents"
+    enabled: false
+  
+  vector_memory:
+    description: "Enable ChromaDB vector memory for context retrieval"
+    enabled: true
+  
+  audit_logging:
+    description: "Enable comprehensive audit logging to database"
+    enabled: true
+  
+  rate_limiting:
+    description: "Enable API rate limiting"
+    enabled: true

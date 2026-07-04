@@ -1,0 +1,133 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "argus"
+version = "0.1.0"
+description = "ARGUS — Autonomous Risk-aware Grid Understanding & Security. AI-powered cybersecurity platform for Smart Grid Infrastructure."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.12"
+authors = [
+    { name = "ARGUS Team" },
+]
+keywords = ["cybersecurity", "smart-grid", "multi-agent", "ai", "security"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+    "Framework :: FastAPI",
+    "Typing :: Typed",
+]
+
+dependencies = [
+    # --- Web Framework ---
+    "fastapi[standard]>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "python-multipart>=0.0.9",
+    # --- Data Validation & Settings ---
+    "pydantic>=2.7.0",
+    "pydantic-settings>=2.3.0",
+    "pyyaml>=6.0.1",
+    # --- Database ---
+    "sqlalchemy[asyncio]>=2.0.30",
+    "aiosqlite>=0.20.0",
+    # --- Vector Database ---
+    "chromadb>=0.5.0",
+    # --- Google ADK ---
+    "google-adk>=1.0.0",
+    # --- Security ---
+    "cryptography>=42.0.0",
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
+    # --- Logging & Observability ---
+    "structlog>=24.1.0",
+    # --- Async Utilities ---
+    "aiofiles>=24.1.0",
+    # --- HTTP Client ---
+    "httpx>=0.27.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.5.0",
+    "mypy>=1.10.0",
+    "pre-commit>=3.7.0",
+]
+test = [
+    "pytest>=8.2.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=5.0.0",
+    "pytest-timeout>=2.3.0",
+    "httpx>=0.27.0",
+    "factory-boy>=3.3.0",
+    "faker>=25.0.0",
+]
+docs = [
+    "mkdocs>=1.6.0",
+    "mkdocs-material>=9.5.0",
+]
+
+[project.scripts]
+argus = "argus.main:run"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/argus"]
+
+# --- Ruff Configuration ---
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "SIM",  # flake8-simplify
+    "TCH",  # flake8-type-checking
+    "RUF",  # ruff-specific rules
+]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["argus"]
+
+# --- Pytest Configuration ---
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "security: Security tests",
+    "performance: Performance tests",
+    "slow: Slow-running tests",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+# --- MyPy Configuration ---
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = [
+    "chromadb.*",
+    "google.adk.*",
+    "google.genai.*",
+]
+ignore_missing_imports = true

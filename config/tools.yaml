@@ -1,0 +1,35 @@
+gemini:
+  enabled: true
+  timeout: 60
+  rate_limit: 10
+  retry_policy: "exponential"
+
+mitre:
+  enabled: true
+  timeout: 30
+  rate_limit: 60
+  retry_policy: "exponential"
+
+cve:
+  enabled: true
+  timeout: 30
+  rate_limit: 60
+  retry_policy: "exponential"
+
+database:
+  enabled: true
+  timeout: 10
+  rate_limit: 1000
+  retry_policy: "linear"
+
+filesystem:
+  enabled: true
+  timeout: 5
+  rate_limit: 1000
+  retry_policy: "none"
+
+api:
+  enabled: true
+  timeout: 60
+  rate_limit: 100
+  retry_policy: "exponential"

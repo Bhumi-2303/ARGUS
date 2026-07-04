@@ -1,0 +1,27 @@
+roles:
+  admin:
+    permissions:
+      - "*"
+  
+  operator:
+    permissions:
+      - "read:*"
+      - "write:tasks"
+      - "write:blackboard"
+      - "execute:actions"
+  
+  agent:
+    permissions:
+      - "read:tasks"
+      - "write:tasks"
+      - "read:blackboard"
+      - "write:blackboard"
+      - "execute:tools"
+  
+  viewer:
+    permissions:
+      - "read:*"
+  
+  tool:
+    permissions:
+      - "read:context"

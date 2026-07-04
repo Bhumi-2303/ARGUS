@@ -1,0 +1,85 @@
+# ==================================================================
+# ARGUS — Docker Compose Stack
+# ==================================================================
+# Services:
+#   argus-api:       FastAPI backend (port 8000)
+#   argus-frontend:  React dev server (port 5173) — dev only
+# ==================================================================
+
+services:
+  # --- FastAPI Backend ---
+  argus-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: argus-api
+    ports:
+      - "${ARGUS_PORT:-8000}:8000"
+    environment:
+      - ARGUS_ENV=${ARGUS_ENV:-production}
+      - ARGUS_DEBUG=${ARGUS_DEBUG:-false}
+      - ARGUS_HOST=0.0.0.0
+      - ARGUS_PORT=8000
+      - ARGUS_LOG_LEVEL=${ARGUS_LOG_LEVEL:-INFO}
+      - ARGUS_SECRET_KEY=${ARGUS_SECRET_KEY:?Secret key is required}
+      - ARGUS_JWT_SECRET_KEY=${ARGUS_JWT_SECRET_KEY:?JWT secret key is required}
+      - ARGUS_JWT_ALGORITHM=${ARGUS_JWT_ALGORITHM:-HS256}
+      - ARGUS_SQLITE_PATH=/app/data/argus.db
+      - ARGUS_CHROMADB_PATH=/app/data/chromadb
+      - ARGUS_CORS_ORIGINS=${ARGUS_CORS_ORIGINS:-["http://localhost:5173"]}
+      - ARGUS_ADK_ENABLED=${ARGUS_ADK_ENABLED:-false}
+      - ARGUS_GOOGLE_API_KEY=${ARGUS_GOOGLE_API_KEY:-}
+    volumes:
+      - argus-data:/app/data
+      - argus-logs:/app/logs
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; r = httpx.get('http://localhost:8000/api/v1/health/live'); r.raise_for_status()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - argus-network
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: "2.0"
+        reservations:
+          memory: 512M
+          cpus: "0.5"
+
+  # --- React Frontend (Development Only) ---
+  argus-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: argus-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://argus-api:8000/api/v1
+      - VITE_WS_URL=ws://argus-api:8000/api/v1/ws
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+    depends_on:
+      argus-api:
+        condition: service_healthy
+    networks:
+      - argus-network
+    profiles:
+      - dev
+
+volumes:
+  argus-data:
+    driver: local
+  argus-logs:
+    driver: local
+
+networks:
+  argus-network:
+    driver: bridge
+    name: argus-network
