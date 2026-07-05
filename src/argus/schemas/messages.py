@@ -1,5 +1,5 @@
 """Message schemas for inter-component communication."""
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 from datetime import datetime
 from pydantic import BaseModel, Field
 
@@ -27,6 +27,28 @@ class AgentMessage(BaseMessage):
 class EventMessage(BaseMessage):
     """System event broadcast message."""
     event_type: str = Field(..., description="Type of event")
+
+
+class FeatureEvent(EventMessage):
+    """Standardized feature event produced by the Data Intelligence Agent.
+    
+    This is the ONLY message type the DIA publishes. Downstream agents
+    (Threat Analysis, Risk Prediction) consume these events.
+    """
+    source_file: str = Field(..., description="Origin CSV/Parquet filename")
+    chunk_index: int = Field(..., description="Chunk sequence number within the file")
+    records_processed: int = Field(..., description="Number of records in this chunk")
+    records_dropped: int = Field(default=0, description="Records dropped during cleaning")
+    feature_names: List[str] = Field(..., description="Ordered list of feature column names")
+    feature_stats: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Per-feature statistics (min, max, mean, std, nulls)"
+    )
+    normalization_method: str = Field(
+        default="min_max",
+        description="Normalization method applied (min_max or z_score)"
+    )
+    processing_duration_ms: float = Field(..., description="Pipeline processing time in ms")
 
 
 class ResponseMessage(BaseMessage):

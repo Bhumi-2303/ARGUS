@@ -56,6 +56,7 @@ class BlackboardSection(StrEnum):
     TASK_QUEUE = "task_queue"
     COMPLETED_TASKS = "completed_tasks"
     SHARED_CONTEXT = "shared_context"
+    DATA_RESULTS = "data_results"
     THREAT_RESULTS = "threat_results"
     KNOWLEDGE_RESULTS = "knowledge_results"
     RISK_RESULTS = "risk_results"
