@@ -24,6 +24,15 @@ AsyncSessionLocal = sessionmaker(
     autoflush=False
 )
 
+def async_session_factory(engine_instance=None):
+    """Return a sessionmaker factory bound to the provided or default engine."""
+    return sessionmaker(
+        engine_instance or engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+        autoflush=False
+    )
+
 Base = declarative_base()
 
 async def get_db():
