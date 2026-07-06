@@ -1,0 +1,110 @@
+{
+  "techniques": {
+    "T0800": {
+      "id": "T0800",
+      "name": "Activate Firmware Update Mode",
+      "tactic": "Inhibit Response Function",
+      "description": "Adversaries may activate firmware update mode on ICS devices to prevent normal operation. This technique targets PLCs, RTUs, and intelligent electronic devices (IEDs) in substations and distribution automation systems.",
+      "assets": ["PLC", "RTU", "IED", "Protection Relay"],
+      "mitigations": [
+        "Access Management: Restrict firmware update capabilities to authorized engineering workstations.",
+        "Network Segmentation: Isolate firmware update networks from operational networks.",
+        "Communication Authenticity: Validate firmware images with cryptographic signatures."
+      ],
+      "references": [
+        "https://attack.mitre.org/techniques/T0800/"
+      ]
+    },
+    "T0855": {
+      "id": "T0855",
+      "name": "Unauthorized Command Message",
+      "tactic": "Impair Process Control",
+      "description": "Adversaries may send unauthorized command messages to ICS controllers to manipulate physical processes. Targets Modbus, DNP3, IEC 61850, and IEC 104 protocols used in power grid SCADA systems.",
+      "assets": ["PLC", "RTU", "SCADA Server", "DCS"],
+      "mitigations": [
+        "Network Allowlisting: Only allow commands from authorized sources.",
+        "Communication Authenticity: Implement secure authentication on industrial protocols.",
+        "Monitoring: Deploy passive IDS to monitor for anomalous control commands.",
+        "Network Segmentation: Separate control networks from corporate IT."
+      ],
+      "references": [
+        "https://attack.mitre.org/techniques/T0855/"
+      ]
+    },
+    "T0831": {
+      "id": "T0831",
+      "name": "Manipulation of Control",
+      "tactic": "Impact",
+      "description": "Adversaries may manipulate control logic or control systems to cause physical damage or disruption. In smart grids, this can lead to voltage instability, load shedding, or transformer damage.",
+      "assets": ["PLC", "RTU", "DCS", "SCADA Server"],
+      "mitigations": [
+        "Safety Instrumented Systems: Deploy independent safety systems.",
+        "Network Segmentation: Isolate safety-critical control loops.",
+        "Monitoring: Implement process anomaly detection.",
+        "Data Backup: Maintain golden copies of control logic."
+      ],
+      "references": [
+        "https://attack.mitre.org/techniques/T0831/"
+      ]
+    },
+    "T0826": {
+      "id": "T0826",
+      "name": "Loss of Availability",
+      "tactic": "Impact",
+      "description": "Adversaries may cause loss of availability of ICS functions and services. In power grids, this disrupts SCADA visibility, metering, and automated protective relaying.",
+      "assets": ["SCADA Server", "Historian", "HMI", "RTU", "IED"],
+      "mitigations": [
+        "Redundancy: Deploy redundant communication paths and servers.",
+        "Data Backup: Maintain regular backups of historian and configuration data.",
+        "Network Segmentation: Prevent lateral movement between IT and OT.",
+        "Emergency Operation Procedures: Train operators for manual fallback."
+      ],
+      "references": [
+        "https://attack.mitre.org/techniques/T0826/"
+      ]
+    },
+    "T0814": {
+      "id": "T0814",
+      "name": "Denial of Service",
+      "tactic": "Inhibit Response Function",
+      "description": "Adversaries may perform denial of service attacks to disrupt ICS operations. Flooding Modbus or DNP3 endpoints can cause RTUs or PLCs to become unresponsive.",
+      "assets": ["PLC", "RTU", "SCADA Server", "Network Switch"],
+      "mitigations": [
+        "Network Intrusion Prevention: Deploy IDS/IPS tuned for ICS protocols.",
+        "Filter Network Traffic: Rate-limit traffic to ICS endpoints.",
+        "Redundancy: Ensure backup communication channels."
+      ],
+      "references": [
+        "https://attack.mitre.org/techniques/T0814/"
+      ]
+    },
+    "T0886": {
+      "id": "T0886",
+      "name": "Remote Services",
+      "tactic": "Initial Access",
+      "description": "Adversaries may leverage remote services (RDP, SSH, VNC, or vendor-specific tools) to gain access to ICS networks. Jump hosts and engineering workstations are primary targets.",
+      "assets": ["Engineering Workstation", "Jump Host", "HMI"],
+      "mitigations": [
+        "Multi-Factor Authentication: Require MFA for all remote access.",
+        "Network Segmentation: Use demilitarized zones (DMZ) between IT and OT.",
+        "Account Management: Regularly audit remote access accounts."
+      ],
+      "references": [
+        "https://attack.mitre.org/techniques/T0886/"
+      ]
+    }
+  },
+  "attack_type_mapping": {
+    "dos": ["T0814", "T0826"],
+    "ddos": ["T0814", "T0826"],
+    "brute_force": ["T0886"],
+    "unauthorized_command": ["T0855"],
+    "firmware_attack": ["T0800"],
+    "control_manipulation": ["T0831"],
+    "ransomware": ["T0826"],
+    "mitm": ["T0855"],
+    "scanning": ["T0886"],
+    "reconnaissance": ["T0886"],
+    "default": ["T0855"]
+  }
+}

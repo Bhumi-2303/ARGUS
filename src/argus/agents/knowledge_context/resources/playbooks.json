@@ -1,0 +1,203 @@
+{
+  "playbooks": {
+    "PB-BRUTE-FORCE-001": {
+      "id": "PB-BRUTE-FORCE-001",
+      "title": "Brute Force Attack Response — Smart Grid",
+      "attack_types": ["brute_force", "password_attack"],
+      "severity": "HIGH",
+      "description": "Response playbook for credential brute force attacks targeting SCADA, RTU, PLC, and HMI authentication interfaces.",
+      "immediate_actions": [
+        "Block source IP at perimeter firewall and OT firewall.",
+        "Enable account lockout on targeted service (e.g., Modbus gateway, SSH, web HMI).",
+        "Force password reset for all potentially compromised accounts.",
+        "Capture network packet trace for forensic analysis."
+      ],
+      "investigation_steps": [
+        "Review authentication logs for failed login patterns.",
+        "Check if any accounts were successfully compromised.",
+        "Correlate with IDS/IPS alerts for lateral movement indicators.",
+        "Verify integrity of PLC/RTU configurations."
+      ],
+      "containment_actions": [
+        "Isolate affected network segment from the control network.",
+        "Disable remote access services (SSH/RDP/VNC) until investigation complete.",
+        "Deploy temporary network ACLs restricting access to critical assets."
+      ],
+      "recovery_actions": [
+        "Implement multi-factor authentication on all remote access points.",
+        "Rotate all credentials on affected systems.",
+        "Deploy account lockout policies with progressive delays.",
+        "Update firewall rules to rate-limit authentication attempts."
+      ]
+    },
+    "PB-DOS-001": {
+      "id": "PB-DOS-001",
+      "title": "Denial of Service Attack Response — ICS/SCADA",
+      "attack_types": ["dos", "ddos"],
+      "severity": "CRITICAL",
+      "description": "Response playbook for volumetric or protocol-level DoS attacks targeting SCADA servers, RTUs, and network infrastructure.",
+      "immediate_actions": [
+        "Activate DDoS mitigation at ISP and local boundary.",
+        "Switch to backup communication channels for critical SCADA links.",
+        "Notify operations team to monitor for physical grid anomalies.",
+        "Enable emergency manual control procedures if SCADA is unavailable."
+      ],
+      "investigation_steps": [
+        "Capture traffic samples to identify attack vector and source.",
+        "Determine if attack is volumetric, protocol-based, or application-layer.",
+        "Check if attack is a diversion for a more targeted intrusion.",
+        "Review log data from upstream ISP for traffic origin analysis."
+      ],
+      "containment_actions": [
+        "Deploy rate limiting on affected interfaces.",
+        "Black-hole route confirmed attack source prefixes.",
+        "Redirect traffic through scrubbing center if available.",
+        "Isolate non-critical services to preserve bandwidth for SCADA."
+      ],
+      "recovery_actions": [
+        "Restore normal network routing after attack subsides.",
+        "Verify SCADA system integrity and reconnect RTUs.",
+        "Deploy additional traffic filtering rules based on attack signature.",
+        "Update incident response plan with lessons learned."
+      ]
+    },
+    "PB-RANSOMWARE-001": {
+      "id": "PB-RANSOMWARE-001",
+      "title": "Ransomware Response — Critical Infrastructure",
+      "attack_types": ["ransomware"],
+      "severity": "CRITICAL",
+      "description": "Response playbook for ransomware incidents affecting IT/OT convergence zones in smart grid infrastructure.",
+      "immediate_actions": [
+        "Disconnect affected systems from the network immediately.",
+        "DO NOT pay ransom — preserve evidence for law enforcement.",
+        "Activate air-gap between IT and OT networks.",
+        "Notify CISA (1-888-282-0870) and FBI Cyber Division.",
+        "Switch to manual/backup operations for grid control."
+      ],
+      "investigation_steps": [
+        "Identify ransomware variant from file extensions and ransom note.",
+        "Determine initial infection vector (phishing, exploit, RDP).",
+        "Map lateral movement path through the network.",
+        "Assess whether OT systems were impacted or only IT."
+      ],
+      "containment_actions": [
+        "Isolate all infected segments from production OT network.",
+        "Disable inter-VLAN routing between IT and OT zones.",
+        "Block known C2 domains and IPs at DNS and firewall.",
+        "Preserve disk images of infected systems for forensics."
+      ],
+      "recovery_actions": [
+        "Restore from verified clean offline backups.",
+        "Rebuild affected systems from golden images.",
+        "Scan all systems with updated anti-malware before reconnection.",
+        "Implement network micro-segmentation to prevent future spread.",
+        "Conduct post-incident tabletop exercise within 30 days."
+      ]
+    },
+    "PB-RECON-001": {
+      "id": "PB-RECON-001",
+      "title": "Reconnaissance & Scanning Response",
+      "attack_types": ["reconnaissance", "scanning"],
+      "severity": "MEDIUM",
+      "description": "Response playbook for network scanning and reconnaissance activity targeting ICS/SCADA infrastructure.",
+      "immediate_actions": [
+        "Log all scanning source IPs and ports targeted.",
+        "Verify no vulnerabilities exist on discovered services.",
+        "Increase monitoring on targeted network segments."
+      ],
+      "investigation_steps": [
+        "Analyze scan patterns (sequential ports, specific ICS ports like 502, 20000, 47808).",
+        "Check if scanning is from known threat actor infrastructure.",
+        "Correlate with any recent phishing campaigns or credential leaks."
+      ],
+      "containment_actions": [
+        "Block scanning source IPs at perimeter firewall.",
+        "Reduce attack surface by disabling unnecessary services.",
+        "Deploy honeypots to monitor for follow-up exploitation."
+      ],
+      "recovery_actions": [
+        "Conduct vulnerability scan of targeted assets.",
+        "Patch any vulnerabilities found during scan.",
+        "Update network firewall rules to restrict external access.",
+        "Review and harden ICS device configurations."
+      ]
+    },
+    "PB-EXPLOIT-001": {
+      "id": "PB-EXPLOIT-001",
+      "title": "Active Exploitation Response — ICS",
+      "attack_types": ["exploit", "injection", "xss"],
+      "severity": "CRITICAL",
+      "description": "Response playbook for active exploitation of known or zero-day vulnerabilities in ICS/SCADA systems.",
+      "immediate_actions": [
+        "Isolate exploited system from the network.",
+        "Preserve volatile memory and network logs.",
+        "Check for persistence mechanisms (backdoors, scheduled tasks, implants).",
+        "Notify vendor PSIRT for ICS-specific exploits."
+      ],
+      "investigation_steps": [
+        "Identify the CVE or vulnerability being exploited.",
+        "Determine if exploitation was successful (check for payload execution).",
+        "Assess impact on physical process (grid stability, safety systems).",
+        "Review historical logs for prior reconnaissance or probing."
+      ],
+      "containment_actions": [
+        "Apply emergency patch or vendor-provided workaround.",
+        "Deploy virtual patching via IPS/WAF rules.",
+        "Restrict access to the vulnerable service to trusted IPs only.",
+        "Monitor for indicators of compromise on adjacent systems."
+      ],
+      "recovery_actions": [
+        "Apply vendor patch and verify fix.",
+        "Restore system from known-good backup if integrity is questionable.",
+        "Conduct full vulnerability assessment of similar assets.",
+        "Update threat intelligence feeds with new IoCs."
+      ]
+    },
+    "PB-MITM-001": {
+      "id": "PB-MITM-001",
+      "title": "Man-in-the-Middle Attack Response — ICS Protocols",
+      "attack_types": ["mitm", "man_in_the_middle"],
+      "severity": "CRITICAL",
+      "description": "Response playbook for adversary-in-the-middle attacks on industrial protocols (Modbus, DNP3, IEC 61850).",
+      "immediate_actions": [
+        "Verify integrity of control commands reaching PLCs/RTUs.",
+        "Compare expected vs actual process values at field devices.",
+        "Enable encrypted communication on affected protocol links.",
+        "Isolate the compromised network segment."
+      ],
+      "investigation_steps": [
+        "Analyze ARP tables for evidence of ARP spoofing.",
+        "Review network taps for duplicate or altered packets.",
+        "Check if SCADA commands match operator logs.",
+        "Inspect switch port security and MAC address tables."
+      ],
+      "containment_actions": [
+        "Enable static ARP entries on critical network devices.",
+        "Deploy 802.1X port-based network access control.",
+        "Activate encrypted protocol modes (TLS, IEC 62351).",
+        "Remove unauthorized devices from the network."
+      ],
+      "recovery_actions": [
+        "Verify all PLC/RTU configurations against golden baselines.",
+        "Deploy network encryption for all ICS protocol traffic.",
+        "Implement continuous monitoring for protocol anomalies.",
+        "Conduct MITM resilience testing on critical communication paths."
+      ]
+    }
+  },
+  "attack_type_mapping": {
+    "brute_force": ["PB-BRUTE-FORCE-001"],
+    "password_attack": ["PB-BRUTE-FORCE-001"],
+    "dos": ["PB-DOS-001"],
+    "ddos": ["PB-DOS-001"],
+    "ransomware": ["PB-RANSOMWARE-001"],
+    "reconnaissance": ["PB-RECON-001"],
+    "scanning": ["PB-RECON-001"],
+    "exploit": ["PB-EXPLOIT-001"],
+    "injection": ["PB-EXPLOIT-001"],
+    "xss": ["PB-EXPLOIT-001"],
+    "mitm": ["PB-MITM-001"],
+    "man_in_the_middle": ["PB-MITM-001"],
+    "default": ["PB-EXPLOIT-001"]
+  }
+}

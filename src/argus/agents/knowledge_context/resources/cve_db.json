@@ -1,0 +1,114 @@
+{
+  "cves": {
+    "CVE-2023-3595": {
+      "id": "CVE-2023-3595",
+      "description": "Rockwell Automation ControlLogix EtherNet/IP communication module allows remote code execution via malicious CIP messages. Affects firmware versions prior to 33.011.",
+      "cvss_score": 9.8,
+      "severity": "CRITICAL",
+      "affected_products": ["Rockwell Automation ControlLogix 1756-EN2T", "1756-EN2F", "1756-EN2TR"],
+      "attack_types": ["exploit", "unauthorized_command", "control_manipulation"],
+      "patch": "Update to firmware version 33.011 or later.",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2023-3595",
+        "https://www.cisa.gov/news-events/ics-advisories/icsa-23-193-01"
+      ]
+    },
+    "CVE-2022-22965": {
+      "id": "CVE-2022-22965",
+      "description": "Spring4Shell: Remote Code Execution vulnerability in Spring Framework allows unauthenticated attackers to execute arbitrary code via crafted HTTP requests. Relevant to SCADA web HMIs built with Java.",
+      "cvss_score": 9.8,
+      "severity": "CRITICAL",
+      "affected_products": ["Spring Framework < 5.3.18", "Spring Framework < 5.2.20"],
+      "attack_types": ["exploit", "injection"],
+      "patch": "Update Spring Framework to 5.3.18 or 5.2.20 or later.",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2022-22965"
+      ]
+    },
+    "CVE-2021-22005": {
+      "id": "CVE-2021-22005",
+      "description": "VMware vCenter Server arbitrary file upload vulnerability allowing remote code execution. vCenter often manages ESXi hosts running SCADA VMs in smart grid environments.",
+      "cvss_score": 9.8,
+      "severity": "CRITICAL",
+      "affected_products": ["VMware vCenter Server 7.0", "VMware vCenter Server 6.7"],
+      "attack_types": ["exploit", "lateral_movement"],
+      "patch": "Apply VMware security patch VMSA-2021-0020.",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2021-22005"
+      ]
+    },
+    "CVE-2020-14882": {
+      "id": "CVE-2020-14882",
+      "description": "Oracle WebLogic Server remote code execution vulnerability. WebLogic is sometimes used in utility enterprise backends connected to OT networks.",
+      "cvss_score": 9.8,
+      "severity": "CRITICAL",
+      "affected_products": ["Oracle WebLogic Server 10.3.6", "12.1.3", "12.2.1.3", "12.2.1.4", "14.1.1.0"],
+      "attack_types": ["exploit", "injection"],
+      "patch": "Apply Oracle Critical Patch Update October 2020.",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2020-14882"
+      ]
+    },
+    "CVE-2023-38408": {
+      "id": "CVE-2023-38408",
+      "description": "OpenSSH remote code execution via ssh-agent forwarding. Affects SSH connections to ICS engineering workstations.",
+      "cvss_score": 9.8,
+      "severity": "CRITICAL",
+      "affected_products": ["OpenSSH < 9.3p2"],
+      "attack_types": ["exploit", "lateral_movement", "brute_force"],
+      "patch": "Update to OpenSSH 9.3p2 or later.",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2023-38408"
+      ]
+    },
+    "CVE-2019-18935": {
+      "id": "CVE-2019-18935",
+      "description": "Telerik UI for ASP.NET AJAX deserialization vulnerability enabling remote code execution. Found in utility web portals.",
+      "cvss_score": 9.8,
+      "severity": "CRITICAL",
+      "affected_products": ["Telerik UI for ASP.NET AJAX R1 2020 and earlier"],
+      "attack_types": ["exploit", "injection"],
+      "patch": "Update to Telerik UI R1 2020 SP1 or later.",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2019-18935"
+      ]
+    },
+    "CVE-2024-3400": {
+      "id": "CVE-2024-3400",
+      "description": "Palo Alto Networks PAN-OS command injection vulnerability in GlobalProtect gateway. Firewalls protecting ICS DMZ are directly affected.",
+      "cvss_score": 10.0,
+      "severity": "CRITICAL",
+      "affected_products": ["PAN-OS 10.2", "PAN-OS 11.0", "PAN-OS 11.1"],
+      "attack_types": ["exploit", "injection", "c2"],
+      "patch": "Apply PAN-OS hotfix per Palo Alto advisory PAN-252214.",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2024-3400"
+      ]
+    },
+    "CVE-2022-0778": {
+      "id": "CVE-2022-0778",
+      "description": "OpenSSL infinite loop vulnerability causing denial of service. Affects TLS connections to SCADA servers and historians.",
+      "cvss_score": 7.5,
+      "severity": "HIGH",
+      "affected_products": ["OpenSSL 1.0.2", "1.1.1", "3.0"],
+      "attack_types": ["dos"],
+      "patch": "Update to OpenSSL 1.1.1n, 3.0.2, or later.",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2022-0778"
+      ]
+    }
+  },
+  "attack_type_mapping": {
+    "brute_force": ["CVE-2023-38408"],
+    "dos": ["CVE-2022-0778"],
+    "exploit": ["CVE-2023-3595", "CVE-2022-22965", "CVE-2021-22005", "CVE-2020-14882", "CVE-2024-3400"],
+    "injection": ["CVE-2022-22965", "CVE-2020-14882", "CVE-2019-18935", "CVE-2024-3400"],
+    "ransomware": ["CVE-2023-38408"],
+    "lateral_movement": ["CVE-2021-22005", "CVE-2023-38408"],
+    "c2": ["CVE-2024-3400"],
+    "scanning": [],
+    "reconnaissance": [],
+    "mitm": [],
+    "default": ["CVE-2023-3595"]
+  }
+}

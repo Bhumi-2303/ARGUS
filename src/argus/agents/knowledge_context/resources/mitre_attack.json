@@ -1,0 +1,179 @@
+{
+  "techniques": {
+    "T1059": {
+      "id": "T1059",
+      "name": "Command and Scripting Interpreter",
+      "tactic": "Execution",
+      "description": "Adversaries may abuse command and script interpreters to execute commands, scripts, or binaries. These interfaces and languages provide ways of interacting with computer systems and are a common feature across many platforms.",
+      "platforms": ["Windows", "Linux", "macOS"],
+      "mitigations": [
+        "Execution Prevention: Use application control to block execution of unauthorized scripts and binaries.",
+        "Disable or Remove Feature or Program: Disable unused scripting interpreters.",
+        "Antivirus/Antimalware: Deploy endpoint protection to detect and block known malicious scripts."
+      ],
+      "references": [
+        "https://attack.mitre.org/techniques/T1059/"
+      ]
+    },
+    "T1110": {
+      "id": "T1110",
+      "name": "Brute Force",
+      "tactic": "Credential Access",
+      "description": "Adversaries may use brute force techniques to gain access to accounts when passwords are unknown or when password hashes are obtained. Credential dumping or brute force attempts may occur over network protocols such as SSH, Telnet, FTP, Modbus, or other industrial control protocols.",
+      "platforms": ["Windows", "Linux", "ICS", "Network"],
+      "mitigations": [
+        "Account Lockout Policies: Set account lockout thresholds to prevent brute force attempts.",
+        "Multi-Factor Authentication: Require MFA for remote access.",
+        "Password Policies: Enforce strong password requirements with minimum complexity.",
+        "Network Segmentation: Isolate critical control systems from external networks."
+      ],
+      "references": [
+        "https://attack.mitre.org/techniques/T1110/"
+      ]
+    },
+    "T1190": {
+      "id": "T1190",
+      "name": "Exploit Public-Facing Application",
+      "tactic": "Initial Access",
+      "description": "Adversaries may attempt to take advantage of a weakness in an Internet-facing computer or program using software, data, or commands in order to cause unintended or unanticipated behavior. Exploitation of public-facing web applications, SCADA HMIs, or EMS portals is common in smart grid environments.",
+      "platforms": ["Windows", "Linux", "ICS", "Network"],
+      "mitigations": [
+        "Application Isolation and Sandboxing: Run vulnerable services in isolated environments.",
+        "Exploit Protection: Enable anti-exploit features.",
+        "Network Segmentation: Restrict access to public-facing applications.",
+        "Update Software: Keep all software updated with latest patches.",
+        "Vulnerability Scanning: Regularly scan public-facing assets."
+      ],
+      "references": [
+        "https://attack.mitre.org/techniques/T1190/"
+      ]
+    },
+    "T1071": {
+      "id": "T1071",
+      "name": "Application Layer Protocol",
+      "tactic": "Command and Control",
+      "description": "Adversaries may communicate using application layer protocols to avoid detection/network filtering by blending in with existing traffic. In ICS environments, attackers may abuse protocols like HTTP, DNS, or Modbus TCP to establish C2 channels.",
+      "platforms": ["Windows", "Linux", "ICS", "Network"],
+      "mitigations": [
+        "Network Intrusion Prevention: Use deep packet inspection to detect anomalous protocol usage.",
+        "Network Segmentation: Separate IT and OT networks.",
+        "Filter Network Traffic: Block unnecessary protocols at network boundaries."
+      ],
+      "references": [
+        "https://attack.mitre.org/techniques/T1071/"
+      ]
+    },
+    "T1498": {
+      "id": "T1498",
+      "name": "Network Denial of Service",
+      "tactic": "Impact",
+      "description": "Adversaries may perform Network Denial of Service (DoS) attacks to degrade or block the availability of targeted resources to users. In critical infrastructure, DoS attacks against SCADA systems, RTUs, or network switches can disrupt grid monitoring and control.",
+      "platforms": ["Windows", "Linux", "ICS", "Network"],
+      "mitigations": [
+        "Filter Network Traffic: Use rate limiting and traffic filtering.",
+        "Network Intrusion Prevention: Deploy IDS/IPS to detect and block volumetric attacks.",
+        "Redundancy: Design networks with redundant communication paths."
+      ],
+      "references": [
+        "https://attack.mitre.org/techniques/T1498/"
+      ]
+    },
+    "T1046": {
+      "id": "T1046",
+      "name": "Network Service Discovery",
+      "tactic": "Discovery",
+      "description": "Adversaries may attempt to get a listing of services running on remote hosts and local network infrastructure, including those that may be vulnerable to remote software exploitation. In ICS networks, attackers scan for Modbus, DNP3, IEC 61850, or OPC-UA endpoints.",
+      "platforms": ["Windows", "Linux", "ICS", "Network"],
+      "mitigations": [
+        "Disable or Remove Feature or Program: Close unnecessary network ports.",
+        "Network Intrusion Prevention: Monitor for scanning activity.",
+        "Network Segmentation: Restrict access between zones."
+      ],
+      "references": [
+        "https://attack.mitre.org/techniques/T1046/"
+      ]
+    },
+    "T1078": {
+      "id": "T1078",
+      "name": "Valid Accounts",
+      "tactic": "Defense Evasion",
+      "description": "Adversaries may obtain and abuse credentials of existing accounts as a means of gaining Initial Access, Persistence, Privilege Escalation, or Defense Evasion. Compromised default credentials on ICS devices (PLCs, RTUs) are a common vector.",
+      "platforms": ["Windows", "Linux", "ICS", "Network"],
+      "mitigations": [
+        "Password Policies: Change default credentials on all ICS devices.",
+        "Privileged Account Management: Use separate accounts for IT and OT activities.",
+        "Multi-Factor Authentication: Implement MFA wherever possible.",
+        "User Account Management: Regularly audit and disable unused accounts."
+      ],
+      "references": [
+        "https://attack.mitre.org/techniques/T1078/"
+      ]
+    },
+    "T1557": {
+      "id": "T1557",
+      "name": "Adversary-in-the-Middle",
+      "tactic": "Credential Access",
+      "description": "Adversaries may attempt to position themselves between two or more networked devices to support follow-on behaviors such as network sniffing or transmitted data manipulation. In ICS, MITM attacks on Modbus TCP or DNP3 can alter control commands.",
+      "platforms": ["Windows", "Linux", "ICS", "Network"],
+      "mitigations": [
+        "Encrypt Sensitive Information: Use TLS or VPNs for all network communication.",
+        "Network Segmentation: Isolate critical control networks.",
+        "Limit Access to Resource Over Network: Restrict protocol communications to authorized devices."
+      ],
+      "references": [
+        "https://attack.mitre.org/techniques/T1557/"
+      ]
+    },
+    "T1021": {
+      "id": "T1021",
+      "name": "Remote Services",
+      "tactic": "Lateral Movement",
+      "description": "Adversaries may use valid accounts to log into a service specifically designed to accept remote connections, such as SSH, RDP, or VNC. In ICS environments, adversaries may leverage remote engineering workstations or jump hosts.",
+      "platforms": ["Windows", "Linux", "ICS"],
+      "mitigations": [
+        "Multi-Factor Authentication: Require MFA for remote services.",
+        "Network Segmentation: Limit remote access to specific jump hosts.",
+        "Privileged Account Management: Restrict remote service access to authorized personnel."
+      ],
+      "references": [
+        "https://attack.mitre.org/techniques/T1021/"
+      ]
+    },
+    "T1486": {
+      "id": "T1486",
+      "name": "Data Encrypted for Impact",
+      "tactic": "Impact",
+      "description": "Adversaries may encrypt data on target systems or on large numbers of systems in a network to interrupt availability to system and network resources. Ransomware targeting ICS/SCADA can halt grid operations.",
+      "platforms": ["Windows", "Linux", "ICS"],
+      "mitigations": [
+        "Data Backup: Maintain offline backups of critical systems.",
+        "Network Segmentation: Isolate IT and OT networks to prevent ransomware spread.",
+        "Update Software: Patch known vulnerabilities promptly.",
+        "User Training: Train employees to recognize phishing attempts."
+      ],
+      "references": [
+        "https://attack.mitre.org/techniques/T1486/"
+      ]
+    }
+  },
+  "attack_type_mapping": {
+    "brute_force": ["T1110"],
+    "dos": ["T1498"],
+    "ddos": ["T1498"],
+    "reconnaissance": ["T1046"],
+    "scanning": ["T1046"],
+    "injection": ["T1059"],
+    "xss": ["T1059"],
+    "ransomware": ["T1486"],
+    "mitm": ["T1557"],
+    "man_in_the_middle": ["T1557"],
+    "backdoor": ["T1078", "T1021"],
+    "exploit": ["T1190"],
+    "c2": ["T1071"],
+    "command_and_control": ["T1071"],
+    "lateral_movement": ["T1021"],
+    "password_attack": ["T1110"],
+    "privilege_escalation": ["T1078"],
+    "default": ["T1059"]
+  }
+}

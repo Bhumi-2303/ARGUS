@@ -1,0 +1,118 @@
+{
+  "advisories": {
+    "ICSA-23-193-01": {
+      "id": "ICSA-23-193-01",
+      "title": "Rockwell Automation ControlLogix Communication Modules",
+      "published": "2023-07-12",
+      "severity": "CRITICAL",
+      "cvss_score": 9.8,
+      "affected_systems": ["ControlLogix EtherNet/IP Modules", "1756-EN2T", "1756-EN2F"],
+      "description": "Successful exploitation of these vulnerabilities could allow malicious actors to gain remote access to the running memory of the module and perform malicious activity.",
+      "recommendations": [
+        "Update firmware to version 33.011 or later.",
+        "Restrict CIP traffic to known authorized devices.",
+        "Use application-layer firewalls for CIP protocol inspection.",
+        "Implement network segmentation between IT and OT."
+      ],
+      "related_cves": ["CVE-2023-3595", "CVE-2023-3596"],
+      "attack_types": ["exploit", "unauthorized_command"],
+      "references": [
+        "https://www.cisa.gov/news-events/ics-advisories/icsa-23-193-01"
+      ]
+    },
+    "ICSA-22-174-03": {
+      "id": "ICSA-22-174-03",
+      "title": "Siemens SIMATIC S7 Communication Processors",
+      "published": "2022-06-23",
+      "severity": "HIGH",
+      "cvss_score": 8.1,
+      "affected_systems": ["SIMATIC S7-1500", "S7-1200", "ET 200SP"],
+      "description": "A vulnerability in Siemens SIMATIC S7 communication processors could allow an unauthenticated attacker to crash the device or gain code execution by sending specially crafted S7 protocol packets.",
+      "recommendations": [
+        "Apply Siemens security updates SSA-838121.",
+        "Restrict S7 protocol access to authorized engineering stations.",
+        "Enable access protection features on S7 CPUs.",
+        "Monitor for anomalous S7 traffic patterns."
+      ],
+      "related_cves": [],
+      "attack_types": ["dos", "exploit"],
+      "references": [
+        "https://www.cisa.gov/news-events/ics-advisories/icsa-22-174-03"
+      ]
+    },
+    "ICSA-21-287-03": {
+      "id": "ICSA-21-287-03",
+      "title": "Schneider Electric EcoStruxure and Modicon",
+      "published": "2021-10-14",
+      "severity": "CRITICAL",
+      "cvss_score": 9.8,
+      "affected_systems": ["Modicon M340", "Modicon M580", "EcoStruxure Control Expert"],
+      "description": "Multiple vulnerabilities in Schneider Electric Modicon controllers could allow remote code execution, denial of service, or unauthorized access to the PLC. Exploitable via Modbus TCP without authentication.",
+      "recommendations": [
+        "Apply Schneider Electric patches SEVD-2021-285-01.",
+        "Enable Modbus TCP security features where available.",
+        "Deploy firewalls with Modbus deep packet inspection.",
+        "Restrict Modbus port 502 access to authorized HMIs only.",
+        "Implement network monitoring for anomalous Modbus traffic."
+      ],
+      "related_cves": [],
+      "attack_types": ["exploit", "brute_force", "dos", "unauthorized_command"],
+      "references": [
+        "https://www.cisa.gov/news-events/ics-advisories/icsa-21-287-03"
+      ]
+    },
+    "ICSA-24-030-01": {
+      "id": "ICSA-24-030-01",
+      "title": "SEL Real Time Automation Controller (RTAC)",
+      "published": "2024-01-30",
+      "severity": "HIGH",
+      "cvss_score": 8.6,
+      "affected_systems": ["SEL-3505 RTAC", "SEL-3530 RTAC", "SEL-3555 RTAC"],
+      "description": "Vulnerabilities in SEL RTAC products could allow an attacker to bypass authentication and execute arbitrary commands on the device. RTACs are widely used in electric utility substations.",
+      "recommendations": [
+        "Update to the latest RTAC firmware version.",
+        "Restrict web interface access to trusted management networks.",
+        "Enable audit logging on all RTAC devices.",
+        "Use certificate-based authentication for RTAC communications."
+      ],
+      "related_cves": [],
+      "attack_types": ["exploit", "brute_force", "backdoor"],
+      "references": [
+        "https://www.cisa.gov/news-events/ics-advisories/icsa-24-030-01"
+      ]
+    },
+    "ICSA-20-205-01": {
+      "id": "ICSA-20-205-01",
+      "title": "GE Digital CIMPLICITY HMI",
+      "published": "2020-07-23",
+      "severity": "HIGH",
+      "cvss_score": 7.8,
+      "affected_systems": ["CIMPLICITY v11.0 and earlier"],
+      "description": "A vulnerability in GE CIMPLICITY HMI allows local code execution through improper input validation. CIMPLICITY is used in power generation and transmission SCADA systems.",
+      "recommendations": [
+        "Update to CIMPLICITY v11.1 or later.",
+        "Restrict local logon access to HMI workstations.",
+        "Deploy application whitelisting on HMI systems.",
+        "Monitor for unauthorized process execution on HMI hosts."
+      ],
+      "related_cves": [],
+      "attack_types": ["exploit", "injection"],
+      "references": [
+        "https://www.cisa.gov/news-events/ics-advisories/icsa-20-205-01"
+      ]
+    }
+  },
+  "attack_type_mapping": {
+    "brute_force": ["ICSA-21-287-03", "ICSA-24-030-01"],
+    "dos": ["ICSA-22-174-03", "ICSA-21-287-03"],
+    "exploit": ["ICSA-23-193-01", "ICSA-22-174-03", "ICSA-21-287-03", "ICSA-24-030-01", "ICSA-20-205-01"],
+    "injection": ["ICSA-20-205-01"],
+    "unauthorized_command": ["ICSA-23-193-01", "ICSA-21-287-03"],
+    "ransomware": [],
+    "mitm": [],
+    "scanning": [],
+    "reconnaissance": [],
+    "backdoor": ["ICSA-24-030-01"],
+    "default": ["ICSA-23-193-01"]
+  }
+}
