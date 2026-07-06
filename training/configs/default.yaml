@@ -1,0 +1,89 @@
+project:
+  name: ARGUS
+  version: "0.1.0"
+  description: "Autonomous Risk-aware Grid Understanding & Security"
+
+dataset:
+  raw_path: "training/data/raw/nftoniotv2/"
+  processed_path: "training/data/processed/"
+  file_format: "csv"
+  target_column: "label"
+
+splitting:
+  test_size: 0.2
+  val_size: 0.1
+  random_seed: 42
+  stratify: true
+
+preprocessing:
+  handle_missing: true
+  missing_strategy: "median"  # mean, median, mode, drop
+  handle_duplicates: true
+  handle_outliers: true
+  outlier_method: "iqr"  # iqr, zscore, isolation_forest
+  outlier_threshold: 1.5
+  normalize: true
+  normalization_method: "standard"  # standard, minmax, robust
+  encode_categoricals: true
+  encoding_method: "label"  # label, onehot, target
+
+feature_engineering:
+  enabled: true
+  mutual_information: true
+  correlation_threshold: 0.95
+  create_interactions: false
+
+feature_selection:
+  enabled: true
+  method: "rfe"  # rfe, shap, correlation, mutual_info
+  n_features: null  # null = auto
+  shap_samples: 1000
+
+evaluation:
+  metrics:
+    - accuracy
+    - precision
+    - recall
+    - f1_score
+    - auc_roc
+    - confusion_matrix
+  cross_validation:
+    enabled: true
+    folds: 5
+
+tuning:
+  enabled: false
+  engine: "optuna"  # optuna, grid, random
+  n_trials: 100
+  timeout_seconds: 3600
+  direction: "maximize"
+  metric: "f1_score"
+
+export:
+  output_dir: "training/exports/"
+  formats:
+    - joblib
+  save_metadata: true
+  save_feature_names: true
+
+reporting:
+  output_dir: "training/reports/"
+  formats:
+    - csv
+    - markdown
+    - html
+  include_graphs: true
+  graphs_dir: "training/graphs/"
+
+logging:
+  level: "INFO"
+  log_dir: "training/logs/"
+  structured: true
+  console: true
+  file: true
+
+hardware:
+  max_memory_gb: 8
+  n_jobs: -1  # -1 = all cores
+  device: "cpu"
+  chunk_size: 50000

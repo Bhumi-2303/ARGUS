@@ -1,0 +1,49 @@
+model:
+  name: "neural_network"
+  type: "classification"
+  library: "tensorflow"
+  class: "tensorflow.keras.Sequential"
+
+architecture:
+  layers:
+    - type: "Dense"
+      units: 256
+      activation: "relu"
+      dropout: 0.3
+    - type: "Dense"
+      units: 128
+      activation: "relu"
+      dropout: 0.2
+    - type: "Dense"
+      units: 64
+      activation: "relu"
+      dropout: 0.1
+  output_activation: "softmax"
+
+parameters:
+  optimizer: "adam"
+  learning_rate: 0.001
+  batch_size: 256
+  epochs: 50
+  early_stopping:
+    enabled: true
+    patience: 10
+    monitor: "val_loss"
+    restore_best_weights: true
+  random_seed: 42
+
+tuning_space:
+  learning_rate:
+    type: float
+    low: 0.0001
+    high: 0.01
+    log: true
+  batch_size:
+    type: categorical
+    choices: [64, 128, 256, 512]
+  layers_0_units:
+    type: categorical
+    choices: [128, 256, 512]
+  layers_1_units:
+    type: categorical
+    choices: [64, 128, 256]
