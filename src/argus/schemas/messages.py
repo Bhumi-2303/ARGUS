@@ -51,7 +51,31 @@ class FeatureEvent(EventMessage):
     processing_duration_ms: float = Field(..., description="Pipeline processing time in ms")
 
 
+class ThreatEvent(EventMessage):
+    """Event detailing a detected threat in the smart grid network."""
+    attack_type: str = Field(..., description="Classification of attack (e.g. brute_force, dos)")
+    source_ip: Optional[str] = Field(None, description="Source IP of attack")
+    dest_ip: Optional[str] = Field(None, description="Target IP of attack")
+    mitre_technique_id: Optional[str] = Field(None, description="Associated MITRE technique ID")
+    cve_id: Optional[str] = Field(None, description="Associated CVE ID")
+    severity: float = Field(..., description="Attack severity score from 0 to 1")
+    description: str = Field(..., description="Detailed threat payload information")
+
+
+class KnowledgeEvent(EventMessage):
+    """Enriched security event populated with threat intelligence context."""
+    attack_context: Dict[str, Any] = Field(..., description="Summary details about the attack category")
+    mitre_techniques: List[Dict[str, Any]] = Field(default_factory=list, description="MITRE ATT&CK records")
+    cves: List[Dict[str, Any]] = Field(default_factory=list, description="CVE vulnerability details")
+    cisa_advisories: List[Dict[str, Any]] = Field(default_factory=list, description="CISA ICS Advisories")
+    recommended_mitigations: List[str] = Field(default_factory=list, description="Consolidated mitigation actions")
+    references: List[str] = Field(default_factory=list, description="External citation links")
+    confidence: float = Field(..., description="Confidence score of the enrichment (0.0 to 1.0)")
+    processing_metadata: Dict[str, Any] = Field(..., description="Execution logs, pipeline time, sources searched")
+
+
 class ResponseMessage(BaseMessage):
+
     """Response to a previous message."""
     in_response_to: str = Field(..., description="Request ID of the original message")
 
