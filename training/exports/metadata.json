@@ -1,0 +1,10 @@
+{
+    "Dataset_Version": "NF-ToN-IoT-v2-Processed",
+    "Processing_Date": "2026-07-06T16:03:28.543648",
+    "Number_of_Records": 500000,
+    "Number_of_Features": 47,
+    "Scaling_Method": "StandardScaler",
+    "Encoding_Method": "LabelEncoding",
+    "Random_Seed": 42,
+    "Status": "READY_FOR_PHASE_3"
+}
