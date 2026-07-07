@@ -185,10 +185,16 @@ def train_random_forest(X_train, y_train, X_val, y_val, X_test, y_test):
             'n_jobs': -1,
             'random_state': 42
         }
-        model = RandomForestClassifier(**params)
-        model.fit(X_train, y_train)
-        preds = model.predict(X_val)
-        return f1_score(y_val, preds, zero_division=0, average='binary')
+        skf = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
+        scores = []
+        for train_idx, val_idx in skf.split(X_train, y_train):
+            X_tr, X_va = X_train.iloc[train_idx], X_train.iloc[val_idx]
+            y_tr, y_va = y_train.iloc[train_idx], y_train.iloc[val_idx]
+            model = RandomForestClassifier(**params)
+            model.fit(X_tr, y_tr)
+            preds = model.predict(X_va)
+            scores.append(f1_score(y_va, preds, zero_division=0, average='binary'))
+        return np.mean(scores)
 
     study = optuna.create_study(direction='maximize')
     study.optimize(objective, n_trials=5) # Reduced for testing, should be 100 for prod
@@ -233,10 +239,16 @@ def train_xgboost(X_train, y_train, X_val, y_val, X_test, y_test):
             'tree_method': 'hist',
             'random_state': 42
         }
-        model = xgb.XGBClassifier(**params, early_stopping_rounds=20)
-        model.fit(X_train, y_train, eval_set=[(X_val, y_val)], verbose=False)
-        preds = model.predict(X_val)
-        return f1_score(y_val, preds, zero_division=0, average='binary')
+        skf = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
+        scores = []
+        for train_idx, val_idx in skf.split(X_train, y_train):
+            X_tr, X_va = X_train.iloc[train_idx], X_train.iloc[val_idx]
+            y_tr, y_va = y_train.iloc[train_idx], y_train.iloc[val_idx]
+            model = xgb.XGBClassifier(**params, early_stopping_rounds=20)
+            model.fit(X_tr, y_tr, eval_set=[(X_va, y_va)], verbose=False)
+            preds = model.predict(X_va)
+            scores.append(f1_score(y_va, preds, zero_division=0, average='binary'))
+        return np.mean(scores)
 
     study = optuna.create_study(direction='maximize')
     study.optimize(objective, n_trials=5) # Reduced for testing, should be 100
@@ -278,10 +290,16 @@ def train_lightgbm(X_train, y_train, X_val, y_val, X_test, y_test):
             'random_state': 42,
             'verbose': -1
         }
-        model = lgb.LGBMClassifier(**params, n_estimators=100)
-        model.fit(X_train, y_train, eval_set=[(X_val, y_val)], callbacks=[lgb.early_stopping(20, verbose=False)])
-        preds = model.predict(X_val)
-        return f1_score(y_val, preds, zero_division=0, average='binary')
+        skf = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
+        scores = []
+        for train_idx, val_idx in skf.split(X_train, y_train):
+            X_tr, X_va = X_train.iloc[train_idx], X_train.iloc[val_idx]
+            y_tr, y_va = y_train.iloc[train_idx], y_train.iloc[val_idx]
+            model = lgb.LGBMClassifier(**params, n_estimators=100)
+            model.fit(X_tr, y_tr, eval_set=[(X_va, y_va)], callbacks=[lgb.early_stopping(20, verbose=False)])
+            preds = model.predict(X_va)
+            scores.append(f1_score(y_va, preds, zero_division=0, average='binary'))
+        return np.mean(scores)
 
     study = optuna.create_study(direction='maximize')
     study.optimize(objective, n_trials=5)
@@ -319,10 +337,16 @@ def train_catboost(X_train, y_train, X_val, y_val, X_test, y_test):
             'verbose': False,
             'random_seed': 42
         }
-        model = CatBoostClassifier(**params)
-        model.fit(X_train, y_train, eval_set=(X_val, y_val), early_stopping_rounds=20)
-        preds = model.predict(X_val)
-        return f1_score(y_val, preds, zero_division=0, average='binary')
+        skf = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
+        scores = []
+        for train_idx, val_idx in skf.split(X_train, y_train):
+            X_tr, X_va = X_train.iloc[train_idx], X_train.iloc[val_idx]
+            y_tr, y_va = y_train.iloc[train_idx], y_train.iloc[val_idx]
+            model = CatBoostClassifier(**params)
+            model.fit(X_tr, y_tr, eval_set=(X_va, y_va), early_stopping_rounds=20)
+            preds = model.predict(X_va)
+            scores.append(f1_score(y_va, preds, zero_division=0, average='binary'))
+        return np.mean(scores)
 
     study = optuna.create_study(direction='maximize')
     study.optimize(objective, n_trials=5)
