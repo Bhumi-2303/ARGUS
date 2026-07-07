@@ -1,4 +1,12 @@
 from typing import Dict, Any
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+try:
+    import shap
+except ImportError:
+    shap = None
+from catboost import CatBoostClassifier
 
 from training.trainers.base_trainer import BaseTrainer
 
@@ -8,20 +16,11 @@ class CatBoostTrainer(BaseTrainer):
     def initialize(self) -> None:
         self._logger.info("initializing_catboost")
         try:
-            from catboost import CatBoostClassifier
             params = self.get_params()
             self._model = CatBoostClassifier(**params)
         except ImportError:
             self._logger.error("catboost_not_installed")
             raise
-        
-    def load_dataset(self) -> None:
-        self._logger.info("loading_dataset")
-        pass
-        
-    def preprocess(self) -> None:
-        self._logger.info("preprocessing_data")
-        pass
         
     def train(self) -> None:
         self._logger.info("training_model")
@@ -35,13 +34,42 @@ class CatBoostTrainer(BaseTrainer):
             self._is_trained = True
             
     def evaluate(self) -> Dict[str, Any]:
-        self._logger.info("evaluating_model")
-        return {"accuracy": 0.0, "f1_score": 0.0}
+        metrics = super().evaluate()
+        self._logger.info("generating_tree_specific_graphs")
         
-    def export(self, output_path: str) -> str:
-        self._logger.info("exporting_model", path=output_path)
-        return output_path
+        graphs_dir = self._config.get("reporting.graphs_dir", "training/graphs/")
+        os.makedirs(graphs_dir, exist_ok=True)
         
-    def shutdown(self) -> None:
-        self._logger.info("shutting_down_trainer")
-        self._model = None
+        # 1. Feature Importance
+        if hasattr(self._model, "get_feature_importance"):
+            importances = self._model.get_feature_importance()
+            indices = np.argsort(importances)[::-1]
+            plt.figure(figsize=(10, 6))
+            plt.title("Feature Importances")
+            plt.bar(range(self.X_train.shape[1]), importances[indices], align="center")
+            plt.xticks(range(self.X_train.shape[1]), np.array(self.feature_names)[indices], rotation=90)
+            plt.xlim([-1, self.X_train.shape[1]])
+            plt.tight_layout()
+            plt.savefig(os.path.join(graphs_dir, "cb_feature_importance.png"))
+            plt.close()
+            
+        # 2. SHAP
+        if shap is not None:
+            self._logger.info("generating_shap_plots")
+            X_sample = self.X_train.sample(min(1000, len(self.X_train)), random_state=42)
+            explainer = shap.TreeExplainer(self._model)
+            shap_values = explainer.shap_values(X_sample)
+            
+            # SHAP Summary Plot
+            plt.figure(figsize=(10, 6))
+            shap.summary_plot(shap_values, X_sample, feature_names=self.feature_names, show=False)
+            plt.savefig(os.path.join(graphs_dir, "cb_shap_summary.png"))
+            plt.close()
+            
+            # SHAP Bar Plot
+            plt.figure(figsize=(10, 6))
+            shap.summary_plot(shap_values, X_sample, feature_names=self.feature_names, plot_type="bar", show=False)
+            plt.savefig(os.path.join(graphs_dir, "cb_shap_bar.png"))
+            plt.close()
+            
+        return metrics

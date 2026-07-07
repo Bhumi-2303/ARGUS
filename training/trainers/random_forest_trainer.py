@@ -1,11 +1,14 @@
 from typing import Dict, Any
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+try:
+    import shap
+except ImportError:
+    shap = None
 from sklearn.ensemble import RandomForestClassifier
 
 from training.trainers.base_trainer import BaseTrainer
-from training.data.csv_loader import CSVLoader
-from training.preprocessing.preprocessor import Preprocessor
-# Assuming Evaluator and ModelExporter exist, we'd import them here.
-# For now, we mock the dependencies for the framework build.
 
 class RandomForestTrainer(BaseTrainer):
     """Trainer for Random Forest models."""
@@ -15,41 +18,50 @@ class RandomForestTrainer(BaseTrainer):
         params = self.get_params()
         self._model = RandomForestClassifier(**params)
         
-    def load_dataset(self) -> None:
-        self._logger.info("loading_dataset")
-        loader = CSVLoader(self._config)
-        dataset_path = self._config.get("dataset.raw_path")
-        # In a real run, this would be df = loader.load(dataset_path)
-        # We store it in a temporary attribute
-        self._raw_df = None
-        
-    def preprocess(self) -> None:
-        self._logger.info("preprocessing_data")
-        # In a real run:
-        # preprocessor = Preprocessor(self._config)
-        # target_col = self._config.get("dataset.target_column")
-        # splits = preprocessor.run_pipeline(self._raw_df, target_col)
-        # self.X_train = splits["X_train"]
-        # ...
-        pass
-        
     def train(self) -> None:
         self._logger.info("training_model")
         if self.X_train is not None and self.y_train is not None:
             self._model.fit(self.X_train, self.y_train)
             self._is_trained = True
-            
+
     def evaluate(self) -> Dict[str, Any]:
-        self._logger.info("evaluating_model")
-        # In a real run, use Evaluator here
-        return {"accuracy": 0.0, "f1_score": 0.0}
+        metrics = super().evaluate()
+        self._logger.info("generating_tree_specific_graphs")
         
-    def export(self, output_path: str) -> str:
-        self._logger.info("exporting_model", path=output_path)
-        # In a real run, use ModelExporter
-        return output_path
+        graphs_dir = self._config.get("reporting.graphs_dir", "training/graphs/")
+        os.makedirs(graphs_dir, exist_ok=True)
         
-    def shutdown(self) -> None:
-        self._logger.info("shutting_down_trainer")
-        self._model = None
-        self._raw_df = None
+        # 1. Feature Importance
+        if hasattr(self._model, "feature_importances_"):
+            importances = self._model.feature_importances_
+            indices = np.argsort(importances)[::-1]
+            plt.figure(figsize=(10, 6))
+            plt.title("Feature Importances")
+            plt.bar(range(self.X_train.shape[1]), importances[indices], align="center")
+            plt.xticks(range(self.X_train.shape[1]), np.array(self.feature_names)[indices], rotation=90)
+            plt.xlim([-1, self.X_train.shape[1]])
+            plt.tight_layout()
+            plt.savefig(os.path.join(graphs_dir, "rf_feature_importance.png"))
+            plt.close()
+            
+        # 2. SHAP
+        if shap is not None:
+            self._logger.info("generating_shap_plots")
+            # Downsample for SHAP explanation to save memory/time
+            X_sample = self.X_train.sample(min(1000, len(self.X_train)), random_state=42)
+            explainer = shap.TreeExplainer(self._model)
+            shap_values = explainer.shap_values(X_sample)
+            
+            # SHAP Summary Plot
+            plt.figure(figsize=(10, 6))
+            shap.summary_plot(shap_values, X_sample, feature_names=self.feature_names, show=False)
+            plt.savefig(os.path.join(graphs_dir, "rf_shap_summary.png"))
+            plt.close()
+            
+            # SHAP Bar Plot
+            plt.figure(figsize=(10, 6))
+            shap.summary_plot(shap_values, X_sample, feature_names=self.feature_names, plot_type="bar", show=False)
+            plt.savefig(os.path.join(graphs_dir, "rf_shap_bar.png"))
+            plt.close()
+            
+        return metrics
