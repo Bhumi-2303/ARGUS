@@ -143,8 +143,37 @@ def generate_eda(df: pd.DataFrame, eda_dir: Path):
         
     print("[*] EDA Generation Complete.")
 
+def split_and_drop_leakage(df: pd.DataFrame):
+    """
+    FIX 1: Drops the 'Attack' column entirely from X to prevent Target Leakage.
+    FIX 2: Splits data into train/val/test BEFORE imputation and scaling, preserving `stratify=strat` behavior.
+    """
+    print("[*] Splitting Data and Resolving Target Leakage...")
+    
+    # 1. FIX TARGET LEAKAGE: Drop 'Attack' column
+    if 'Attack' in df.columns:
+        print("[*] Dropping 'Attack' column to prevent Target Leakage.")
+        df = df.drop(columns=['Attack'])
+        
+    # 2. SPLIT DATA FIRST
+    target_col = 'Label' if 'Label' in df.columns else None
+    X = df.drop(columns=[target_col]) if target_col else df
+    y = df[target_col] if target_col else pd.Series(np.zeros(len(df)))
+    
+    # Preserve stratify=strat behavior
+    strat = y if len(y.unique()) > 1 else None
+    X_temp, X_test, y_temp, y_test = train_test_split(X, y, test_size=0.1, random_state=42, stratify=strat)
+    
+    strat_temp = y_temp if len(y_temp.unique()) > 1 else None
+    X_train, X_val, y_train, y_val = train_test_split(X_temp, y_temp, test_size=0.1111, random_state=42, stratify=strat_temp)
+    
+    return X_train, X_val, X_test, y_train, y_val, y_test
+
 def clean_data(X_train, X_val, X_test):
-    """Clean data using imputers fit ONLY on the training set to prevent data leakage."""
+    """
+    FIX 2: Clean data using imputers fit ONLY on the training set to prevent train-test data leakage.
+    .transform() is applied to val and test sets.
+    """
     print("[*] Cleaning Data (Imputation via Training Set)...")
     
     for df in [X_train, X_val, X_test]:
@@ -153,11 +182,12 @@ def clean_data(X_train, X_val, X_test):
     for col in X_train.columns:
         if X_train[col].isnull().any() or X_val[col].isnull().any() or X_test[col].isnull().any():
             if pd.api.types.is_numeric_dtype(X_train[col]):
-                fill_val = X_train[col].median()
+                fill_val = X_train[col].median() # fit ONLY on train
             else:
                 mode_s = X_train[col].mode()
-                fill_val = mode_s[0] if not mode_s.empty else "UNKNOWN"
+                fill_val = mode_s[0] if not mode_s.empty else "UNKNOWN" # fit ONLY on train
                 
+            # Transform all sets
             X_train[col] = X_train[col].fillna(fill_val)
             X_val[col] = X_val[col].fillna(fill_val)
             X_test[col] = X_test[col].fillna(fill_val)
@@ -183,7 +213,10 @@ def feature_engineering(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 def encode_and_scale(X_train, X_val, X_test, artifacts_dir: Path):
-    """Encode and Scale using parameters fit ONLY on the training set to prevent data leakage."""
+    """
+    FIX 2: Encode and Scale using parameters fit ONLY on the training set to prevent data leakage.
+    Persist the fitted transformers (scaler.pkl, encoder.pkl) exactly as before.
+    """
     print("[*] Encoding and Scaling Data (Fit via Training Set)...")
     artifacts_dir.mkdir(parents=True, exist_ok=True)
     
@@ -193,19 +226,18 @@ def encode_and_scale(X_train, X_val, X_test, artifacts_dir: Path):
     for col in cat_cols:
         le = LabelEncoder()
         
-        # Fit on train
+        # Fit ONLY on train
         le.fit(X_train[col].astype(str))
         classes = list(le.classes_)
+        # handle_unknown-safe logic: append "UNKNOWN" so val/test unseen elements don't crash
         if "UNKNOWN" not in classes:
             classes.append("UNKNOWN")
         le.classes_ = np.array(classes)
         
-        # Transform all handling unseen classes
         for df in [X_train, X_val, X_test]:
-            # Convert categorical back to string/object to apply lambda properly
             df[col] = df[col].astype(str)
             df[col] = df[col].apply(lambda x: x if x in le.classes_ else "UNKNOWN")
-            df[col] = le.transform(df[col])
+            df[col] = le.transform(df[col]) # .transform() on all sets
             
         encoders[col] = le
         
@@ -215,6 +247,7 @@ def encode_and_scale(X_train, X_val, X_test, artifacts_dir: Path):
     feature_cols = list(num_cols)
     
     scaler = StandardScaler()
+    # Fit ONLY on train, transform all
     X_train[feature_cols] = scaler.fit_transform(X_train[feature_cols])
     X_val[feature_cols] = scaler.transform(X_val[feature_cols])
     X_test[feature_cols] = scaler.transform(X_test[feature_cols])
@@ -262,7 +295,7 @@ def generate_final_metadata(X_train, artifacts_dir: Path):
 ## Execution Result
 The dataset was processed following rigorous leakage-free validation protocols.
 - **Target Leakage Fixed**: The `Attack` column was dropped entirely.
-- **Data Leakage Fixed**: Train/Test split occurred *before* imputation, scaling, and encoding.
+- **Data Leakage Fixed**: Train/Test split occurred *before* imputation, scaling, and encoding. Transformers fit ONLY on training set.
 - **Split**: 80% Train, 10% Validation, 10% Testing.
 - **Export**: Data is available in `training/data/processed/` in `.csv` and `.parquet` formats.
 """
@@ -276,23 +309,11 @@ def main():
     
     df = df.drop_duplicates()
     
+    # Run EDA on full set before split (this is fine, EDA is just graphs)
     generate_eda(df, EDA_REPORTS_DIR)
     
-    # 1. FIX TARGET LEAKAGE: Drop 'Attack' column
-    if 'Attack' in df.columns:
-        print("[*] Dropping 'Attack' column to prevent Target Leakage.")
-        df = df.drop(columns=['Attack'])
-        
-    # 2. SPLIT DATA FIRST
-    target_col = 'Label' if 'Label' in df.columns else None
-    X = df.drop(columns=[target_col]) if target_col else df
-    y = df[target_col] if target_col else pd.Series(np.zeros(len(df)))
-    
-    strat = y if len(y.unique()) > 1 else None
-    X_temp, X_test, y_temp, y_test = train_test_split(X, y, test_size=0.1, random_state=42, stratify=strat)
-    
-    strat_temp = y_temp if len(y_temp.unique()) > 1 else None
-    X_train, X_val, y_train, y_val = train_test_split(X_temp, y_temp, test_size=0.1111, random_state=42, stratify=strat_temp)
+    # 1 & 2. FIX TARGET LEAKAGE and SPLIT FIRST
+    X_train, X_val, X_test, y_train, y_val, y_test = split_and_drop_leakage(df)
     
     print(f"[*] Data split into Train ({len(X_train)}), Val ({len(X_val)}), Test ({len(X_test)})")
     

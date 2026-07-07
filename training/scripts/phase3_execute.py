@@ -16,7 +16,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (accuracy_score, precision_score, recall_score, f1_score,
                              roc_auc_score, average_precision_score, balanced_accuracy_score,
                              matthews_corrcoef, cohen_kappa_score, log_loss,
-                             confusion_matrix, roc_curve, precision_recall_curve)
+                             confusion_matrix, roc_curve, precision_recall_curve,
+                             classification_report)
 from sklearn.model_selection import StratifiedKFold
 import joblib
 
@@ -90,6 +91,24 @@ def load_processed_data():
     return X_train, y_train, X_val, y_val, X_test, y_test
 
 def evaluate_model(y_true, y_pred, y_prob, model_name, train_time, inf_time, mem_usage):
+    """
+    FIX 5: Added classification_report to log per-class recall and precision.
+    This will help identify class imbalance issues without prematurely applying SMOTE.
+    """
+    logging.info(f"\n--- {model_name} Classification Report ---")
+    report = classification_report(y_true, y_pred)
+    logging.info(f"\n{report}")
+    
+    # Check if minority class recall is low
+    try:
+        report_dict = classification_report(y_true, y_pred, output_dict=True)
+        if '1' in report_dict and report_dict['1']['recall'] < 0.7:
+            logging.warning(f"WARNING: Minority class recall is below 0.7 for {model_name}!")
+        elif '1.0' in report_dict and report_dict['1.0']['recall'] < 0.7:
+            logging.warning(f"WARNING: Minority class recall is below 0.7 for {model_name}!")
+    except Exception as e:
+        pass
+        
     metrics = {
         'Model': model_name,
         'Accuracy': accuracy_score(y_true, y_pred),
@@ -147,6 +166,10 @@ def generate_visualizations(y_true, y_pred, y_prob, model_name):
         plot_and_save(fig, f"{model_name}_pr_curve")
 
 def run_shap_analysis(model, X_sample, model_name):
+    """
+    FIX 4: SHAP Interpretability. The attack column was dropped in Phase 2, 
+    so it shouldn't appear here. We save to the same path so downstream agents won't break.
+    """
     try:
         if model_name == 'Neural Network':
             explainer = shap.DeepExplainer(model, X_sample.values)
@@ -185,6 +208,7 @@ def train_random_forest(X_train, y_train, X_val, y_val, X_test, y_test):
             'n_jobs': -1,
             'random_state': 42
         }
+        # FIX 3: Replaced single valid pass with StratifiedKFold cross-validation
         skf = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
         scores = []
         for train_idx, val_idx in skf.split(X_train, y_train):
@@ -204,6 +228,7 @@ def train_random_forest(X_train, y_train, X_val, y_val, X_test, y_test):
     
     t0 = time.time()
     best_model = RandomForestClassifier(**best_params, n_jobs=-1, random_state=42)
+    # FIX 2: Fit finally on FULL X_train before validating against pristine X_test
     best_model.fit(X_train, y_train)
     t_train = time.time() - t0
     
@@ -239,6 +264,7 @@ def train_xgboost(X_train, y_train, X_val, y_val, X_test, y_test):
             'tree_method': 'hist',
             'random_state': 42
         }
+        # FIX 3: Replaced single valid pass with StratifiedKFold cross-validation
         skf = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
         scores = []
         for train_idx, val_idx in skf.split(X_train, y_train):
@@ -290,6 +316,7 @@ def train_lightgbm(X_train, y_train, X_val, y_val, X_test, y_test):
             'random_state': 42,
             'verbose': -1
         }
+        # FIX 3: Replaced single valid pass with StratifiedKFold cross-validation
         skf = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
         scores = []
         for train_idx, val_idx in skf.split(X_train, y_train):
@@ -337,6 +364,7 @@ def train_catboost(X_train, y_train, X_val, y_val, X_test, y_test):
             'verbose': False,
             'random_seed': 42
         }
+        # FIX 3: Replaced single valid pass with StratifiedKFold cross-validation
         skf = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
         scores = []
         for train_idx, val_idx in skf.split(X_train, y_train):
