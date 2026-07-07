@@ -30,3 +30,6 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 catboost_info/
+training/exports/
+training/graphs/
+training/reports/

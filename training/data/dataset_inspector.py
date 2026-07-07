@@ -71,7 +71,7 @@ class DatasetInspector:
         """
         Calculates memory usage of the DataFrame.
         """
-        mem_bytes = df.memory_usage(deep=True).sum()
+        mem_bytes = df.memory_usage(deep=False).sum()
         return {
             "bytes": int(mem_bytes),
             "megabytes": float(round(mem_bytes / (1024 * 1024), 2))

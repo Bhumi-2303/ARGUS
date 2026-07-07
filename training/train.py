@@ -72,9 +72,42 @@ def main():
         sys.exit(0)
         
     else:
-        # Actual execution path is disabled per constraints
-        logger.warning("training_execution_disabled")
-        print("\nIMPORTANT: Training not yet enabled. Use --dry-run to validate framework readiness.\n")
+        logger.info("starting_training_execution")
+        models_to_train = AVAILABLE_MODELS if args.all else [args.model]
+        
+        trainer_classes = {
+            "random_forest": "RandomForestTrainer",
+            "xgboost": "XGBoostTrainer",
+            "lightgbm": "LightGBMTrainer",
+            "catboost": "CatBoostTrainer",
+            "neural_network": "NeuralNetworkTrainer"
+        }
+        
+        import importlib
+        import gc
+        
+        for model_name in models_to_train:
+            logger.info(f"training_{model_name}")
+            config = ConfigurationManager.from_args(model_name=model_name)
+            
+            # Dynamic import
+            module_name = f"training.trainers.{model_name}_trainer"
+            class_name = trainer_classes[model_name]
+            module = importlib.import_module(module_name)
+            trainer_class = getattr(module, class_name)
+            
+            # Run pipeline
+            trainer = trainer_class(config)
+            try:
+                metrics = trainer.run_pipeline()
+                logger.info(f"finished_training_{model_name}", metrics=metrics)
+            except Exception as e:
+                logger.error(f"failed_training_{model_name}", error=str(e))
+            
+            # Memory optimization: release memory after each model
+            del trainer
+            gc.collect()
+            
         sys.exit(0)
 
 if __name__ == "__main__":

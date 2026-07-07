@@ -26,7 +26,7 @@ class Preprocessor:
     def handle_missing(self, df: pd.DataFrame, strategy: str = 'median') -> pd.DataFrame:
         """Handles missing values in the DataFrame."""
         self.logger.info("handling_missing_values", strategy=strategy)
-        df_clean = df.copy()
+        df_clean = df
         
         if strategy == 'drop':
             df_clean = df_clean.dropna()
@@ -61,7 +61,7 @@ class Preprocessor:
     def handle_outliers(self, df: pd.DataFrame, method: str = 'iqr', threshold: float = 1.5) -> pd.DataFrame:
         """Handles outliers in numeric columns."""
         self.logger.info("handling_outliers", method=method, threshold=threshold)
-        df_clean = df.copy()
+        df_clean = df
         
         numeric_cols = df_clean.select_dtypes(include=[np.number]).columns
         
@@ -91,7 +91,7 @@ class Preprocessor:
     def encode_categoricals(self, df: pd.DataFrame, method: str = 'label') -> pd.DataFrame:
         """Encodes categorical variables."""
         self.logger.info("encoding_categoricals", method=method)
-        df_encoded = df.copy()
+        df_encoded = df
         cat_cols = df_encoded.select_dtypes(include=['object', 'category']).columns
         
         if method == 'label':
@@ -110,7 +110,7 @@ class Preprocessor:
     def normalize(self, df: pd.DataFrame, method: str = 'standard', columns: Optional[List[str]] = None) -> pd.DataFrame:
         """Normalizes numeric features."""
         self.logger.info("normalizing_features", method=method)
-        df_norm = df.copy()
+        df_norm = df
         
         if columns is None:
             columns = df_norm.select_dtypes(include=[np.number]).columns.tolist()
@@ -146,23 +146,21 @@ class Preprocessor:
             
         return True
 
-    def split_data(self, df: pd.DataFrame, target_col: str, test_size: float = 0.2, 
+    def split_data(self, X: pd.DataFrame, y: pd.Series, test_size: float = 0.2, 
                    val_size: float = 0.1, random_seed: int = 42, stratify: bool = True) -> Dict[str, Any]:
         """Splits the dataset into train, validation, and test sets."""
         self.logger.info("splitting_data", test_size=test_size, val_size=val_size)
         
-        if target_col not in df.columns:
-            raise ValueError(f"Target column '{target_col}' not found in dataframe")
-            
-        X = df.drop(columns=[target_col])
-        y = df[target_col]
-        
         stratify_col = y if stratify else None
         
-        # First split: Train+Val vs Test
         X_temp, X_test, y_temp, y_test = train_test_split(
             X, y, test_size=test_size, random_state=random_seed, stratify=stratify_col
         )
+        # Delete X and y immediately to free memory
+        del X
+        del y
+        import gc
+        gc.collect()
         
         # Second split: Train vs Val (adjusting val_size relative to remaining data)
         relative_val_size = val_size / (1.0 - test_size)
@@ -171,6 +169,11 @@ class Preprocessor:
         X_train, X_val, y_train, y_val = train_test_split(
             X_temp, y_temp, test_size=relative_val_size, random_state=random_seed, stratify=stratify_temp
         )
+        
+        # Delete temp immediately
+        del X_temp
+        del y_temp
+        gc.collect()
         
         self.logger.info("data_split_complete", 
                          train_shape=X_train.shape, 
@@ -194,7 +197,7 @@ class Preprocessor:
             Dict containing the splits (X_train, y_train, etc.)
         """
         self.logger.info("starting_preprocessing_pipeline")
-        df_processed = df.copy()
+        df_processed = df
         prep_config = self.config.get("preprocessing", {})
         
         # 1. Duplicates
@@ -213,6 +216,9 @@ class Preprocessor:
         # Separate target for outlier handling and normalization to prevent target leakage/modification
         y = df_processed[target_col]
         X = df_processed.drop(columns=[target_col])
+        del df_processed
+        import gc
+        gc.collect()
         
         # 4. Outliers (on features only)
         if prep_config.get("handle_outliers", True):
@@ -227,16 +233,14 @@ class Preprocessor:
             X = self.normalize(X, method=prep_config.get("normalization_method", "standard"))
             
         # Recombine to validate
-        df_final = pd.concat([X, y], axis=1)
-        
-        if not self.validate_features(df_final):
+        if not self.validate_features(X) or y.isnull().any():
             raise ValueError("Preprocessed data failed validation.")
             
         # 6. Split
         split_config = self.config.get("splitting", {})
         splits = self.split_data(
-            df=df_final,
-            target_col=target_col,
+            X=X,
+            y=y,
             test_size=split_config.get("test_size", 0.2),
             val_size=split_config.get("val_size", 0.1),
             random_seed=split_config.get("random_seed", 42),

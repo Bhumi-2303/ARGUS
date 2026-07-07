@@ -4,10 +4,10 @@ project:
   description: "Autonomous Risk-aware Grid Understanding & Security"
 
 dataset:
-  raw_path: "training/data/raw/nftoniotv2/"
+  raw_path: "data/NF-ToN-IoT-V2.parquet"
   processed_path: "training/data/processed/"
   file_format: "csv"
-  target_column: "label"
+  target_column: "Label"
 
 splitting:
   test_size: 0.2

@@ -1,9 +1,20 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional
 import pandas as pd
+import numpy as np
+import gc
+import os
 
 from training.utils.config_manager import ConfigurationManager
 from training.utils.logger import get_logger
+from training.data.csv_loader import CSVLoader
+from training.data.dataset_inspector import DatasetInspector
+from training.preprocessing.preprocessor import Preprocessor
+from training.feature_engineering.feature_engineer import FeatureEngineer
+from training.feature_selection.feature_selector import FeatureSelector
+from training.evaluation.evaluator import Evaluator
+from training.reports.report_generator import ReportGenerator
+from training.exports.model_exporter import ModelExporter
 
 class BaseTrainer(ABC):
     """Abstract base class that all model trainers must implement."""
@@ -28,35 +39,105 @@ class BaseTrainer(ABC):
         """Loads config and sets up the model instance with parameters."""
         pass
 
-    @abstractmethod
     def load_dataset(self) -> None:
         """Loads data using CSVLoader."""
-        pass
+        self._logger.info("loading_dataset")
+        dataset_path = self._config.get("dataset.raw_path")
+        loader = CSVLoader(self._config)
+        self._raw_df = loader.load(dataset_path)
 
-    @abstractmethod
     def preprocess(self) -> None:
-        """Preprocesses data using Preprocessor and sets data split attributes."""
-        pass
+        """Preprocesses data and sets data split attributes."""
+        self._logger.info("preprocessing_data")
+        target_col = self._config.get("dataset.target_column", "Label")
+        
+        # 1. Dataset Inspection & EDA
+        inspector = DatasetInspector()
+        profile_report = inspector.generate_profile_report(self._raw_df, target_col)
+        reports_dir = self._config.get("reporting.output_dir", "training/reports/")
+        os.makedirs(reports_dir, exist_ok=True)
+        import json
+        with open(os.path.join(reports_dir, "metadata.json"), "w") as f:
+            json.dump(profile_report, f, indent=4)
+        
+        # 2. Preprocessing & Split
+        preprocessor = Preprocessor(self._config)
+        splits = preprocessor.run_pipeline(self._raw_df, target_col)
+        
+        # Free memory of raw_df immediately
+        del self._raw_df
+        gc.collect()
+        
+        # 3. Feature Engineering
+        engineer = FeatureEngineer(self._config)
+        splits["X_train"] = engineer.run_pipeline(splits["X_train"], target_col)
+        # Apply same transformations to val/test
+        splits["X_val"] = engineer.run_pipeline(splits["X_val"], target_col)
+        splits["X_test"] = engineer.run_pipeline(splits["X_test"], target_col)
+        
+        # 4. Feature Selection
+        selector = FeatureSelector(self._config)
+        # We don't have estimator yet, fallback to all or basic correlation
+        selected_features = selector.run_selection(splits["X_train"], splits["y_train"], estimator=None)
+        self.feature_names = selected_features
+        
+        for k in ["X_train", "X_val", "X_test"]:
+            splits[k] = splits[k][selected_features]
+            
+        self.X_train = splits["X_train"]
+        self.X_val = splits["X_val"]
+        self.X_test = splits["X_test"]
+        self.y_train = splits["y_train"]
+        self.y_val = splits["y_val"]
+        self.y_test = splits["y_test"]
 
     @abstractmethod
     def train(self) -> None:
         """Trains the model on the prepared data."""
         pass
 
-    @abstractmethod
     def evaluate(self) -> Dict[str, Any]:
         """Evaluates the model and returns metrics."""
-        pass
+        self._logger.info("evaluating_model")
+        evaluator = Evaluator(self._config)
+        y_pred = self._model.predict(self.X_test)
+        y_proba = None
+        if hasattr(self._model, "predict_proba"):
+            y_proba = self._model.predict_proba(self.X_test)
+            
+        metrics = evaluator.evaluate(self.y_test, y_pred, y_proba)
+        
+        # Generate reports and graphs
+        reporter = ReportGenerator(self._config)
+        reporter.generate_all(metrics, self.get_model_name())
+        
+        return metrics
 
-    @abstractmethod
     def export(self, output_path: str) -> str:
         """Exports the trained model to disk."""
-        pass
+        self._logger.info("exporting_model", path=output_path)
+        exporter = ModelExporter(self._config)
+        formats = self._config.get("export.formats", ["joblib"])
+        results = exporter.export(
+            model=self._model,
+            model_name=self.get_model_name(),
+            formats=formats,
+            params=self.get_params(),
+            metrics=self.metrics,
+            feature_names=self.feature_names
+        )
+        return list(results.values())[0] if results else output_path
 
-    @abstractmethod
     def shutdown(self) -> None:
         """Cleans up resources and memory."""
-        pass
+        self._logger.info("shutting_down_trainer")
+        self.X_train = None
+        self.X_val = None
+        self.X_test = None
+        self.y_train = None
+        self.y_val = None
+        self.y_test = None
+        gc.collect()
         
     def run_pipeline(self) -> Dict[str, Any]:
         """Executes the complete training pipeline end-to-end."""
