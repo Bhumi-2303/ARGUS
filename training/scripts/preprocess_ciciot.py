@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import os
 import gc
-import glob
 import json
 import argparse
 import numpy as np
@@ -19,20 +18,19 @@ import joblib
 plt.switch_backend('Agg')
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="ARGUS Phase 2: Dynamic Preprocessing Pipeline")
-    parser.add_argument("--dataset", type=str, required=True, help="Name of the dataset (e.g., nftoniotv2, ciciot2023)")
+    parser = argparse.ArgumentParser(description="Standalone preprocessing script for CICIoT2023 dataset")
+    parser.add_argument("--max-rows", type=int, default=500000, help="Maximum number of rows to load (default: 500000)")
     return parser.parse_args()
 
 def setup_directories(dataset: str):
+    base_dir = Path("/Users/tirthkosambia/Documents/ARGUS")
     dirs = {
-        "raw": Path(f"training/data/raw/{dataset}"),
-        "processed": Path(f"training/data/processed/{dataset}"),
-        "eda": Path(f"training/reports/eda/{dataset}"),
-        "exports": Path(f"training/exports/{dataset}")
+        "processed": base_dir / f"training/data/processed/{dataset}",
+        "eda": base_dir / f"training/reports/eda/{dataset}",
+        "exports": base_dir / f"training/exports/{dataset}"
     }
     for k, v in dirs.items():
-        if k != "raw":
-            v.mkdir(parents=True, exist_ok=True)
+        v.mkdir(parents=True, exist_ok=True)
     return dirs
 
 def optimize_dtypes(df: pd.DataFrame) -> pd.DataFrame:
@@ -62,44 +60,36 @@ def optimize_dtypes(df: pd.DataFrame) -> pd.DataFrame:
                 df[col] = df[col].astype('category')
     return df
 
-def load_data(raw_dir: Path) -> pd.DataFrame:
-    csv_files = glob.glob(str(raw_dir / "*.csv"))
-    parquet_files = glob.glob(str(raw_dir / "*.parquet"))
-    
-    if not csv_files and not parquet_files:
-        raise FileNotFoundError(f"No dataset files found in {raw_dir}. Please place files here.")
+def load_data(file_path: Path, max_rows: int) -> pd.DataFrame:
+    if not file_path.exists():
+        raise FileNotFoundError(f"Dataset file not found at {file_path}")
         
-    print(f"[*] Found {len(csv_files)} CSV files and {len(parquet_files)} Parquet files.")
+    print(f"[*] Loading data from {file_path} (max rows: {max_rows})...")
     chunks = []
     total_rows = 0
-    max_rows = 500000 # Configurable limit for memory safety
     
-    for file in csv_files:
+    for chunk in pd.read_csv(file_path, chunksize=100000, low_memory=False):
         if total_rows >= max_rows: break
-        print(f"[*] Processing CSV {file}...")
-        for chunk in pd.read_csv(file, chunksize=100000, low_memory=False):
-            if total_rows >= max_rows: break
-            chunk = optimize_dtypes(chunk)
-            chunks.append(chunk)
-            total_rows += len(chunk)
-            
-    for file in parquet_files:
-        if total_rows >= max_rows: break
-        print(f"[*] Processing Parquet {file}...")
-        import pyarrow.dataset as ds
-        dataset = ds.dataset(file, format="parquet")
-        for batch in dataset.to_batches(batch_size=100000):
-            if total_rows >= max_rows: break
-            chunk = batch.to_pandas()
-            chunk = optimize_dtypes(chunk)
-            chunks.append(chunk)
-            total_rows += len(chunk)
+        chunk = optimize_dtypes(chunk)
+        chunks.append(chunk)
+        total_rows += len(chunk)
+        print(f"[*] Loaded {total_rows} rows...")
             
     df = pd.concat(chunks, ignore_index=True)
     df = df.head(max_rows)
     del chunks
     gc.collect()
     print(f"[*] Data loaded successfully. Shape: {df.shape}")
+    return df
+
+def binarize_labels(df: pd.DataFrame) -> pd.DataFrame:
+    print("[*] Binarizing labels...")
+    if 'label' in df.columns:
+        df['label'] = df['label'].apply(lambda x: 0 if x == 'BenignTraffic' else 1).astype(np.int8)
+        df.rename(columns={'label': 'Label'}, inplace=True)
+    elif 'Label' in df.columns:
+        if df['Label'].dtype == 'O' or df['Label'].dtype.name == 'category':
+            df['Label'] = df['Label'].apply(lambda x: 0 if x == 'BenignTraffic' else 1).astype(np.int8)
     return df
 
 def generate_eda(df: pd.DataFrame, eda_dir: Path):
@@ -139,14 +129,6 @@ def generate_eda(df: pd.DataFrame, eda_dir: Path):
         sns.countplot(data=df, x=target_col)
         plt.title("Target Class Distribution")
         save_plot("target_distribution")
-
-    # Target leakage column preview
-    attack_col = 'Attack' if 'Attack' in df.columns else None
-    if attack_col:
-        plt.figure(figsize=(10, 6))
-        sns.countplot(data=df, y=attack_col, order=df[attack_col].value_counts().index)
-        plt.title("Attack Category Distribution")
-        save_plot("attack_distribution")
         
     # 4. Missing Values
     plt.figure(figsize=(12, 6))
@@ -336,13 +318,17 @@ def generate_metadata(X_train, dataset_name: str, exports_dir: Path):
 
 def main():
     args = parse_args()
-    dataset = args.dataset
+    dataset = "ciciot2023"
     print(f"\n=== ARGUS Phase 2 Pipeline Execution: {dataset} ===")
     
     dirs = setup_directories(dataset)
     
-    # Data Type Validation & Chunked Loading
-    df = load_data(dirs["raw"])
+    # Load dataset
+    file_path = Path("/Users/tirthkosambia/Documents/ARGUS/data/CICIOT23/train/train.csv")
+    df = load_data(file_path, args.max_rows)
+    
+    # Label binarization
+    df = binarize_labels(df)
     
     # Duplicate Removal
     print(f"[*] Removing duplicates. Original shape: {df.shape}")

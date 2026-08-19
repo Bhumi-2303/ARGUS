@@ -1,508 +1,311 @@
 import os
-import gc
-import json
 import time
-import psutil
-import shutil
-import logging
-import warnings
+import json
+import argparse
 import numpy as np
 import pandas as pd
+from pathlib import Path
 import matplotlib.pyplot as plt
 import seaborn as sns
-from pathlib import Path
-
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import (accuracy_score, precision_score, recall_score, f1_score,
-                             roc_auc_score, average_precision_score, balanced_accuracy_score,
-                             matthews_corrcoef, cohen_kappa_score, log_loss,
-                             confusion_matrix, roc_curve, precision_recall_curve,
-                             classification_report)
-from sklearn.model_selection import StratifiedKFold
 import joblib
+import shap
+
+from sklearn.metrics import (
+    accuracy_score, precision_score, recall_score, f1_score,
+    roc_auc_score, average_precision_score, balanced_accuracy_score,
+    matthews_corrcoef, cohen_kappa_score, log_loss,
+    confusion_matrix, classification_report
+)
+from sklearn.model_selection import StratifiedKFold
+from sklearn.ensemble import RandomForestClassifier
 
 import xgboost as xgb
 import lightgbm as lgb
-from catboost import CatBoostClassifier, Pool
+from catboost import CatBoostClassifier
 
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, BatchNormalization, Dropout
-from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint, CSVLogger, TensorBoard
-
+from tensorflow.keras.layers import Dense, Dropout, BatchNormalization
+from tensorflow.keras.callbacks import EarlyStopping, CSVLogger, ModelCheckpoint
 import optuna
-import shap
 
-warnings.filterwarnings('ignore')
+plt.switch_backend('Agg')
 
-# -------------------------------------------------------------------
-# Configuration
-# -------------------------------------------------------------------
-PROCESSED_DATA_DIR = Path("training/data/processed")
-REPORTS_DIR = Path("training/reports")
-MODELS_DIR = Path("training/exports")
-BEST_MODEL_DIR = Path("models/best_model")
+def parse_args():
+    parser = argparse.ArgumentParser(description="ARGUS Phase 3: Multi-Dataset Training")
+    parser.add_argument("--train-dataset", type=str, required=True, help="Dataset to train on")
+    parser.add_argument("--test-dataset", type=str, required=True, help="Dataset to test on")
+    parser.add_argument("--trials", type=int, default=50, help="Number of Optuna trials")
+    return parser.parse_args()
 
-for d in [REPORTS_DIR, MODELS_DIR, BEST_MODEL_DIR]:
-    d.mkdir(parents=True, exist_ok=True)
-    (REPORTS_DIR / "shap").mkdir(parents=True, exist_ok=True)
-    (REPORTS_DIR / "figures").mkdir(parents=True, exist_ok=True)
-    
-logging.basicConfig(level=logging.INFO, format='[*] %(message)s')
-
-# -------------------------------------------------------------------
-# Utility Functions
-# -------------------------------------------------------------------
-def get_memory_usage():
-    process = psutil.Process(os.getpid())
-    mem_info = process.memory_info()
-    return mem_info.rss / (1024 ** 2) # in MB
-
-def clear_memory():
-    gc.collect()
-
-def load_processed_data():
-    logging.info("Loading processed datasets...")
-    # Support both Parquet and CSV
-    train_path_pq = PROCESSED_DATA_DIR / "training.parquet"
-    train_path_csv = PROCESSED_DATA_DIR / "training.csv"
-    
-    if train_path_pq.exists():
-        train_df = pd.read_parquet(train_path_pq)
-        val_df = pd.read_parquet(PROCESSED_DATA_DIR / "validation.parquet")
-        test_df = pd.read_parquet(PROCESSED_DATA_DIR / "testing.parquet")
-    else:
-        train_df = pd.read_csv(train_path_csv, low_memory=False)
-        val_df = pd.read_csv(PROCESSED_DATA_DIR / "validation.csv", low_memory=False)
-        test_df = pd.read_csv(PROCESSED_DATA_DIR / "testing.csv", low_memory=False)
-
-    # Assuming 'Label' is the target column from Phase 2
-    target_col = 'Label' 
-    X_train = train_df.drop(columns=[target_col])
-    y_train = train_df[target_col]
-    
-    X_val = val_df.drop(columns=[target_col])
-    y_val = val_df[target_col]
-    
-    X_test = test_df.drop(columns=[target_col])
-    y_test = test_df[target_col]
-    
-    logging.info(f"Train shape: {X_train.shape}, Val shape: {X_val.shape}, Test shape: {X_test.shape}")
-    return X_train, y_train, X_val, y_val, X_test, y_test
-
-def evaluate_model(y_true, y_pred, y_prob, model_name, train_time, inf_time, mem_usage):
-    """
-    FIX 5: Added classification_report to log per-class recall and precision.
-    This will help identify class imbalance issues without prematurely applying SMOTE.
-    """
-    logging.info(f"\n--- {model_name} Classification Report ---")
-    report = classification_report(y_true, y_pred)
-    logging.info(f"\n{report}")
-    
-    # Check if minority class recall is low
-    try:
-        report_dict = classification_report(y_true, y_pred, output_dict=True)
-        if '1' in report_dict and report_dict['1']['recall'] < 0.7:
-            logging.warning(f"WARNING: Minority class recall is below 0.7 for {model_name}!")
-        elif '1.0' in report_dict and report_dict['1.0']['recall'] < 0.7:
-            logging.warning(f"WARNING: Minority class recall is below 0.7 for {model_name}!")
-    except Exception as e:
-        pass
-        
-    metrics = {
-        'Model': model_name,
-        'Accuracy': accuracy_score(y_true, y_pred),
-        'Precision': precision_score(y_true, y_pred, zero_division=0, average='binary'),
-        'Recall': recall_score(y_true, y_pred, zero_division=0, average='binary'),
-        'F1 Score': f1_score(y_true, y_pred, zero_division=0, average='binary'),
-        'ROC AUC': roc_auc_score(y_true, y_prob) if y_prob is not None else np.nan,
-        'PR AUC': average_precision_score(y_true, y_prob) if y_prob is not None else np.nan,
-        'Balanced Accuracy': balanced_accuracy_score(y_true, y_pred),
-        'MCC': matthews_corrcoef(y_true, y_pred),
-        'Cohen Kappa': cohen_kappa_score(y_true, y_pred),
-        'Log Loss': log_loss(y_true, y_prob) if y_prob is not None else np.nan,
-        'Training Time (s)': train_time,
-        'Inference Time (s)': inf_time,
-        'Memory Usage (MB)': mem_usage
+def setup_directories(train_ds: str, test_ds: str):
+    exp_dir = Path(f"training/exports/exp_{train_ds}_{test_ds}")
+    dirs = {
+        "models": exp_dir / "models",
+        "reports": exp_dir / "reports",
+        "figures": exp_dir / "reports/figures",
+        "best": Path("training/models/best")
     }
+    for d in dirs.values():
+        d.mkdir(parents=True, exist_ok=True)
+    return dirs
+
+def load_data(dataset: str):
+    data_dir = Path(f"training/data/processed/{dataset}")
+    if not data_dir.exists():
+        raise FileNotFoundError(f"Processed data for {dataset} not found. Run Phase 2 first.")
+    
+    train_df = pd.read_parquet(data_dir / "training.parquet")
+    val_df = pd.read_parquet(data_dir / "validation.parquet")
+    test_df = pd.read_parquet(data_dir / "testing.parquet")
+    
+    return train_df, val_df, test_df
+
+def align_features(train_df, test_df):
+    """Align test features to train features if evaluating cross-dataset."""
+    train_features = [c for c in train_df.columns if c != 'Label']
+    
+    X_test = pd.DataFrame()
+    for col in train_features:
+        if col in test_df.columns:
+            X_test[col] = test_df[col]
+        else:
+            X_test[col] = 0
+            
+    y_test = test_df['Label'] if 'Label' in test_df.columns else np.zeros(len(test_df))
+    return X_test, y_test
+
+def evaluate_model(model_name, y_true, y_pred, y_prob, train_time, infer_time, reports_dir):
+    acc = accuracy_score(y_true, y_pred)
+    prec = precision_score(y_true, y_pred, average='macro', zero_division=0)
+    rec = recall_score(y_true, y_pred, average='macro', zero_division=0)
+    f1 = f1_score(y_true, y_pred, average='macro', zero_division=0)
+    
+    roc_auc = roc_auc_score(y_true, y_prob) if y_prob is not None else 0
+    pr_auc = average_precision_score(y_true, y_prob) if y_prob is not None else 0
+    
+    bal_acc = balanced_accuracy_score(y_true, y_pred)
+    mcc = matthews_corrcoef(y_true, y_pred)
+    kappa = cohen_kappa_score(y_true, y_pred)
+    ll = log_loss(y_true, y_prob) if y_prob is not None else 0
+    
+    metrics = {
+        "Accuracy": acc, "Precision": prec, "Recall": rec, "F1": f1,
+        "ROC_AUC": roc_auc, "PR_AUC": pr_auc, "Balanced_Accuracy": bal_acc,
+        "Matthews_Correlation": mcc, "Cohen_Kappa": kappa, "Log_Loss": ll,
+        "Training_Time_s": train_time, "Inference_Time_s": infer_time
+    }
+    
+    cm = confusion_matrix(y_true, y_pred)
+    cm_norm = confusion_matrix(y_true, y_pred, normalize='true')
+    
+    fig, ax = plt.subplots(1, 2, figsize=(12, 5))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax[0])
+    ax[0].set_title(f"{model_name} Raw Confusion Matrix")
+    sns.heatmap(cm_norm, annot=True, fmt='.2f', cmap='Blues', ax=ax[1])
+    ax[1].set_title(f"{model_name} Normalized Confusion Matrix")
+    for ext in ['png', 'svg', 'pdf']:
+        plt.savefig(reports_dir / f"figures/{model_name}_cm.{ext}", dpi=300, bbox_inches='tight')
+    plt.close()
+    
     return metrics
 
-def plot_and_save(fig, filename):
-    for fmt in ['png', 'svg', 'pdf']:
-        fig.savefig(REPORTS_DIR / "figures" / f"{filename}.{fmt}", format=fmt, dpi=300, bbox_inches='tight')
-    plt.close(fig)
-
-def generate_visualizations(y_true, y_pred, y_prob, model_name):
-    # Confusion Matrix
-    cm = confusion_matrix(y_true, y_pred)
-    fig, ax = plt.subplots(figsize=(6,5))
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax)
-    ax.set_title(f'{model_name} - Confusion Matrix')
-    plot_and_save(fig, f"{model_name}_confusion_matrix")
+def train_optuna_tree(model_class, model_name, X_train, y_train, trials_count):
+    print(f"[*] Tuning {model_name}...")
     
-    # Normalized Confusion Matrix
-    cm_norm = confusion_matrix(y_true, y_pred, normalize='true')
-    fig, ax = plt.subplots(figsize=(6,5))
-    sns.heatmap(cm_norm, annot=True, fmt='.2f', cmap='Blues', ax=ax)
-    ax.set_title(f'{model_name} - Normalized Confusion Matrix')
-    plot_and_save(fig, f"{model_name}_norm_confusion_matrix")
-    
-    if y_prob is not None:
-        # ROC Curve
-        fpr, tpr, _ = roc_curve(y_true, y_prob)
-        fig, ax = plt.subplots(figsize=(6,5))
-        ax.plot(fpr, tpr, color='blue', label=f'AUC = {roc_auc_score(y_true, y_prob):.4f}')
-        ax.plot([0, 1], [0, 1], color='red', linestyle='--')
-        ax.set_title(f'{model_name} - ROC Curve')
-        ax.legend()
-        plot_and_save(fig, f"{model_name}_roc_curve")
-        
-        # PR Curve
-        prec, rec, _ = precision_recall_curve(y_true, y_prob)
-        fig, ax = plt.subplots(figsize=(6,5))
-        ax.plot(rec, prec, color='blue', label=f'PR AUC = {average_precision_score(y_true, y_prob):.4f}')
-        ax.set_title(f'{model_name} - Precision Recall Curve')
-        ax.legend()
-        plot_and_save(fig, f"{model_name}_pr_curve")
-
-def run_shap_analysis(model, X_sample, model_name):
-    """
-    FIX 4: SHAP Interpretability. The attack column was dropped in Phase 2, 
-    so it shouldn't appear here. We save to the same path so downstream agents won't break.
-    """
-    try:
-        if model_name == 'Neural Network':
-            explainer = shap.DeepExplainer(model, X_sample.values)
-            shap_values = explainer.shap_values(X_sample.values)
-        elif model_name in ['Random Forest', 'XGBoost', 'LightGBM', 'CatBoost']:
-            explainer = shap.TreeExplainer(model)
-            shap_values = explainer.shap_values(X_sample)
-        else:
-            return
-
-        fig = plt.figure(figsize=(10, 6))
-        shap.summary_plot(shap_values, X_sample, show=False)
-        plot_and_save(fig, f"{model_name}_shap_summary")
-        
-        fig = plt.figure(figsize=(10, 6))
-        shap.summary_plot(shap_values, X_sample, plot_type="bar", show=False)
-        plot_and_save(fig, f"{model_name}_shap_bar")
-        
-    except Exception as e:
-        logging.error(f"SHAP generation failed for {model_name}: {e}")
-
-# -------------------------------------------------------------------
-# Model Training Routines
-# -------------------------------------------------------------------
-
-def train_random_forest(X_train, y_train, X_val, y_val, X_test, y_test):
-    logging.info("--- Training Random Forest ---")
     def objective(trial):
-        params = {
-            'n_estimators': trial.suggest_int('n_estimators', 50, 300),
-            'max_depth': trial.suggest_int('max_depth', 5, 30),
-            'min_samples_split': trial.suggest_int('min_samples_split', 2, 10),
-            'min_samples_leaf': trial.suggest_int('min_samples_leaf', 1, 10),
-            'criterion': trial.suggest_categorical('criterion', ['gini', 'entropy']),
-            'bootstrap': trial.suggest_categorical('bootstrap', [True, False]),
-            'n_jobs': -1,
-            'random_state': 42
-        }
-        # FIX 3: Replaced single valid pass with StratifiedKFold cross-validation
-        skf = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
+        if model_name == "Random Forest":
+            params = {
+                'n_estimators': trial.suggest_int('n_estimators', 50, 300),
+                'max_depth': trial.suggest_int('max_depth', 5, 30),
+                'min_samples_split': trial.suggest_int('min_samples_split', 2, 10),
+                'n_jobs': -1, 'random_state': 42
+            }
+            model = RandomForestClassifier(**params)
+        elif model_name == "XGBoost":
+            params = {
+                'n_estimators': trial.suggest_int('n_estimators', 50, 300),
+                'max_depth': trial.suggest_int('max_depth', 3, 15),
+                'learning_rate': trial.suggest_float('learning_rate', 1e-3, 0.3, log=True),
+                'n_jobs': -1, 'random_state': 42, 'use_label_encoder': False, 'eval_metric': 'logloss'
+            }
+            model = xgb.XGBClassifier(**params)
+        elif model_name == "LightGBM":
+            params = {
+                'n_estimators': trial.suggest_int('n_estimators', 50, 300),
+                'max_depth': trial.suggest_int('max_depth', 3, 15),
+                'learning_rate': trial.suggest_float('learning_rate', 1e-3, 0.3, log=True),
+                'n_jobs': -1, 'random_state': 42, 'verbose': -1
+            }
+            model = lgb.LGBMClassifier(**params)
+        elif model_name == "CatBoost":
+            params = {
+                'iterations': trial.suggest_int('iterations', 50, 300),
+                'depth': trial.suggest_int('depth', 4, 10),
+                'learning_rate': trial.suggest_float('learning_rate', 1e-3, 0.3, log=True),
+                'random_seed': 42, 'verbose': 0
+            }
+            model = CatBoostClassifier(**params)
+            
+        skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
         scores = []
         for train_idx, val_idx in skf.split(X_train, y_train):
             X_tr, X_va = X_train.iloc[train_idx], X_train.iloc[val_idx]
             y_tr, y_va = y_train.iloc[train_idx], y_train.iloc[val_idx]
-            model = RandomForestClassifier(**params)
             model.fit(X_tr, y_tr)
             preds = model.predict(X_va)
-            scores.append(f1_score(y_va, preds, zero_division=0, average='binary'))
+            scores.append(f1_score(y_va, preds, average='macro'))
+            
         return np.mean(scores)
-
+        
     study = optuna.create_study(direction='maximize')
-    study.optimize(objective, n_trials=5) # Reduced for testing, should be 100 for prod
-    
-    best_params = study.best_params
-    logging.info(f"Best RF Params: {best_params}")
-    
-    t0 = time.time()
-    best_model = RandomForestClassifier(**best_params, n_jobs=-1, random_state=42)
-    # FIX 2: Fit finally on FULL X_train before validating against pristine X_test
-    best_model.fit(X_train, y_train)
-    t_train = time.time() - t0
-    
-    t0 = time.time()
-    preds = best_model.predict(X_test)
-    probs = best_model.predict_proba(X_test)[:, 1]
-    t_inf = time.time() - t0
-    
-    mem = get_memory_usage()
-    
-    metrics = evaluate_model(y_test, preds, probs, 'Random Forest', t_train, t_inf, mem)
-    generate_visualizations(y_test, preds, probs, 'Random Forest')
-    run_shap_analysis(best_model, X_train.sample(min(1000, len(X_train))), 'Random Forest')
-    
-    joblib.dump(best_model, MODELS_DIR / 'random_forest.joblib')
-    return metrics, study, best_model
+    study.optimize(objective, n_trials=trials_count)
+    return study.best_params
 
-def train_xgboost(X_train, y_train, X_val, y_val, X_test, y_test):
-    logging.info("--- Training XGBoost ---")
-    def objective(trial):
-        params = {
-            'learning_rate': trial.suggest_float('learning_rate', 1e-3, 0.3, log=True),
-            'max_depth': trial.suggest_int('max_depth', 3, 10),
-            'n_estimators': trial.suggest_int('n_estimators', 100, 500),
-            'subsample': trial.suggest_float('subsample', 0.5, 1.0),
-            'colsample_bytree': trial.suggest_float('colsample_bytree', 0.5, 1.0),
-            'gamma': trial.suggest_float('gamma', 0, 5),
-            'min_child_weight': trial.suggest_int('min_child_weight', 1, 10),
-            'lambda': trial.suggest_float('lambda', 1e-3, 10.0, log=True),
-            'alpha': trial.suggest_float('alpha', 1e-3, 10.0, log=True),
-            'objective': 'binary:logistic',
-            'eval_metric': 'logloss',
-            'tree_method': 'hist',
-            'random_state': 42
-        }
-        # FIX 3: Replaced single valid pass with StratifiedKFold cross-validation
-        skf = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
-        scores = []
-        for train_idx, val_idx in skf.split(X_train, y_train):
-            X_tr, X_va = X_train.iloc[train_idx], X_train.iloc[val_idx]
-            y_tr, y_va = y_train.iloc[train_idx], y_train.iloc[val_idx]
-            model = xgb.XGBClassifier(**params, early_stopping_rounds=20)
-            model.fit(X_tr, y_tr, eval_set=[(X_va, y_va)], verbose=False)
-            preds = model.predict(X_va)
-            scores.append(f1_score(y_va, preds, zero_division=0, average='binary'))
-        return np.mean(scores)
-
-    study = optuna.create_study(direction='maximize')
-    study.optimize(objective, n_trials=5) # Reduced for testing, should be 100
+def train_neural_network(X_train, y_train, X_val, y_val, models_dir, reports_dir):
+    print("[*] Training TensorFlow Neural Network...")
+    model = Sequential([
+        Dense(128, activation='relu', input_shape=(X_train.shape[1],)),
+        BatchNormalization(),
+        Dropout(0.3),
+        Dense(64, activation='relu'),
+        BatchNormalization(),
+        Dropout(0.3),
+        Dense(32, activation='relu'),
+        Dense(1, activation='sigmoid')
+    ])
     
-    best_params = study.best_params
-    best_params.update({'objective': 'binary:logistic', 'eval_metric': 'logloss', 'tree_method': 'hist'})
-    
-    t0 = time.time()
-    best_model = xgb.XGBClassifier(**best_params, random_state=42)
-    best_model.fit(X_train, y_train, eval_set=[(X_val, y_val)], verbose=False)
-    t_train = time.time() - t0
-    
-    t0 = time.time()
-    preds = best_model.predict(X_test)
-    probs = best_model.predict_proba(X_test)[:, 1]
-    t_inf = time.time() - t0
-    
-    metrics = evaluate_model(y_test, preds, probs, 'XGBoost', t_train, t_inf, get_memory_usage())
-    generate_visualizations(y_test, preds, probs, 'XGBoost')
-    run_shap_analysis(best_model, X_train.sample(min(1000, len(X_train))), 'XGBoost')
-    
-    best_model.save_model(MODELS_DIR / 'xgboost.json')
-    return metrics, study, best_model
-
-def train_lightgbm(X_train, y_train, X_val, y_val, X_test, y_test):
-    logging.info("--- Training LightGBM ---")
-    def objective(trial):
-        params = {
-            'num_leaves': trial.suggest_int('num_leaves', 20, 150),
-            'max_depth': trial.suggest_int('max_depth', 3, 12),
-            'learning_rate': trial.suggest_float('learning_rate', 1e-3, 0.3, log=True),
-            'feature_fraction': trial.suggest_float('feature_fraction', 0.5, 1.0),
-            'bagging_fraction': trial.suggest_float('bagging_fraction', 0.5, 1.0),
-            'min_child_samples': trial.suggest_int('min_child_samples', 5, 50),
-            'lambda_l1': trial.suggest_float('lambda_l1', 1e-3, 10.0, log=True),
-            'lambda_l2': trial.suggest_float('lambda_l2', 1e-3, 10.0, log=True),
-            'objective': 'binary',
-            'metric': 'binary_logloss',
-            'random_state': 42,
-            'verbose': -1
-        }
-        # FIX 3: Replaced single valid pass with StratifiedKFold cross-validation
-        skf = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
-        scores = []
-        for train_idx, val_idx in skf.split(X_train, y_train):
-            X_tr, X_va = X_train.iloc[train_idx], X_train.iloc[val_idx]
-            y_tr, y_va = y_train.iloc[train_idx], y_train.iloc[val_idx]
-            model = lgb.LGBMClassifier(**params, n_estimators=100)
-            model.fit(X_tr, y_tr, eval_set=[(X_va, y_va)], callbacks=[lgb.early_stopping(20, verbose=False)])
-            preds = model.predict(X_va)
-            scores.append(f1_score(y_va, preds, zero_division=0, average='binary'))
-        return np.mean(scores)
-
-    study = optuna.create_study(direction='maximize')
-    study.optimize(objective, n_trials=5)
-    
-    best_params = study.best_params
-    best_params.update({'objective': 'binary', 'metric': 'binary_logloss', 'verbose': -1})
-    
-    t0 = time.time()
-    best_model = lgb.LGBMClassifier(**best_params, n_estimators=100)
-    best_model.fit(X_train, y_train, eval_set=[(X_val, y_val)], callbacks=[lgb.early_stopping(20, verbose=False)])
-    t_train = time.time() - t0
-    
-    t0 = time.time()
-    preds = best_model.predict(X_test)
-    probs = best_model.predict_proba(X_test)[:, 1]
-    t_inf = time.time() - t0
-    
-    metrics = evaluate_model(y_test, preds, probs, 'LightGBM', t_train, t_inf, get_memory_usage())
-    generate_visualizations(y_test, preds, probs, 'LightGBM')
-    run_shap_analysis(best_model, X_train.sample(min(1000, len(X_train))), 'LightGBM')
-    
-    best_model.booster_.save_model(str(MODELS_DIR / 'lightgbm.txt'))
-    return metrics, study, best_model
-
-def train_catboost(X_train, y_train, X_val, y_val, X_test, y_test):
-    logging.info("--- Training CatBoost ---")
-    def objective(trial):
-        params = {
-            'depth': trial.suggest_int('depth', 4, 10),
-            'iterations': trial.suggest_int('iterations', 100, 500),
-            'learning_rate': trial.suggest_float('learning_rate', 1e-3, 0.3, log=True),
-            'l2_leaf_reg': trial.suggest_float('l2_leaf_reg', 1, 10),
-            'border_count': trial.suggest_int('border_count', 32, 255),
-            'loss_function': 'Logloss',
-            'verbose': False,
-            'random_seed': 42
-        }
-        # FIX 3: Replaced single valid pass with StratifiedKFold cross-validation
-        skf = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
-        scores = []
-        for train_idx, val_idx in skf.split(X_train, y_train):
-            X_tr, X_va = X_train.iloc[train_idx], X_train.iloc[val_idx]
-            y_tr, y_va = y_train.iloc[train_idx], y_train.iloc[val_idx]
-            model = CatBoostClassifier(**params)
-            model.fit(X_tr, y_tr, eval_set=(X_va, y_va), early_stopping_rounds=20)
-            preds = model.predict(X_va)
-            scores.append(f1_score(y_va, preds, zero_division=0, average='binary'))
-        return np.mean(scores)
-
-    study = optuna.create_study(direction='maximize')
-    study.optimize(objective, n_trials=5)
-    
-    best_params = study.best_params
-    best_params.update({'loss_function': 'Logloss', 'verbose': False})
-    
-    t0 = time.time()
-    best_model = CatBoostClassifier(**best_params)
-    best_model.fit(X_train, y_train, eval_set=(X_val, y_val), early_stopping_rounds=20)
-    t_train = time.time() - t0
-    
-    t0 = time.time()
-    preds = best_model.predict(X_test)
-    probs = best_model.predict_proba(X_test)[:, 1]
-    t_inf = time.time() - t0
-    
-    metrics = evaluate_model(y_test, preds, probs, 'CatBoost', t_train, t_inf, get_memory_usage())
-    generate_visualizations(y_test, preds, probs, 'CatBoost')
-    run_shap_analysis(best_model, X_train.sample(min(1000, len(X_train))), 'CatBoost')
-    
-    best_model.save_model(str(MODELS_DIR / 'catboost.cbm'))
-    return metrics, study, best_model
-
-def train_neural_network(X_train, y_train, X_val, y_val, X_test, y_test):
-    logging.info("--- Training Neural Network ---")
-    input_dim = X_train.shape[1]
-    
-    def build_model():
-        model = Sequential([
-            Dense(256, activation='relu', input_shape=(input_dim,)),
-            BatchNormalization(),
-            Dropout(0.3),
-            Dense(128, activation='relu'),
-            BatchNormalization(),
-            Dropout(0.3),
-            Dense(64, activation='relu'),
-            BatchNormalization(),
-            Dropout(0.2),
-            Dense(1, activation='sigmoid') # Binary classification requires 1 output unit for sigmoid
-        ])
-        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
-                      loss='binary_crossentropy',
-                      metrics=['accuracy', tf.keras.metrics.Precision(), tf.keras.metrics.Recall(), tf.keras.metrics.AUC()])
-        return model
-
-    model = build_model()
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy', tf.keras.metrics.Precision(name='precision'), tf.keras.metrics.Recall(name='recall')])
     
     callbacks = [
-        EarlyStopping(patience=10, restore_best_weights=True),
-        ReduceLROnPlateau(factor=0.5, patience=5),
-        CSVLogger(str(REPORTS_DIR / 'nn_training_log.csv')),
-        ModelCheckpoint(str(MODELS_DIR / 'neural_network.keras'), save_best_only=True)
+        EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True),
+        CSVLogger(reports_dir / 'NN_History.csv'),
+        ModelCheckpoint(filepath=str(models_dir / 'NN_model.keras'), save_best_only=True)
     ]
     
-    # Sample for NN to prevent TensorFlow from hanging on Mac MPS Backend
-    sample_size = min(10000, len(X_train))
-    idx = np.random.choice(len(X_train), sample_size, replace=False)
-    X_train_nn = X_train.iloc[idx]
-    y_train_nn = y_train.iloc[idx]
+    start_time = time.time()
+    history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=50, batch_size=256, callbacks=callbacks, verbose=1)
+    train_time = time.time() - start_time
     
-    t0 = time.time()
-    history = model.fit(X_train_nn, y_train_nn, epochs=20, batch_size=64, # Reduced epochs for testing
-                        validation_data=(X_val, y_val), callbacks=callbacks, verbose=1)
-    t_train = time.time() - t0
+    model.save(models_dir / 'NN_model.h5')
     
-    t0 = time.time()
-    probs = model.predict(X_test).ravel()
-    preds = (probs > 0.5).astype(int)
-    t_inf = time.time() - t0
+    hist_df = pd.DataFrame(history.history)
+    hist_df.to_excel(reports_dir / 'NN_History.xlsx', index=False)
     
-    metrics = evaluate_model(y_test, preds, probs, 'Neural Network', t_train, t_inf, get_memory_usage())
-    generate_visualizations(y_test, preds, probs, 'Neural Network')
-    
-    # Save .h5 as requested in addition to keras
-    model.save(str(MODELS_DIR / 'neural_network.h5'))
-    return metrics, None, model
-
-def save_leaderboard(all_metrics):
-    df_metrics = pd.DataFrame(all_metrics)
-    
-    # Rank models
-    df_metrics['F1_Rank'] = df_metrics['F1 Score'].rank(ascending=False)
-    df_metrics['Recall_Rank'] = df_metrics['Recall'].rank(ascending=False)
-    df_metrics['Inf_Time_Rank'] = df_metrics['Inference Time (s)'].rank(ascending=True)
-    
-    df_metrics = df_metrics.sort_values(by=['F1_Rank', 'Recall_Rank', 'Inf_Time_Rank'])
-    
-    df_metrics.to_excel(REPORTS_DIR / 'training_results.xlsx', index=False)
-    df_metrics.to_csv(REPORTS_DIR / 'leaderboard.csv', index=False)
-    
-    best_model_name = df_metrics.iloc[0]['Model']
-    logging.info(f"Best Model Selected: {best_model_name}")
-    return best_model_name
+    for metric in ['loss', 'accuracy', 'precision', 'recall']:
+        cols = [c for c in hist_df.columns if metric in c]
+        if cols:
+            plt.figure()
+            hist_df[cols].plot()
+            plt.title(f"NN {metric.capitalize()} Curve")
+            plt.savefig(reports_dir / f"figures/NN_{metric}_curve.png")
+            plt.close()
+            
+    return model, train_time
 
 def main():
-    X_train, y_train, X_val, y_val, X_test, y_test = load_processed_data()
+    args = parse_args()
+    print(f"=== Phase 3: Train {args.train_dataset} -> Test {args.test_dataset} ===")
     
-    all_metrics = []
+    dirs = setup_directories(args.train_dataset, args.test_dataset)
     
-    models = [
-        ('Random Forest', train_random_forest),
-        ('XGBoost', train_xgboost),
-        ('LightGBM', train_lightgbm),
-        ('CatBoost', train_catboost)
+    print("[*] Loading datasets...")
+    train_df, val_df, _ = load_data(args.train_dataset)
+    _, _, test_df = load_data(args.test_dataset)
+    
+    y_train = train_df['Label']
+    X_train = train_df.drop(columns=['Label'])
+    
+    y_val = val_df['Label']
+    X_val = val_df.drop(columns=['Label'])
+    
+    X_test, y_test = align_features(X_train, test_df)
+    
+    models_to_train = [
+        ("Random Forest", RandomForestClassifier),
+        ("XGBoost", xgb.XGBClassifier),
+        ("LightGBM", lgb.LGBMClassifier),
+        ("CatBoost", CatBoostClassifier)
     ]
     
-    for name, train_func in models:
-        metrics, study, model = train_func(X_train, y_train, X_val, y_val, X_test, y_test)
-        all_metrics.append(metrics)
-        clear_memory()
-        
-    best_model_name = save_leaderboard(all_metrics)
+    all_metrics = {}
     
-    # Copy best model to models/best_model/
-    if best_model_name == 'Random Forest':
-        shutil.copy(MODELS_DIR / 'random_forest.joblib', BEST_MODEL_DIR / 'model.joblib')
-    elif best_model_name == 'XGBoost':
-        shutil.copy(MODELS_DIR / 'xgboost.json', BEST_MODEL_DIR / 'model.json')
-    elif best_model_name == 'LightGBM':
-        shutil.copy(MODELS_DIR / 'lightgbm.txt', BEST_MODEL_DIR / 'model.txt')
-    elif best_model_name == 'CatBoost':
-        shutil.copy(MODELS_DIR / 'catboost.cbm', BEST_MODEL_DIR / 'model.cbm')
-    elif best_model_name == 'Neural Network':
-        shutil.copy(MODELS_DIR / 'neural_network.keras', BEST_MODEL_DIR / 'model.keras')
+    for name, model_class in models_to_train:
+        print(f"\n[*] --- {name} ---")
+        best_params = train_optuna_tree(model_class, name, X_train, y_train, args.trials)
+        with open(dirs["models"] / f"{name}_hyperparameters.json", "w") as f:
+            json.dump(best_params, f, indent=4)
+            
+        model = model_class(**best_params)
+        
+        start_time = time.time()
+        model.fit(X_train, y_train)
+        train_time = time.time() - start_time
+        
+        start_time = time.time()
+        y_pred = model.predict(X_test)
+        y_prob = model.predict_proba(X_test)[:, 1] if hasattr(model, "predict_proba") else None
+        infer_time = time.time() - start_time
+        
+        metrics = evaluate_model(name, y_test, y_pred, y_prob, train_time, infer_time, dirs["reports"])
+        all_metrics[name] = metrics
+        
+        if name == "Random Forest":
+            joblib.dump(model, dirs["models"] / f"{name}.joblib")
+        elif name == "XGBoost":
+            model.save_model(dirs["models"] / f"{name}.json")
+        elif name == "LightGBM":
+            model.booster_.save_model(dirs["models"] / f"{name}.txt")
+        elif name == "CatBoost":
+            model.save_model(dirs["models"] / f"{name}.cbm")
+            
+        try:
+            print(f"[*] Generating SHAP for {name}...")
+            X_sample = X_test.sample(min(1000, len(X_test)))
+            explainer = shap.TreeExplainer(model)
+            shap_values = explainer.shap_values(X_sample)
+            
+            plt.figure()
+            shap.summary_plot(shap_values, X_sample, show=False)
+            plt.savefig(dirs["figures"] / f"{name}_shap_summary.png", bbox_inches='tight')
+            plt.close()
+            
+            plt.figure()
+            shap.summary_plot(shap_values, X_sample, plot_type="bar", show=False)
+            plt.savefig(dirs["figures"] / f"{name}_shap_bar.png", bbox_inches='tight')
+            plt.close()
+        except Exception as e:
+            print(f"[!] SHAP generation failed for {name}: {e}")
 
-    # Note: Threat Analysis Agent needs the scaler and encoder, which should be copied here as well.
-    logging.info("Phase 3 Pipeline Complete.")
+    print("\n[*] --- Neural Network ---")
+    nn_model, nn_train_time = train_neural_network(X_train, y_train, X_val, y_val, dirs["models"], dirs["reports"])
+    
+    start_time = time.time()
+    nn_prob = nn_model.predict(X_test).flatten()
+    nn_pred = (nn_prob > 0.5).astype(int)
+    nn_infer_time = time.time() - start_time
+    
+    nn_metrics = evaluate_model("Neural Network", y_test, nn_pred, nn_prob, nn_train_time, nn_infer_time, dirs["reports"])
+    all_metrics["Neural Network"] = nn_metrics
+    
+    df_metrics = pd.DataFrame.from_dict(all_metrics, orient='index')
+    df_metrics.to_csv(dirs["reports"] / "leaderboard.csv")
+    df_metrics.to_excel(dirs["reports"] / "leaderboard.xlsx")
+    df_metrics.to_html(dirs["reports"] / "leaderboard.html")
+    df_metrics.to_markdown(dirs["reports"] / "leaderboard.md")
+    
+    with open(dirs["reports"] / "metrics.json", "w") as f:
+        json.dump(all_metrics, f, indent=4)
+        
+    print("\n[*] Leaderboard:")
+    print(df_metrics[['F1', 'ROC_AUC', 'Balanced_Accuracy']])
+    
+    best_model_name = df_metrics['F1'].idxmax()
+    print(f"\n[*] Best Model: {best_model_name}")
+    with open(dirs["best"] / f"best_model_exp_{args.train_dataset}_{args.test_dataset}.txt", "w") as f:
+        f.write(f"Best Model for {args.train_dataset} -> {args.test_dataset}: {best_model_name}\n")
+        
+    print("=== Phase 3 Execution Complete ===")
 
 if __name__ == "__main__":
     main()
