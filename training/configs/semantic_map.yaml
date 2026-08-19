@@ -1,0 +1,144 @@
+unified_schema:
+  flow_duration:
+    nftoniotv2: FLOW_DURATION_MILLISECONDS
+    ciciot2023: flow_duration
+    confidence: high
+    notes: Convert ms to consistent unit if needed.
+  src_port:
+    nftoniotv2: L4_SRC_PORT
+    ciciot2023: null  # Missing in CICIoT2023
+    confidence: low
+  dst_port:
+    nftoniotv2: L4_DST_PORT
+    ciciot2023: null
+    confidence: low
+  protocol:
+    nftoniotv2: PROTOCOL
+    ciciot2023: _derived_protocol
+    confidence: medium
+  bytes_in:
+    nftoniotv2: IN_BYTES
+    ciciot2023: _derived_bytes_in # Might relate to Tot size or forward bytes if separated
+    confidence: low
+  pkts_in:
+    nftoniotv2: IN_PKTS
+    ciciot2023: null
+    confidence: low
+  bytes_out:
+    nftoniotv2: OUT_BYTES
+    ciciot2023: null
+    confidence: low
+  pkts_out:
+    nftoniotv2: OUT_PKTS
+    ciciot2023: null
+    confidence: low
+  fin_flag_count:
+    nftoniotv2: _derived_fin_flag
+    ciciot2023: fin_flag_number
+    confidence: high
+  syn_flag_count:
+    nftoniotv2: _derived_syn_flag
+    ciciot2023: syn_flag_number
+    confidence: high
+  rst_flag_count:
+    nftoniotv2: _derived_rst_flag
+    ciciot2023: rst_flag_number
+    confidence: high
+  psh_flag_count:
+    nftoniotv2: _derived_psh_flag
+    ciciot2023: psh_flag_number
+    confidence: high
+  ack_flag_count:
+    nftoniotv2: _derived_ack_flag
+    ciciot2023: ack_flag_number
+    confidence: high
+  cwr_flag_count:
+    nftoniotv2: _derived_cwr_flag
+    ciciot2023: cwr_flag_number
+    confidence: high
+  ece_flag_count:
+    nftoniotv2: _derived_ece_flag
+    ciciot2023: ece_flag_number
+    confidence: high
+  tcp_flag_mask:
+    nftoniotv2: TCP_FLAGS
+    ciciot2023: _derived_tcp_mask
+    confidence: medium
+  min_pkt_len:
+    nftoniotv2: MIN_IP_PKT_LEN
+    ciciot2023: Min
+    confidence: medium
+  max_pkt_len:
+    nftoniotv2: MAX_IP_PKT_LEN
+    ciciot2023: Max
+    confidence: medium
+  avg_pkt_len:
+    nftoniotv2: _derived_avg_pkt_len # Or could use IN_BYTES/IN_PKTS roughly
+    ciciot2023: AVG
+    confidence: medium
+  std_pkt_len:
+    nftoniotv2: null
+    ciciot2023: Std
+    confidence: low
+
+derivations:
+  ciciot2023:
+    _derived_protocol:
+      method: select_first_active
+      columns: [HTTP, HTTPS, DNS, Telnet, SMTP, SSH, IRC, TCP, UDP, DHCP, ARP, ICMP, IPv, LLC]
+      mapping: {TCP: 6, UDP: 17, ICMP: 1, IPv: 4, HTTP: 6, HTTPS: 6, DNS: 17} # Approximations for generic protocol
+    _derived_tcp_mask:
+      method: combine_flags
+      columns: [fin_flag_number, syn_flag_number, rst_flag_number, psh_flag_number, ack_flag_number, ece_flag_number, cwr_flag_number]
+  nftoniotv2:
+    _derived_fin_flag:
+      method: extract_bit
+      column: TCP_FLAGS
+      bit: 0
+    _derived_syn_flag:
+      method: extract_bit
+      column: TCP_FLAGS
+      bit: 1
+    _derived_rst_flag:
+      method: extract_bit
+      column: TCP_FLAGS
+      bit: 2
+    _derived_psh_flag:
+      method: extract_bit
+      column: TCP_FLAGS
+      bit: 3
+    _derived_ack_flag:
+      method: extract_bit
+      column: TCP_FLAGS
+      bit: 4
+    _derived_ece_flag:
+      method: extract_bit
+      column: TCP_FLAGS
+      bit: 6 # Adjust based on precise netflow export specs
+    _derived_cwr_flag:
+      method: extract_bit
+      column: TCP_FLAGS
+      bit: 7 # Adjust based on precise netflow export specs
+    _derived_avg_pkt_len:
+      method: ratio
+      numerator: IN_BYTES
+      denominator: IN_PKTS
+
+target:
+  nftoniotv2:
+    column: Label
+    type: binary
+  ciciot2023:
+    column: label
+    type: multiclass
+    binarize_rules:
+      benign_classes: ["BenignTraffic"]
+      malicious_classes: "all_others"
+  unified_name: label
+
+dropped_columns:
+  nftoniotv2:
+    - IPV4_SRC_ADDR
+    - IPV4_DST_ADDR
+    - Attack
+  ciciot2023: []

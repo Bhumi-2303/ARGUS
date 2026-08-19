@@ -1,0 +1,36 @@
+dann:
+  feature_extractor:
+    hidden_dims: [128, 64]
+    dropout: 0.3
+    batch_norm: true
+  label_classifier:
+    hidden_dims: [32]
+  domain_classifier:
+    hidden_dims: [32]
+  training:
+    epochs: 100
+    batch_size: 256
+    lr: 0.001
+    weight_decay: 0.0001
+    lambda_schedule: "ganin"  # 2/(1+exp(-10p))-1
+    patience: 15
+    min_delta: 0.001
+
+experiments:
+  max_rows_per_dataset: 500000
+  baseline_models: ["xgboost", "lightgbm"]
+  metrics: ["F1", "Balanced_Accuracy", "ROC_AUC", "PR_AUC", "Kappa", "Domain_AUC"]
+  random_seed: 42
+  n_splits_cv: 5
+  directions:
+    - source: nftoniotv2
+      target: ciciot2023
+    - source: ciciot2023
+      target: nftoniotv2
+
+visualization:
+  tsne_perplexity: 30
+  tsne_samples: 5000
+  umap_n_neighbors: 15
+  figure_dpi: 300
+  figure_formats: ["png", "svg", "pdf"]
