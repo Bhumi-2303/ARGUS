@@ -33,3 +33,14 @@ catboost_info/
 training/exports/
 training/graphs/
 training/reports/
+
+# Large data and checkpoint artifacts
+ARGUS_Cross_Domain_Results/
+LightGBM_CICIoT2023_Backup/
+TF_ToN_IoT_LightGBM_Final/
+TF_ToN_IoT_XGBoost/
+training/archive_leaked_run/
+phase3_results/checkpoints/
+phase3_results/experiments/
+phase3_results/*.zip
+models/best_model/
