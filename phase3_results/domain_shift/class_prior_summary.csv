@@ -1,0 +1,4 @@
+Domain,Total_Samples,Benign_Samples,Attack_Samples,Benign_Pct,Attack_Pct,Prior_Regime
+Domain 1 (CICIoT2023),6668822,157247,6511575,2.3579,97.6421,Attack-Saturated
+Domain 2 (NF-ToN-IoT-v2),13135881,3601284,9534597,27.4156,72.5844,Attack-Heavy
+Domain 3 (IEC 60870-5-104),3572265,2769718,802547,77.5339,22.4661,Benign-Majority (Operational SCADA)
