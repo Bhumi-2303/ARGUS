@@ -1,0 +1,8 @@
+{
+  "Group": "D",
+  "Source": "D1+D2",
+  "Method": "Optimal Fusion",
+  "w1": 0.5,
+  "w2": 0.5,
+  "Selected_By": "MCC on D3 calibration set"
+}
