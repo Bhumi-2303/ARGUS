@@ -1,0 +1,11 @@
+{
+  "P_T_Attack": 0.22466068446769766,
+  "P_T_Benign": 0.7753393155323023,
+  "P_S1_Attack": 0.976421,
+  "P_S1_Benign": 0.023579000000000017,
+  "P_S2_Attack": 0.725844,
+  "P_S2_Benign": 0.27415599999999996,
+  "Estimation_Source": "D3 calibration + adaptation sets",
+  "Estimation_N": 2857812,
+  "Note": "D3 test labels NOT used"
+}
