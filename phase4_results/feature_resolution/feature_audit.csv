@@ -1,0 +1,9 @@
+Candidate,D1 Available,D2 Available,D3 Available,Same Definition,Deployment Available,Leakage Risk,Selected,Original Column Names,Formula,Units
+pkt_mean_to_max,YES,YES,YES,YES,YES,NO,YES (ARGUS-4 Baseline),"D1: AVG/Max, D2: (IN_BYTES+OUT_BYTES)/(IN_PKTS+OUT_PKTS)/LONGEST_FLOW_PKT, D3: Pkt Len Mean/Max",pkt_mean / pkt_max (0 if max=0),"Ratio [0,1]"
+tcp_flag_density,YES,YES,YES,YES,YES,NO,YES (ARGUS-4 Baseline),"D1: sum(flags), D2: TCP_FLAGS, D3: sum(FLAG_COLS)","sum of TCP flags (FIN, SYN, RST, PSH, ACK, URG, ECE, CWR)","Count [0,8]"
+log_pkt_mean,YES,YES,YES,YES,YES,NO,YES (ARGUS-4 Baseline),"D1: AVG, D2: mean_pkt_size, D3: Pkt Len Mean",log(1 + pkt_mean),Log Bytes
+log_pkt_max,YES,YES,YES,YES,YES,NO,YES (ARGUS-4 Baseline),"D1: Max, D2: LONGEST_FLOW_PKT, D3: Pkt Len Max",log(1 + pkt_max),Log Bytes
+log_tot_pkts,YES,YES,YES,YES,YES,NO,YES (f_5 for ARGUS-6),"D1: Number, D2: IN_PKTS + OUT_PKTS, D3: Tot Fwd Pkts + Tot Bwd Pkts",log(1 + tot_pkts),Log Packets
+log_flow_duration,YES,YES,YES,YES,YES,NO,YES (f_6 for ARGUS-6),"D1: flow_duration, D2: FLOW_DURATION_MILLISECONDS, D3: Flow Duration",log(1 + flow_duration_us),Log Microseconds
+log_pkt_std,YES,YES,YES,YES,YES,NO,YES (f_7 for ARGUS-8),"D1: Std, D2: approx std from pkt range, D3: Pkt Len Std",log(1 + pkt_std),Log Bytes
+log_pkt_min,YES,YES,YES,YES,YES,NO,YES (f_8 for ARGUS-8),"D1: Min, D2: SHORTEST_FLOW_PKT, D3: Pkt Len Min",log(1 + pkt_min),Log Bytes

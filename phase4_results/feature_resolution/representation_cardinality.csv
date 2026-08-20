@@ -1,0 +1,4 @@
+Representation,Features,Unique Tuples,Unique Probabilities,Max Cluster Pct,Boundary Concentration (0.49-0.51) Pct,Distinct Probabilities in (0.49-0.51)
+ARGUS-4,4,1574,34,70.26172093015118,0.0,0
+ARGUS-6,6,1574,3,88.21949636348049,0.0,0
+ARGUS-8,8,1574,3,88.21827165159397,0.0,0
