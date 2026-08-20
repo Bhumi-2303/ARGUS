@@ -1,0 +1,32 @@
+[
+  {
+    "asset_id": "SCADA-MTU-01",
+    "asset_name": "Main Master Terminal Unit (Control Center)",
+    "criticality": 5,
+    "description": "Core SCADA control server managing grid telemetry and command dispatch."
+  },
+  {
+    "asset_id": "SCADA-RTU-04",
+    "asset_name": "Primary Substation Remote Terminal Unit",
+    "criticality": 4,
+    "description": "High-voltage substation RTU executing breaker and transformer operations."
+  },
+  {
+    "asset_id": "PLC-SUB-12",
+    "asset_name": "Feeder Automation Programmable Logic Controller",
+    "criticality": 3,
+    "description": "Field PLC controlling automated feeder switches and load tap changers."
+  },
+  {
+    "asset_id": "HMI-WORKSTATION-02",
+    "asset_name": "Operator HMI Console",
+    "criticality": 3,
+    "description": "Operator GUI workstation for monitoring real-time IEC 60870-5-104 traffic."
+  },
+  {
+    "asset_id": "SENSOR-NODE-88",
+    "asset_name": "Perimeter Environmental Monitor",
+    "criticality": 1,
+    "description": "Secondary environmental temperature and humidity telemetry sensor."
+  }
+]
