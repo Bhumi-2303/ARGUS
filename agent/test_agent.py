@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Test script for verifying ARGUS Decision Support Agent API endpoints,
-system prompt rules compliance, plain-text dashboard formatting, and latency profiling.
+llm_fallback_used tracking, system prompt rules compliance, and plain-text formatting.
 """
 
 from fastapi.testclient import TestClient
@@ -15,7 +15,7 @@ def test_health():
         assert response.json()["status"] == "healthy"
         assert response.json()["system_prompt_loaded"] is True
 
-def test_explain_output_formatting_rules():
+def test_explain_output_formatting_and_fallback_tracking():
     with TestClient(app) as client:
         payload = [
             {
@@ -47,6 +47,10 @@ def test_explain_output_formatting_rules():
 
         item = data["explanations"][0]
         text = item["explanation_text"]
+
+        # Assert presence of explicit llm_fallback_used boolean field
+        assert "llm_fallback_used" in item
+        print(f"[*] llm_fallback_used: {item['llm_fallback_used']} | llm_ms: {item['latency_ms']['llm_ms']} ms")
 
         # Assert Plain Text rules (no markdown ticks, no bullet points)
         assert "```" not in text
@@ -82,13 +86,15 @@ def test_explain_benign_plain_text():
         ]
         response = client.post("/explain", json=payload)
         assert response.status_code == 200
-        text = response.json()["explanations"][0]["explanation_text"]
-        print("\nBenign Telemetry Plain-Text Output:\n", text)
+        item = response.json()["explanations"][0]
+        text = item["explanation_text"]
+        print("\nBenign Telemetry Output:\n", text)
+        print(f"[*] Benign llm_fallback_used: {item['llm_fallback_used']}")
         assert "benign" in text.lower()
         assert "```" not in text
 
 if __name__ == "__main__":
     test_health()
-    test_explain_output_formatting_rules()
+    test_explain_output_formatting_and_fallback_tracking()
     test_explain_benign_plain_text()
-    print("\n[✓] All Decision Support Agent system prompt compliance tests passed!")
+    print("\n[✓] All Decision Support Agent llm_fallback_used & prompt compliance tests passed!")

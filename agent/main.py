@@ -1,6 +1,6 @@
 import os, time, json
 from pathlib import Path
-from typing import List, Dict, Union, Any, Optional
+from typing import List, Dict, Union, Any, Optional, Tuple
 
 import requests
 from fastapi import FastAPI, HTTPException
@@ -42,15 +42,6 @@ class AttckTechniqueContext(BaseModel):
     name: str
     description: str
 
-class ExplainRequest(BaseModel):
-    flow_record: Optional[FlowRecord] = None
-    prediction: Optional[int] = None
-    probability: Optional[float] = None
-    shap_values: Optional[Dict[str, float]] = None
-    risk_score: Optional[float] = None
-    risk_tier: Optional[str] = None
-    attck_context: Optional[List[AttckTechniqueContext]] = None
-
 class LatencyBreakdown(BaseModel):
     detector_ms: float = Field(0.0, description="Detector model inference latency in ms")
     llm_ms: float = Field(0.0, description="Ollama LLM decision support latency in ms")
@@ -62,6 +53,7 @@ class ExplanationItem(BaseModel):
     threshold: float = Field(0.50, description="Decision threshold")
     shap_values: Dict[str, float] = Field(..., description="Per-feature SHAP contribution values")
     explanation_text: str = Field(..., description="Plain-text human-readable decision support explanation")
+    llm_fallback_used: bool = Field(..., description="True if local Ollama LLM was offline and fallback path was executed, False if real Ollama LLM responded")
     latency_ms: LatencyBreakdown = Field(..., description="Detailed latency breakdown")
 
 class ExplanationResponse(BaseModel):
@@ -94,10 +86,10 @@ def generate_llm_explanation(
     risk_score: Optional[float] = None,
     risk_tier: Optional[str] = None,
     attck_context: Optional[List[Dict[str, Any]]] = None
-) -> str:
+) -> Tuple[str, bool]:
     """
     Sends SHAP and grounding context to local Ollama API (http://localhost:11434/api/generate).
-    Strictly outputs plain text (3-5 sentences, no markdown, no bullet points).
+    Returns (explanation_text, llm_fallback_used).
     """
     pred_str = "attack" if prediction == 1 else "benign"
     
@@ -134,23 +126,21 @@ def generate_llm_explanation(
             if explanation:
                 # Clean any stray markdown ticks or bullet headers
                 explanation = explanation.replace("```", "").replace("*", "").strip()
-                return explanation
+                return explanation, False  # Real Ollama LLM response used!
     except Exception as e:
-        print(f"[!] Ollama LLM call warning ({url}): {e}")
+        print(f"[!] Ollama LLM call warning ({OLLAMA_API_URL}): {e}")
 
-    # Deterministic Rule-Based Fallback obeying exact prompt constraints:
-    # Plain text, 3-5 sentences, no markdown, no bullet points, uncertainty check, top 2 SHAP features.
-    
-    # Check model uncertainty (within 0.05 of threshold 0.50 -> [0.45, 0.55])
+    # Deterministic Rule-Based Fallback path (llm_fallback_used = True)
     is_uncertain = abs(probability - 0.50) <= 0.05
     uncertainty_sentence = " The model exhibited uncertainty as the probability score is near the decision threshold." if is_uncertain else ""
 
     if prediction == 0:
-        return (
+        fallback_text = (
             f"The detector classified this flow as benign telemetry with a confidence probability of {probability:.4f}.{uncertainty_sentence} "
             f"The primary feature driving this decision was {max(shap_values.items(), key=lambda x: abs(x[1]))[0]} with a SHAP contribution of {max(shap_values.items(), key=lambda x: abs(x[1]))[1]:+.4f}. "
             f"No malicious anomalies or security risks were identified for this network flow."
         )
+        return fallback_text, True
 
     # Rank features by SHAP magnitude
     sorted_features = sorted(shap_values.items(), key=lambda x: abs(x[1]), reverse=True)
@@ -175,14 +165,14 @@ def generate_llm_explanation(
     sentence4 = " The flow telemetry requires operator review to confirm process control boundary integrity."
 
     full_text = f"{sentence1} {sentence2}{sentence3}{sentence4}"
-    return full_text.strip()
+    return full_text.strip(), True
 
 @app.post("/explain", response_model=ExplanationResponse)
 def explain(payload: Union[List[Dict[str, Any]], Dict[str, Any]]):
     """
     POST /explain endpoint.
     Accepts flow record(s) or pre-computed prediction + SHAP + ATT&CK context.
-    Returns plain-text explanation complying with dashboard rendering constraints.
+    Returns plain-text explanation and llm_fallback_used boolean indicator.
     """
     t_start_total = time.perf_counter()
 
@@ -198,7 +188,6 @@ def explain(payload: Union[List[Dict[str, Any]], Dict[str, Any]]):
     explanations = []
 
     for item in items:
-        # Check if flow_record provided without prediction -> query detector
         flow_rec = item.get("flow_record") or item
         pred = item.get("prediction")
         prob = item.get("probability")
@@ -210,7 +199,6 @@ def explain(payload: Union[List[Dict[str, Any]], Dict[str, Any]]):
         det_ms = 0.0
 
         if pred is None or prob is None or shap_vals is None:
-            # Query Detector API
             t0_det = time.perf_counter()
             try:
                 det_payload = [{
@@ -238,7 +226,7 @@ def explain(payload: Union[List[Dict[str, Any]], Dict[str, Any]]):
             det_ms = (time.perf_counter() - t0_det) * 1000.0
 
         t0_llm = time.perf_counter()
-        exp_text = generate_llm_explanation(
+        exp_text, fallback_used = generate_llm_explanation(
             prediction=pred,
             probability=prob,
             shap_values=shap_vals,
@@ -247,7 +235,6 @@ def explain(payload: Union[List[Dict[str, Any]], Dict[str, Any]]):
             attck_context=attck_ctx
         )
         llm_ms = (time.perf_counter() - t0_llm) * 1000.0
-
         total_ms = (time.perf_counter() - t_start_total) * 1000.0
 
         explanations.append(ExplanationItem(
@@ -256,6 +243,7 @@ def explain(payload: Union[List[Dict[str, Any]], Dict[str, Any]]):
             threshold=0.50,
             shap_values=shap_vals,
             explanation_text=exp_text,
+            llm_fallback_used=fallback_used,
             latency_ms=LatencyBreakdown(
                 detector_ms=round(det_ms, 2),
                 llm_ms=round(llm_ms, 2),

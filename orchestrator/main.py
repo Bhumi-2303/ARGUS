@@ -70,7 +70,7 @@ class ProcessedAlertResponse(BaseModel):
     
     # Performance & Fault Metrics
     stage_latencies: StageLatencies = Field(..., description="Per-stage latency profiling for paper benchmarks")
-    stage_errors: Dict[str, str] = Field(default_factory=dict, description="Partial failure notices per stage if any service failed")
+    stage_errors: Dict[str, str] = Field(default_factory=dict, description="Partial failure notices per stage if any service or fallback fired")
 
 app = FastAPI(
     title="ARGUS Pipeline Orchestrator",
@@ -162,7 +162,6 @@ def process_alert(req: AlertRequest):
     # --------------------------------------------------------------------------
     # DESIGN DECISION — SHORT-CIRCUIT ROUTING:
     # If the detector flags telemetry as Benign (prediction == 0), short-circuit early.
-    # Documented in paper methodology as an efficiency mechanism for high-throughput SCADA.
     # --------------------------------------------------------------------------
     if pred == 0:
         t_total = (time.perf_counter() - t_start_pipeline) * 1000.0
@@ -204,7 +203,6 @@ def process_alert(req: AlertRequest):
     # --------------------------------------------------------------------------
     t0_know = time.perf_counter()
     try:
-        # Construct query from SCADA features and top SHAP driver
         top_shap_driver = max(shap_vals.items(), key=lambda x: abs(x[1]))[0] if shap_vals else "tcp_flag_density"
         query_text = (
             f"SCADA cyberattack anomaly on {req.asset_id} with probability {prob:.2f}. "
@@ -225,7 +223,6 @@ def process_alert(req: AlertRequest):
     t1_know = time.perf_counter()
     latencies.knowledge_ms = round((t1_know - t0_know) * 1000.0, 2)
 
-    # Extract ATT&CK technique names for grounding the Decision Support agent
     grounded_context_str = ""
     if knowledge_out and "techniques" in knowledge_out:
         tech_list = knowledge_out["techniques"]
@@ -236,17 +233,23 @@ def process_alert(req: AlertRequest):
     # --------------------------------------------------------------------------
     t0_llm = time.perf_counter()
     try:
-        dec_payload = [req.flow_record.model_dump()]
+        dec_payload = [{
+            "flow_record": req.flow_record.model_dump(),
+            "prediction": pred,
+            "probability": prob,
+            "shap_values": shap_vals,
+            "risk_score": risk_out.get("risk_score") if risk_out else None,
+            "risk_tier": risk_out.get("risk_tier") if risk_out else None,
+            "attck_context": knowledge_out.get("techniques") if knowledge_out else None
+        }]
         resp = requests.post(DECISION_API_URL, json=dec_payload, timeout=12.0)
         if resp.status_code == 200:
             res_data = resp.json()
             exps = res_data.get("explanations", [])
             if exps:
                 decision_out = exps[0]
-                # Enhance explanation with MITRE ATT&CK grounded technique names if available
-                if grounded_context_str and "explanation_text" in decision_out:
-                    orig_exp = decision_out["explanation_text"]
-                    decision_out["explanation_text"] = f"{orig_exp} [Grounded MITRE ATT&CK ICS References: {grounded_context_str}]"
+                if decision_out.get("llm_fallback_used", False):
+                    errors["llm"] = "Ollama LLM service offline; deterministic rule fallback explanation generated."
         else:
             errors["decision"] = f"Decision API returned HTTP {resp.status_code}: {resp.text}"
     except Exception as e:
