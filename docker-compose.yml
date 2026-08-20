@@ -1,85 +1,196 @@
-# ==================================================================
-# ARGUS — Docker Compose Stack
-# ==================================================================
-# Services:
-#   argus-api:       FastAPI backend (port 8000)
-#   argus-frontend:  React dev server (port 5173) — dev only
-# ==================================================================
-
-services:
-  # --- FastAPI Backend ---
-  argus-api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: runtime
-    container_name: argus-api
-    ports:
-      - "${ARGUS_PORT:-8000}:8000"
-    environment:
-      - ARGUS_ENV=${ARGUS_ENV:-production}
-      - ARGUS_DEBUG=${ARGUS_DEBUG:-false}
-      - ARGUS_HOST=0.0.0.0
-      - ARGUS_PORT=8000
-      - ARGUS_LOG_LEVEL=${ARGUS_LOG_LEVEL:-INFO}
-      - ARGUS_SECRET_KEY=${ARGUS_SECRET_KEY:?Secret key is required}
-      - ARGUS_JWT_SECRET_KEY=${ARGUS_JWT_SECRET_KEY:?JWT secret key is required}
-      - ARGUS_JWT_ALGORITHM=${ARGUS_JWT_ALGORITHM:-HS256}
-      - ARGUS_SQLITE_PATH=/app/data/argus.db
-      - ARGUS_CHROMADB_PATH=/app/data/chromadb
-      - ARGUS_CORS_ORIGINS=${ARGUS_CORS_ORIGINS:-["http://localhost:5173"]}
-      - ARGUS_ADK_ENABLED=${ARGUS_ADK_ENABLED:-false}
-      - ARGUS_GOOGLE_API_KEY=${ARGUS_GOOGLE_API_KEY:-}
-    volumes:
-      - argus-data:/app/data
-      - argus-logs:/app/logs
-    healthcheck:
-      test: ["CMD", "python", "-c", "import httpx; r = httpx.get('http://localhost:8000/api/v1/health/live'); r.raise_for_status()"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
-    restart: unless-stopped
-    networks:
-      - argus-network
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-          cpus: "2.0"
-        reservations:
-          memory: 512M
-          cpus: "0.5"
-
-  # --- React Frontend (Development Only) ---
-  argus-frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.dev
-    container_name: argus-frontend
-    ports:
-      - "5173:5173"
-    environment:
-      - VITE_API_URL=http://argus-api:8000/api/v1
-      - VITE_WS_URL=ws://argus-api:8000/api/v1/ws
-    volumes:
-      - ./frontend/src:/app/src
-      - ./frontend/public:/app/public
-    depends_on:
-      argus-api:
-        condition: service_healthy
-    networks:
-      - argus-network
-    profiles:
-      - dev
-
-volumes:
-  argus-data:
-    driver: local
-  argus-logs:
-    driver: local
+version: "3.8"
 
 networks:
   argus-network:
     driver: bridge
-    name: argus-network
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. Apache Zookeeper (Distributed Coordination)
+  # ----------------------------------------------------------------------------
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: argus-zookeeper
+    networks:
+      - argus-network
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  # ----------------------------------------------------------------------------
+  # 2. Apache Kafka (Streaming Telemetry Broker)
+  # ----------------------------------------------------------------------------
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: argus-kafka
+    depends_on:
+      - zookeeper
+    networks:
+      - argus-network
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+
+  # ----------------------------------------------------------------------------
+  # 3. ARGUS Stage 1: Threat Detector API (LightGBM + SHAP)
+  # ----------------------------------------------------------------------------
+  detector-api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    container_name: argus-detector-api
+    networks:
+      - argus-network
+    ports:
+      - "8000:8000"
+    environment:
+      MODEL_PATH: /app/phase3_results/models/model_d2_coral.txt
+      THRESHOLD: "0.50"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+
+  # ----------------------------------------------------------------------------
+  # 4. ARGUS Stage 2: Risk Prediction & Alert Triage Agent
+  # ----------------------------------------------------------------------------
+  risk-agent:
+    build:
+      context: .
+      dockerfile: risk_agent/Dockerfile
+    container_name: argus-risk-agent
+    depends_on:
+      - detector-api
+    networks:
+      - argus-network
+    ports:
+      - "8002:8002"
+    environment:
+      DETECTOR_API_URL: http://detector-api:8000/predict
+      INVENTORY_PATH: /app/risk_agent/asset_inventory.json
+      WEIGHT_PROBABILITY: "0.60"
+      WEIGHT_CRITICALITY: "0.40"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  # ----------------------------------------------------------------------------
+  # 5. ARGUS Stage 3: MITRE ATT&CK for ICS Knowledge & Context Agent (ChromaDB)
+  # ----------------------------------------------------------------------------
+  knowledge-agent:
+    build:
+      context: .
+      dockerfile: knowledge_agent/Dockerfile
+    container_name: argus-knowledge-agent
+    networks:
+      - argus-network
+    ports:
+      - "8003:8003"
+    environment:
+      CHROMA_DB_DIR: /app/knowledge_agent/chroma_db
+      COLLECTION_NAME: mitre_attack_ics
+      EMBEDDING_MODEL: all-MiniLM-L6-v2
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+
+  # ----------------------------------------------------------------------------
+  # 6. ARGUS Stage 4: Decision Support & Explainability Agent (Ollama Integration)
+  # ----------------------------------------------------------------------------
+  decision-agent:
+    build:
+      context: .
+      dockerfile: agent/Dockerfile
+    container_name: argus-decision-agent
+    depends_on:
+      - detector-api
+    networks:
+      - argus-network
+    ports:
+      - "8001:8001"
+    environment:
+      DETECTOR_API_URL: http://detector-api:8000/predict
+      OLLAMA_API_URL: http://host.docker.internal:11434
+      OLLAMA_MODEL: llama3.2
+      PROMPT_PATH: /app/prompts/decision_support_system_prompt.txt
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  # ----------------------------------------------------------------------------
+  # 7. ARGUS Pipeline Orchestrator (Deterministic State Machine)
+  # ----------------------------------------------------------------------------
+  orchestrator:
+    build:
+      context: .
+      dockerfile: orchestrator/Dockerfile
+    container_name: argus-orchestrator
+    depends_on:
+      - detector-api
+      - risk-agent
+      - knowledge-agent
+      - decision-agent
+    networks:
+      - argus-network
+    ports:
+      - "8004:8004"
+    environment:
+      DETECTOR_API_URL: http://detector-api:8000/predict
+      RISK_API_URL: http://risk-agent:8002/risk_score
+      KNOWLEDGE_API_URL: http://knowledge-agent:8003/context
+      DECISION_API_URL: http://decision-agent:8001/explain
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  # ----------------------------------------------------------------------------
+  # 8. ARGUS Kafka Stream Consumer Worker
+  # ----------------------------------------------------------------------------
+  stream-consumer:
+    build:
+      context: .
+      dockerfile: streaming/Dockerfile
+    container_name: argus-stream-consumer
+    depends_on:
+      - kafka
+      - orchestrator
+    networks:
+      - argus-network
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_TOPIC: argus-flows
+      ORCHESTRATOR_API_URL: http://orchestrator:8004/process_alert
+    restart: on-failure
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
