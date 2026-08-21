@@ -26,6 +26,36 @@ RISK_API_URL = os.getenv("RISK_API_URL", "http://localhost:8002/risk_score")
 KNOWLEDGE_API_URL = os.getenv("KNOWLEDGE_API_URL", "http://localhost:8003/context")
 DECISION_API_URL = os.getenv("DECISION_API_URL", "http://localhost:8001/explain")
 
+FEATURE_PLAIN_LANGUAGE = {
+    ("tcp_flag_density", True): "high TCP flag multiplicity and control flag density",
+    ("tcp_flag_density", False): "unusually low TCP flag diversity",
+    ("pkt_mean_to_max", True): "high packet size mean to max ratio",
+    ("pkt_mean_to_max", False): "skewed packet length ratio",
+    ("log_pkt_mean", True): "elevated average packet payload size",
+    ("log_pkt_mean", False): "reduced average packet size",
+    ("log_pkt_max", True): "unusually large maximum packet payload",
+    ("log_pkt_max", False): "suppressed maximum packet length"
+}
+
+def build_shap_context_query(shap_values: Dict[str, float]) -> str:
+    """
+    Builds a dynamic plain-language vector retrieval query (under 20 words)
+    derived from the top-2 SHAP features by magnitude and their signed values.
+    """
+    if not shap_values:
+        return "unusually low TCP flag diversity combined with reduced average packet size, SCADA network flow"
+
+    sorted_feats = sorted(shap_values.items(), key=lambda x: abs(x[1]), reverse=True)
+    top1_name, top1_val = sorted_feats[0]
+    top1_desc = FEATURE_PLAIN_LANGUAGE.get((top1_name, top1_val >= 0), top1_name)
+
+    if len(sorted_feats) > 1:
+        top2_name, top2_val = sorted_feats[1]
+        top2_desc = FEATURE_PLAIN_LANGUAGE.get((top2_name, top2_val >= 0), top2_name)
+        return f"{top1_desc} combined with {top2_desc}, SCADA network flow"
+
+    return f"{top1_desc}, SCADA network flow"
+
 class FlowRecord(BaseModel):
     pkt_mean_to_max: float = Field(..., description="Ratio of mean packet length to max packet length [0,1]")
     tcp_flag_density: float = Field(..., description="TCP flag multiplicity count")
@@ -200,14 +230,11 @@ def process_alert(req: AlertRequest):
 
     # --------------------------------------------------------------------------
     # STAGE 3: Knowledge & Context (ChromaDB MITRE ATT&CK for ICS Vector Lookup)
+    # Dynamic Query Construction derived from Top-2 SHAP Features & Signs
     # --------------------------------------------------------------------------
     t0_know = time.perf_counter()
     try:
-        top_shap_driver = max(shap_vals.items(), key=lambda x: abs(x[1]))[0] if shap_vals else "tcp_flag_density"
-        query_text = (
-            f"SCADA cyberattack anomaly on {req.asset_id} with probability {prob:.2f}. "
-            f"Key feature anomaly in {top_shap_driver} and packet length skew."
-        )
+        query_text = build_shap_context_query(shap_vals)
         know_payload = {
             "query": query_text,
             "top_k": 3
@@ -222,11 +249,6 @@ def process_alert(req: AlertRequest):
 
     t1_know = time.perf_counter()
     latencies.knowledge_ms = round((t1_know - t0_know) * 1000.0, 2)
-
-    grounded_context_str = ""
-    if knowledge_out and "techniques" in knowledge_out:
-        tech_list = knowledge_out["techniques"]
-        grounded_context_str = ", ".join([f"{t['technique_id']}: {t['name']}" for t in tech_list])
 
     # --------------------------------------------------------------------------
     # STAGE 4: Decision Support (Ollama LLM Explanation Grounded with ATT&CK Context)
