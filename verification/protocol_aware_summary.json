@@ -1,0 +1,203 @@
+{
+  "dataset_size": 47364,
+  "label_counts": {
+    "1": 29548,
+    "0": 17816
+  },
+  "protocol_aware_results": {
+    "model_name": "model_d3_protocol_aware",
+    "description": "Protocol-Aware ASDU/APDU Features Only",
+    "num_features": 44,
+    "distinct_tuples": 47357,
+    "auc_test": 0.9999962958266789,
+    "auc_calib": 0.9999961414820583,
+    "distinct_probs": 39,
+    "best_mcc_th": 0.92,
+    "metrics_optimal": {
+      "threshold": 0.92,
+      "tn": 3560,
+      "fp": 3,
+      "fn": 0,
+      "tp": 5910,
+      "accuracy": 0.9996833104613111,
+      "precision": 0.9994926433282597,
+      "recall": 1.0,
+      "f1": 0.9997462572951028,
+      "mcc": 0.9993253141127246,
+      "fpr": 0.0008419870895312938
+    },
+    "metrics_50": {
+      "threshold": 0.5,
+      "tn": 3558,
+      "fp": 5,
+      "fn": 0,
+      "tp": 5910,
+      "accuracy": 0.9994721841021852,
+      "precision": 0.9991546914623838,
+      "recall": 1.0,
+      "f1": 0.9995771670190274,
+      "mcc": 0.9988756508584825,
+      "fpr": 0.0014033118158854898
+    },
+    "top_features": [
+      [
+        "flow total IEC104_U_Message packets",
+        524559.8453747998
+      ],
+      [
+        "s_msg_ratio",
+        1422.6404040520806
+      ],
+      [
+        "flow total IEC104_I_Message_SingleIOA packets",
+        910.9635071614757
+      ],
+      [
+        "flow packet APDU length mean",
+        907.109339328701
+      ],
+      [
+        "bw total IEC104_U_Message packets",
+        615.6259424469092
+      ],
+      [
+        "fw packets APDU total length",
+        328.286755415616
+      ],
+      [
+        "flow down/up ratio",
+        100.43638304034732
+      ],
+      [
+        "fw packet APDU length max",
+        94.87952995300293
+      ],
+      [
+        "bw packet APDU length mean",
+        64.22385367006075
+      ],
+      [
+        "flow duration",
+        61.36891933085456
+      ],
+      [
+        "flow packet APDU length std",
+        41.02088085386706
+      ],
+      [
+        "u_msg_ratio",
+        39.8410709830148
+      ],
+      [
+        "flow packets APDU total length",
+        33.61908853093301
+      ],
+      [
+        "fw packet APDU length std",
+        27.45119603725709
+      ],
+      [
+        "fw packet APDU length mean",
+        25.149285860359697
+      ]
+    ]
+  },
+  "combined_results": {
+    "model_name": "model_d3_protocol_combined",
+    "description": "Protocol-Aware ASDU/APDU + Transport/Flow Features Combined",
+    "num_features": 97,
+    "distinct_tuples": 47357,
+    "auc_test": 0.9999988127649612,
+    "auc_calib": 0.9999991095727827,
+    "distinct_probs": 64,
+    "best_mcc_th": 0.99,
+    "metrics_optimal": {
+      "threshold": 0.99,
+      "tn": 3562,
+      "fp": 1,
+      "fn": 0,
+      "tp": 5910,
+      "accuracy": 0.999894436820437,
+      "precision": 0.9998308238876671,
+      "recall": 1.0,
+      "f1": 0.999915404788089,
+      "mcc": 0.9997750792082474,
+      "fpr": 0.000280662363177098
+    },
+    "metrics_50": {
+      "threshold": 0.5,
+      "tn": 3560,
+      "fp": 3,
+      "fn": 0,
+      "tp": 5910,
+      "accuracy": 0.9996833104613111,
+      "precision": 0.9994926433282597,
+      "recall": 1.0,
+      "f1": 0.9997462572951028,
+      "mcc": 0.9993253141127246,
+      "fpr": 0.0008419870895312938
+    },
+    "top_features": [
+      [
+        "flow total IEC104_U_Message packets",
+        524675.2507416867
+      ],
+      [
+        "s_msg_ratio",
+        1221.879260591658
+      ],
+      [
+        "flow packet APDU length mean",
+        897.8651682077084
+      ],
+      [
+        "flow total IEC104_I_Message_SingleIOA packets",
+        854.1719828173095
+      ],
+      [
+        "bw total IEC104_U_Message packets",
+        401.52340865135193
+      ],
+      [
+        "fw IAT std",
+        339.4846895891242
+      ],
+      [
+        "init fw window bytes",
+        151.8623417839408
+      ],
+      [
+        "flow active time max",
+        137.852435984482
+      ],
+      [
+        "flow idle time std",
+        97.54203396223728
+      ],
+      [
+        "init bw window bytes",
+        83.06447812650889
+      ],
+      [
+        "flow IAT mean",
+        62.941938621894224
+      ],
+      [
+        "flow IAT std",
+        51.390299797058105
+      ],
+      [
+        "bw IAT std",
+        44.98088439647108
+      ],
+      [
+        "flow packets APDU total length",
+        31.065975037184383
+      ],
+      [
+        "u_msg_ratio",
+        24.215435162186623
+      ]
+    ]
+  }
+}
