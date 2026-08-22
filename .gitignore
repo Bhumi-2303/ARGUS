@@ -44,3 +44,9 @@ phase3_results/checkpoints/
 phase3_results/experiments/
 phase3_results/*.zip
 models/best_model/
+
+# Experiment execution large prediction & checkpoint artifacts
+experiment_execution/predictions/
+experiment_execution/neural_robustness/predictions/
+experiment_execution/neural_robustness/checkpoints/
+*.zip
