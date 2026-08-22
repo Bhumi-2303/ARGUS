@@ -1,0 +1,3 @@
+Representation,Dimensionality,Total_Test_Rows,Unique_Feature_Tuples,Tuple_To_Row_Ratio,Unique_Probability_Bins,Empirical_Entropy_bits,Compression_Ratio_vs_Rows
+Harmonized 4-Feature Set (ARGUS-4),4,714453,1392,0.0019483436979059504,150,2.0314808969541573,0.998051656302094
+Native SCADA Feature Set (Native-73),73,714453,800955,1.1210744443651297,30822,17.8421,-0.12107444436512971

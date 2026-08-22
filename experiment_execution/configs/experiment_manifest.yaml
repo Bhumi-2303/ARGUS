@@ -1,0 +1,96 @@
+project_name: ARGUS_Empirical_Evidence_Pipeline
+version: 1.0.0
+dataset_versions:
+  D1:
+    name: CICIoT2023
+    total_rows: 6668822
+    attack_prior: 0.976421
+  D2:
+    name: NF-ToN-IoT-v2
+    total_rows: 13135881
+    attack_prior: 0.725844
+  D3:
+    name: IEC 60870-5-104
+    total_rows: 3572265
+    attack_prior: 0.224734
+feature_sets:
+  ARGUS-4:
+  - pkt_mean_to_max
+  - tcp_flag_density
+  - log_pkt_mean
+  - log_pkt_max
+  ARGUS-6:
+  - pkt_mean_to_max
+  - tcp_flag_density
+  - log_pkt_mean
+  - log_pkt_max
+  - log_tot_pkts
+  - log_flow_duration
+  ARGUS-8:
+  - pkt_mean_to_max
+  - tcp_flag_density
+  - log_pkt_mean
+  - log_pkt_max
+  - log_tot_pkts
+  - log_flow_duration
+  - log_pkt_std
+  - log_pkt_min
+  Native-73: 73_CIC_Flow_Features
+splits:
+  D1:
+    train: 5491971
+    test: 1176851
+  D2:
+    train: 10508704
+    test: 2627177
+    adaptation: 8406962
+    calibration: 2101742
+  D3:
+    train_total: 2857812
+    adaptation: 2286249
+    calibration: 571563
+    test: 714453
+seeds:
+- 42
+- 123
+- 456
+- 789
+- 1011
+models:
+  lightgbm:
+    objective: binary
+    metric: binary_logloss
+    boosting_type: gbdt
+    learning_rate: 0.05
+    num_leaves: 31
+    max_depth: 6
+    min_child_samples: 20
+    num_boost_round: 200
+    verbose: -1
+metrics:
+- accuracy
+- precision
+- recall
+- f1
+- macro_f1
+- fpr
+- fnr
+- mcc
+- roc_auc
+- pr_auc
+- log_loss
+- brier_score
+operational_fpr_constraints:
+- 0.001
+- 0.005
+- 0.01
+- 0.05
+- unconstrained
+experiments:
+  EXP-01: Multi-Seed Transfer Baseline & Dummy Comparison
+  EXP-02: Bayesian Prior-Shift Deconstruction Matrix
+  EXP-03: Representation State-Space Cardinality & Entropy Audit
+  EXP-04: Native SCADA Performance Ceiling Benchmark
+  EXP-05: Multi-Seed Domain Adaptation & Multi-Source Fusion Benchmark
+  EXP-06: Operational Constrained False-Alarm Operating Point Evaluation
+  EXP-07: Repaired Feature-Resolution Expansion Sweep (4 vs 6 vs 8 vs 73)

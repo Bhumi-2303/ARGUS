@@ -1,0 +1,2 @@
+Comparison,Delta_MCC,Delta_F1,p_value,Significant_at_p01
+Native SCADA (73 Feat) vs D1 Transfer Baseline (4 Feat),0.20131886373179259,0.06546789297970357,0.0625,False

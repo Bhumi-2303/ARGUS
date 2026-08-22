@@ -1,0 +1,5 @@
+Feature,Source_SHAP_Importance_Pct,Target_SCADA_Dominance
+log_pkt_max,37.48,Subordinate / Low Separation
+tcp_flag_density,28.27,Subordinate / Low Separation
+log_pkt_mean,27.57,Subordinate / Low Separation
+pkt_mean_to_max,6.67,Subordinate / Low Separation

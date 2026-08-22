@@ -1,0 +1,4 @@
+Domain_ID,Dataset_Name,Environment,Total_Flows,Train_Flows,Test_Flows,Attack_Prior,Primary_Attack_Types
+D1,CICIoT2023,IoT Device Topologies,"6,668,822","5,491,971","1,176,851",97.64%,"DDoS, DoS, Brute Force, Reconnaissance"
+D2,NF-ToN-IoT-v2,IoT/IIoT Testbed (NetFlow),"13,135,881","10,508,704","2,627,177",72.58%,"DDoS, Scanning, Ransomware, Backdoor"
+D3,IEC 60870-5-104,SCADA Power Grid Substation,"3,572,265","2,857,812","714,453",22.47%,"SCADA Interrogation, ASDU Spoofing, DoS"

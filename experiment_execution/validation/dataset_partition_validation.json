@@ -1,0 +1,162 @@
+{
+  "D1_train": {
+    "file_name": "ciciot_train_features.csv",
+    "file_size_bytes": 281926695,
+    "total_rows": 5491971,
+    "features": [
+      "pkt_mean_to_max",
+      "tcp_flag_density",
+      "log_pkt_mean",
+      "log_pkt_max"
+    ],
+    "benign_rows": 129538,
+    "attack_rows": 5362433,
+    "attack_prior": 0.9764132039298824,
+    "null_values": 0,
+    "inf_values": 0
+  },
+  "D1_test": {
+    "file_name": "ciciot_test_features.csv",
+    "file_size_bytes": 60423682,
+    "total_rows": 1176851,
+    "features": [
+      "pkt_mean_to_max",
+      "tcp_flag_density",
+      "log_pkt_mean",
+      "log_pkt_max"
+    ],
+    "benign_rows": 27709,
+    "attack_rows": 1149142,
+    "attack_prior": 0.9764549632876209,
+    "null_values": 0,
+    "inf_values": 0
+  },
+  "D2_train": {
+    "file_name": "nfton_train_features.csv",
+    "file_size_bytes": 554632930,
+    "total_rows": 10508704,
+    "features": [
+      "pkt_mean_to_max",
+      "tcp_flag_density",
+      "log_pkt_mean",
+      "log_pkt_max"
+    ],
+    "benign_rows": 2881027,
+    "attack_rows": 7627677,
+    "attack_prior": 0.7258437386760537,
+    "null_values": 0,
+    "inf_values": 0
+  },
+  "D2_test": {
+    "file_name": "nfton_test_features.csv",
+    "file_size_bytes": 138665203,
+    "total_rows": 2627177,
+    "features": [
+      "pkt_mean_to_max",
+      "tcp_flag_density",
+      "log_pkt_mean",
+      "log_pkt_max"
+    ],
+    "benign_rows": 720257,
+    "attack_rows": 1906920,
+    "attack_prior": 0.7258437478708134,
+    "null_values": 0,
+    "inf_values": 0
+  },
+  "D2_adapt": {
+    "file_name": "nfton_train_adaptation.csv",
+    "file_size_bytes": 435555099,
+    "total_rows": 8406962,
+    "features": [
+      "pkt_mean_to_max",
+      "tcp_flag_density",
+      "log_pkt_mean",
+      "log_pkt_max"
+    ],
+    "benign_rows": 2304821,
+    "attack_rows": 6102141,
+    "attack_prior": 0.7258437709127269,
+    "null_values": 0,
+    "inf_values": 0
+  },
+  "D2_calib": {
+    "file_name": "nfton_train_calibration.csv",
+    "file_size_bytes": 108895294,
+    "total_rows": 2101742,
+    "features": [
+      "pkt_mean_to_max",
+      "tcp_flag_density",
+      "log_pkt_mean",
+      "log_pkt_max"
+    ],
+    "benign_rows": 576206,
+    "attack_rows": 1525536,
+    "attack_prior": 0.7258436097294529,
+    "null_values": 0,
+    "inf_values": 0
+  },
+  "D3_train_all": {
+    "file_name": "iec104_train_features.csv",
+    "file_size_bytes": 128404432,
+    "total_rows": 2857812,
+    "features": [
+      "pkt_mean_to_max",
+      "tcp_flag_density",
+      "log_pkt_mean",
+      "log_pkt_max"
+    ],
+    "benign_rows": 2215774,
+    "attack_rows": 642038,
+    "attack_prior": 0.22466068446769766,
+    "null_values": 0,
+    "inf_values": 0
+  },
+  "D3_adapt": {
+    "file_name": "iec104_train_adaptation.csv",
+    "file_size_bytes": 102715853,
+    "total_rows": 2286249,
+    "features": [
+      "pkt_mean_to_max",
+      "tcp_flag_density",
+      "log_pkt_mean",
+      "log_pkt_max"
+    ],
+    "benign_rows": 1772619,
+    "attack_rows": 513630,
+    "attack_prior": 0.22466056846826396,
+    "null_values": 0,
+    "inf_values": 0
+  },
+  "D3_calib": {
+    "file_name": "iec104_train_calibration.csv",
+    "file_size_bytes": 25688643,
+    "total_rows": 571563,
+    "features": [
+      "pkt_mean_to_max",
+      "tcp_flag_density",
+      "log_pkt_mean",
+      "log_pkt_max"
+    ],
+    "benign_rows": 443155,
+    "attack_rows": 128408,
+    "attack_prior": 0.22466114846482366,
+    "null_values": 0,
+    "inf_values": 0
+  },
+  "D3_test": {
+    "file_name": "iec104_test_features.csv",
+    "file_size_bytes": 32111557,
+    "total_rows": 714453,
+    "features": [
+      "pkt_mean_to_max",
+      "tcp_flag_density",
+      "log_pkt_mean",
+      "log_pkt_max"
+    ],
+    "benign_rows": 553944,
+    "attack_rows": 160509,
+    "attack_prior": 0.22465998463159928,
+    "null_values": 0,
+    "inf_values": 0
+  }
+}
