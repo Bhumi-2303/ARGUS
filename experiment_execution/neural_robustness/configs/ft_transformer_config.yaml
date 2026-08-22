@@ -1,0 +1,34 @@
+architecture: FT-Transformer
+model_family: Neural Tabular
+paper_reference: "Gorishniy et al., 'Revisiting Deep Learning Models for Tabular Data', NeurIPS 2021"
+
+hyperparameters:
+  d_token: 32
+  n_blocks: 2
+  n_heads: 4
+  d_ff: 64
+  dropout: 0.10
+  bias: true
+
+training:
+  optimizer: AdamW
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  batch_size: 32768
+  max_epochs: 10
+  patience: 2
+  sample_size: 500000
+  loss_function: BCEWithLogitsLoss
+  scaling: StandardScaler
+  device: auto
+
+seeds:
+- 42
+- 123
+- 456
+- 789
+- 1011
+
+experiments:
+  NR-01: FT-Transformer + ARGUS-4 (Source Transfer D1->D3, D2->D3)
+  NR-02: FT-Transformer + Native SCADA (Target In-Domain D3)
