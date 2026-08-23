@@ -34,6 +34,11 @@ training/exports/
 training/graphs/
 training/reports/
 
+# AppleDouble and metadata files
+._*
+**/._*
+**/.DS_Store
+
 # Large data and checkpoint artifacts
 ARGUS_Cross_Domain_Results/
 LightGBM_CICIoT2023_Backup/
@@ -49,4 +54,8 @@ models/best_model/
 experiment_execution/predictions/
 experiment_execution/neural_robustness/predictions/
 experiment_execution/neural_robustness/checkpoints/
+experiment_execution/neural_robustness/domain_adaptation/predictions/
+experiment_execution/neural_robustness/domain_adaptation/checkpoints/
+experiment_execution/neural_robustness/domain_adaptation/DA02_DANN/predictions/
+experiment_execution/neural_robustness/domain_adaptation/DA02_DANN/checkpoints/
 *.zip
