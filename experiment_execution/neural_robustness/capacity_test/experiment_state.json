@@ -1,0 +1,12 @@
+{
+  "current_stage": "STAGE_2_REGULARIZATION_TEST",
+  "current_experiment": "CAPACITY-01R FTT-LARGE Regularization",
+  "current_seed": 42,
+  "current_epoch": 1,
+  "checkpoint_path": "experiment_execution/neural_robustness/capacity_test/regularization/checkpoints/FTT_LARGE_REG_seed42/best_model.pt",
+  "last_successful_artifact": "experiment_execution/neural_robustness/capacity_test/regularization/reports/CAPACITY01_REGULARIZATION_INTERPRETATION.md",
+  "memory_safe_batch_size": 16384,
+  "status": "COMPLETE",
+  "error": null,
+  "timestamp": "2026-08-22T23:16:50+05:30"
+}

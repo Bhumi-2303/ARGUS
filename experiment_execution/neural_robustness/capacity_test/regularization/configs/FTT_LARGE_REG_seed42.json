@@ -1,0 +1,34 @@
+{
+  "architecture": "FT-Transformer Large Regularized (FTT-LARGE-REG)",
+  "model_family": "Neural Tabular",
+  "paper_reference": "Gorishniy et al., 'Revisiting Deep Learning Models for Tabular Data', NeurIPS 2021",
+  "hyperparameters": {
+    "d_token": 64,
+    "n_blocks": 4,
+    "n_heads": 8,
+    "d_ff": 256,
+    "dropout": 0.30,
+    "bias": true
+  },
+  "training": {
+    "optimizer": "AdamW",
+    "learning_rate": 0.001,
+    "weight_decay": 0.01,
+    "batch_size": 16384,
+    "max_epochs": 10,
+    "patience": 2,
+    "max_train_samples": 500000,
+    "loss_function": "BCEWithLogitsLoss",
+    "scaling": "StandardScaler",
+    "device": "auto"
+  },
+  "experiment": {
+    "id": "CAPACITY-01R",
+    "description": "Controlled FT-Transformer Regularization Stress Test (FTT-SMALL vs FTT-LARGE vs FTT-LARGE-REG)",
+    "feature_set": "ARGUS-4",
+    "features": ["pkt_mean_to_max", "tcp_flag_density", "log_pkt_mean", "log_pkt_max"],
+    "source_domain": "D1 (CICIoT2023)",
+    "target_domain": "D3 (IEC 60870-5-104)",
+    "seed": 42
+  }
+}
