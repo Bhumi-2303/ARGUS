@@ -1,0 +1,38 @@
+{
+  "condition": "A1_LABEL_SMOOTHING",
+  "architecture": "FT-Transformer Small (FTT-SMALL)",
+  "model_family": "Neural Tabular",
+  "hyperparameters": {
+    "d_token": 32,
+    "n_blocks": 2,
+    "n_heads": 4,
+    "d_ff": 64,
+    "dropout": 0.10,
+    "bias": true
+  },
+  "interventions": {
+    "label_smoothing": 0.05,
+    "feature_mask_prob": 0.00
+  },
+  "training": {
+    "optimizer": "AdamW",
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "batch_size": 16384,
+    "max_epochs": 10,
+    "patience": 2,
+    "max_train_samples": 500000,
+    "loss_function": "BCEWithLogitsLoss(label_smoothing=0.05)",
+    "scaling": "StandardScaler",
+    "device": "auto"
+  },
+  "experiment": {
+    "id": "A1",
+    "description": "FT-Transformer SMALL + Label Smoothing (0.05)",
+    "feature_set": "ARGUS-4",
+    "features": ["pkt_mean_to_max", "tcp_flag_density", "log_pkt_mean", "log_pkt_max"],
+    "source_domain": "D1 (CICIoT2023)",
+    "target_domain": "D3 (IEC 60870-5-104)",
+    "seed": 42
+  }
+}
