@@ -1,12 +1,12 @@
 {
-  "current_stage": "STAGE_1_ARTIFACT_FINALIZATION_COMPLETE",
-  "current_experiment": "N1, N2, N3 Artifact Finalization & Audit",
+  "current_stage": "STAGE_2_REGULARIZATION_ABLATION",
+  "current_experiment": "A0-A3 FTT-SMALL Robustness Test",
   "current_seed": 42,
-  "current_epoch": null,
-  "checkpoint_path": "experiment_execution/neural_robustness/checkpoints/FTT_Native_seed42/best_model.pt",
-  "last_successful_artifact": "experiment_execution/neural_robustness/reports/N3_COMPLETION_AUDIT.md",
+  "current_epoch": 1,
+  "checkpoint_path": "experiment_execution/neural_robustness/ablation/checkpoints/A1_LABEL_SMOOTHING_seed42/best_model.pt",
+  "last_successful_artifact": "experiment_execution/neural_robustness/reports/REGULARIZATION_ABLATION_REPORT.md",
   "memory_safe_batch_size": 16384,
-  "status": "STAGE_1_COMPLETE",
+  "status": "STAGE_2_COMPLETE",
   "error": null,
-  "timestamp": "2026-08-22T21:51:30+05:30"
+  "timestamp": "2026-08-23T00:01:40+05:30"
 }

@@ -1,0 +1,21 @@
+{
+  "stage": "METRIC_INTEGRITY_AUDIT",
+  "current_substage": "AUDIT_COMPLETE",
+  "completed_substages": [
+    "ARTIFACT_INVENTORY",
+    "TEST_SET_INTEGRITY",
+    "RANKING_METRICS_AUDIT",
+    "PR_CURVE_AUDIT",
+    "ROC_CURVE_AUDIT",
+    "THRESHOLD_CALIBRATION_AUDIT",
+    "GENERALIZATION_GAP_AUDIT",
+    "LEAKAGE_AUDIT",
+    "METRIC_DEFINITIONS_AND_VERDICT",
+    "DOMAIN_ADAPTATION_PREPARATION"
+  ],
+  "current_seed": 42,
+  "status": "STAGE_COMPLETE",
+  "last_successful_artifact": "/Users/tirthkosambia/Documents/ARGUS/experiment_execution/neural_robustness/audit/AUDIT_COMPLETION_REPORT.md",
+  "error": null,
+  "timestamp": "2026-08-23T08:15:13.732712+00:00"
+}

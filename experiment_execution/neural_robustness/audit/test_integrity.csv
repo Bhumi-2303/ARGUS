@@ -1,0 +1,5 @@
+condition,test_rows,expected_rows,ground_truth_label_match,duplicate_sample_indices,nan_probabilities,infinite_probabilities,probability_min,probability_max,probabilities_in_0_1,positive_samples,negative_samples,attack_prior,integrity_status
+A0_BASELINE,714453,714453,True,0,0,0,0.66140807,0.962305,True,160509,553944,0.22465998463159928,PASS
+A1_LABEL_SMOOTHING,714453,714453,True,0,0,0,0.3670608,0.9680475,True,160509,553944,0.22465998463159928,PASS
+A2_FEATURE_MASKING,714453,714453,True,0,0,0,0.3148981,0.97273797,True,160509,553944,0.22465998463159928,PASS
+A3_COMBINED,714453,714453,True,0,0,0,0.32442254,0.9681188,True,160509,553944,0.22465998463159928,PASS

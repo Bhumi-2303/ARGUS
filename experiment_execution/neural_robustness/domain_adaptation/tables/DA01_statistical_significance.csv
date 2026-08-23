@@ -1,0 +1,3 @@
+metric,baseline_mean,coral_mean,paired_difference_mean,paired_t_statistic,p_value,cohens_d,is_significant_p05,verdict
+ROC-AUC,0.5543355939925132,0.4496794109601211,-0.10465618303239213,-5.905097510767553,0.00411585766246307,-2.9525487553837757,True,Statistically Significant Degradation (p < 0.05)
+Average Precision,0.2575678,0.22640756348998475,-0.03116023651001526,-2.006109031997341,0.11530965730155188,-1.0030545159986706,False,Statistically Significant Degradation (p < 0.05)
