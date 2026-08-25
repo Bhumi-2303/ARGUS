@@ -58,4 +58,8 @@ experiment_execution/neural_robustness/domain_adaptation/predictions/
 experiment_execution/neural_robustness/domain_adaptation/checkpoints/
 experiment_execution/neural_robustness/domain_adaptation/DA02_DANN/predictions/
 experiment_execution/neural_robustness/domain_adaptation/DA02_DANN/checkpoints/
+experiment_execution/neural_robustness/native_high_performance/predictions/
+experiment_execution/neural_robustness/native_high_performance/checkpoints/
+experiment_execution/neural_robustness/native_representation/predictions/
+experiment_execution/neural_robustness/native_representation/checkpoints/
 *.zip
