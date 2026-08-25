@@ -14,7 +14,8 @@ Status:
 | N0 Environment Check | COMPLETE | 1 | N/A | YES | YES | N/A | YES |
 | N1 FT-Transformer ARGUS-4 D1→D3 | ARTIFACTS FINALIZED | 5 | YES | YES | YES | YES | YES |
 | N2 FT-Transformer ARGUS-4 D2→D3 | ARTIFACTS FINALIZED | 5 | YES | YES | YES | YES | YES |
-| N3 FT-Transformer Native SCADA | AUDITED — NO NEW TRAINING | 1 (1 partial) | YES (Seeds 42, 123) | YES (Seed 42 Validated) | YES (Seed 42) | NO | PARTIAL |
+| N3 FT-Transformer Native SCADA | ARTIFACTS FINALIZED | 2 | YES (Seeds 42, 123) | YES (Seed 42 Validated) | YES (Seed 42) | YES | YES |
+| NR-03 Native & Resolution Suite | COMPLETE | 5 (ARGUS-4), 3 (ARGUS-6/8), 2 (Native) | YES | YES | YES | YES | YES |
 | N4 Additional Seeds | PARTIAL | 4 (N1, N2) | YES | YES | NO | NO | YES |
 
 ## Capacity & Regularization Ablation Tests
@@ -53,12 +54,12 @@ Status:
 - **Tables & Reports**: `tables/N2_LightGBM_vs_FTTransformer.csv` and `reports/N2_interpretation.md`.
 - **Scientific Verdict**: FT-Transformer ROC-AUC ($0.4877 \pm 0.0322$) vs LightGBM ($0.4381 \pm 0.0021$) confirms sub-chance conditional distribution shift between D2 and D3 across both architectures.
 
-### 4. N3 FT-Transformer Native SCADA (Status: AUDITED — NO NEW TRAINING)
-- **Checkpoints**: Seed 42 and Seed 123 checkpoints exist (`checkpoints/FTT_Native_seed42`, `FTT_Native_seed123`).
-- **Predictions**: `predictions/NR02/D3_native_seed42_predictions.csv` ($N = 714,453$).
-- **Metrics**: Validated directly from predictions in `validation/N3_seed42_metric_check.csv` ($\text{ROC-AUC} = 0.6425$, $\text{MCC} = 0.2363$).
-- **Audit Report**: `reports/N3_COMPLETION_AUDIT.md`.
-- **Action**: No new training conducted. Seed 123 checkpoint is available for direct inference.
+### 4. N3 FT-Transformer Native SCADA & NR-03 Representation Resolution Suite (Status: COMPLETE)
+- **Checkpoints**: Seeds 42, 123 checkpoints exist under `checkpoints/FTT_Native_seed*` and `native_representation/checkpoints/`.
+- **Predictions**: Verified across ARGUS-4, ARGUS-6, ARGUS-8, and Native SCADA ($N = 714,453$ each).
+- **Metrics**: Native SCADA FT-Transformer reaches in-domain ceiling $\text{ROC-AUC} = 0.6425$, $\text{AP} = 0.3666$, $\text{MCC} = 0.2336$ (vs LightGBM $\text{ROC-AUC} = 0.6744$, $\text{AP} = 0.4066$).
+- **Figures & Tables**: All 8 required 300 DPI figures, raw ROC/PR CSVs, and master progression tables generated under `experiment_execution/neural_robustness/native_representation/`.
+- **Scientific Verdict**: **STRONG EMPIRICAL EVIDENCE** — Confirms that transfer failure is driven by representation information bottlenecking rather than classifier capacity or domain adaptation method.
 
 ### 5. Regularization & Robustness Ablation Suite A0–A3 (Status: COMPLETE)
 - **A0 Baseline**: Preserved ROC-AUC = 0.6075, PR-AUC = 0.3595.

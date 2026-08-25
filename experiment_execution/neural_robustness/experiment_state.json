@@ -1,12 +1,11 @@
 {
-  "current_stage": "STAGE_2_REGULARIZATION_ABLATION",
-  "current_experiment": "A0-A3 FTT-SMALL Robustness Test",
-  "current_seed": 42,
-  "current_epoch": 1,
-  "checkpoint_path": "experiment_execution/neural_robustness/ablation/checkpoints/A1_LABEL_SMOOTHING_seed42/best_model.pt",
-  "last_successful_artifact": "experiment_execution/neural_robustness/reports/REGULARIZATION_ABLATION_REPORT.md",
-  "memory_safe_batch_size": 16384,
-  "status": "STAGE_2_COMPLETE",
-  "error": null,
-  "timestamp": "2026-08-23T00:01:40+05:30"
+  "current_stage": "NATIVE_HIGH_PERFORMANCE_BENCHMARK",
+  "current_experiment": "NR-04 Native SCADA In-Domain Benchmark",
+  "last_completed_experiment": "NR-04",
+  "status": "COMPLETE",
+  "timestamp": "2026-08-26T01:32:20.949640",
+  "selected_model": "FTT-LARGE",
+  "in_domain_ceiling_roc_auc": 0.64703467976758,
+  "in_domain_ceiling_ap": 0.3516070123829563,
+  "reusable_artifacts_verified": true
 }
