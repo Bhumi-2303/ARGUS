@@ -1,0 +1,15 @@
+Requirement,Status,Details,Action_Required
+Multiple seeds (D1→D3 transfer),DONE,"5 seeds [42,123,456,789,1011] for EXP-01/04/05; mean±SD reported",None
+Multiple seeds (D1→D2),NOT DONE,Single seed 42 only for all D1→D2 experiments,P1: Run 5 seeds for Clean Class-aware CORAL and DANN on D1→D2
+Multiple seeds (D3 native 73-feat),DONE,"5 seeds [42,123,456,789,1011] in EXP-04",None
+Multiple seeds (D3 native FTT),DONE,"5 seeds [42,123,456,789,1011] in NR-04",None
+Multiple seeds (D3 protocol-aware),NOT DONE,Single seed 42 only for grouped protocol models,P1: Run 5 seeds for protocol-aware grouped model
+Multiple seeds (feature resolution),DONE,"3 seeds [42,123,456] in EXP-07",None
+Mean ± SD reporting,DONE,All multi-seed experiments report mean±SD,None
+Confidence intervals (bootstrap),PARTIAL,Bootstrap 95% CIs mentioned in statistical report but not fully tabulated,P1: Generate and tabulate bootstrap CIs for primary metrics
+DeLong test (ROC-AUC comparison),NOT DONE,No DeLong test for comparing ROC curves,P2: Optional for comparing native vs transfer ROC curves
+McNemar test,NOT DONE,No McNemar test for paired prediction comparison,P2: Optional paired test between models
+Wilcoxon signed-rank,DONE,Used for Native FTT vs Transfer baseline comparison (p=0.0004),None
+Cohen's d effect size,DONE,"Reported for key comparisons (d=2.15 Native FTT vs Transfer, d=1.45 FTT-Large vs Small)",None
+Statistical significance threshold,DONE,p<0.001 verified for primary comparisons,None
+Variance tightness,DONE,σ≤0.002 across seeds confirming stability,None

@@ -1,0 +1,16 @@
+Metric,Appropriateness,Current_Usage,Misleading_Risk,Recommendation
+Accuracy,LOW for imbalanced IDS,"Used across all experiments; D3 test set 22.47% attack, D2 test set 72.59% attack",HIGH - Majority class prediction gives 77.53% accuracy on D3; misleading without context,SECONDARY - report but never use as primary
+Precision,MODERATE,"Used; high precision (94-97%) achievable on D3 native at high threshold",LOW if paired with recall,SECONDARY - report alongside recall and FPR
+Recall (Sensitivity),MODERATE,"Used; source-only models achieve 99%+ recall by predicting everything as attack",HIGH when reported alone - 99.98% recall with 99.94% FPR is meaningless,SECONDARY - always pair with FPR/Specificity
+F1,MODERATE,"Primary metric in many experiments; Best transfer F1=0.3869, Native=0.4352",MODERATE - F1 can be inflated by class imbalance; does not capture ranking quality,SECONDARY - useful for threshold-dependent comparison but not primary
+Balanced Accuracy,HIGH,"Used; Clean CORAL D1→D2 = 71.09%; source-only ≈ 50% (random)",LOW - directly comparable across imbalanced settings,PRIMARY - recommended for threshold-dependent evaluation
+Specificity (TNR),HIGH,Used to expose false alarm rates; source-only D1→D2 specificity = 0.06%,LOW,REPORT alongside recall for operational interpretation
+FPR (1-Specificity),HIGH,"Critical for IDS; Full ARGUS D3 FPR=87%; Native at θ=0.78 FPR=0.07%",LOW - directly meaningful for SOC operations,PRIMARY - essential for operational IDS evaluation
+FNR,MODERATE,Used in prior-shift analysis,LOW,REPORT for completeness
+ROC-AUC,HIGH,"Used extensively; transfer 0.44-0.56 (near random); native 0.67; protocol 1.0",LOW - threshold-independent ranking quality; clearly exposes random-level performance,PRIMARY - recommended as primary ranking metric
+PR-AUC (Average Precision),HIGH,"Used; transfer PR-AUC 0.13-0.56; native 0.41; protocol 0.9999",LOW - better than ROC-AUC for highly imbalanced datasets,PRIMARY - recommended alongside ROC-AUC
+MCC,HIGH,"Used; transfer MCC -0.16 to 0.12; native 0.25; protocol 0.9998",LOW - single metric capturing all confusion matrix quadrants,PRIMARY - recommended as primary classification quality metric
+Kappa (Cohen),MODERATE,Used in D1→D2 audit; Clean CORAL Kappa=0.31,LOW,SECONDARY - less interpretable than MCC for binary classification
+ECE (Expected Calibration Error),HIGH - for calibration claims,"Computed for phase3/phase4 experiments; ECE=0.76 for D1 baseline on D3",LOW,INCLUDE if claiming any calibration capability
+Brier Score,MODERATE,"Computed; Brier=0.75 for D1 baseline (near worst)",LOW,SECONDARY - include for probabilistic model evaluation
+Log Loss,MODERATE,Computed; extremely high for uncalibrated models (9.80),LOW but unstable for near-0/1 probabilities,SECONDARY

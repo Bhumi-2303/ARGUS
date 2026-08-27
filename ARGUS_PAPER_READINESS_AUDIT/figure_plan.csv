@@ -1,0 +1,13 @@
+Figure_ID,Purpose,Research_Question,Data_Source,Status,Main_or_Supplement
+Fig 1,ARGUS experimental framework architecture,"What is the end-to-end evaluation pipeline?",experiment_execution/figures/Figure1_Framework.png,READY - 300 DPI generated,MAIN
+Fig 2,ROC and PR curves overlaying all methods,"How do transfer methods compare in ranking quality vs dummies and native?",experiment_execution/figures/Figure2_ROC_PR_Overlay.png,READY - 300 DPI generated,MAIN
+Fig 3,State-space compression and entropy loss,"How much information is lost in 4-feat harmonization?",experiment_execution/figures/Figure3_Cardinality.png,READY - 300 DPI generated,MAIN
+Fig 4,Operational FPR vs Recall detection curve,"Do transfer models survive realistic SOC false alarm budgets?",experiment_execution/figures/Figure4_FPR_vs_Recall.png,READY - 300 DPI generated,MAIN
+Fig 5,SHAP importance vs Target Gain disconnect,"Do source-trained feature attributions transfer to target domain?",experiment_execution/figures/Figure5_SHAP_vs_Gain.png,READY - 300 DPI generated,MAIN
+Fig 6,Cross-domain degradation progression bar chart,How does performance degrade from source→CORAL→DANN→Fused?,experiment_execution/neural_robustness/native_high_performance/figures/fig11_cross_progression.png,READY - 300 DPI generated,MAIN or SUPPLEMENT
+Fig 7,Feature resolution scaling ROC-AUC progression,"Does more features monotonically recover discriminative power?",phase4_results/feature_resolution/fig1_unique_tuples.png or custom,READY - data available; may need reformatting,SUPPLEMENT
+Fig 8,Multi-seed stability error bars,"How stable are results across random seeds?",experiment_execution/neural_robustness/native_high_performance/figures/fig7_multiseed_stability.png,READY - 300 DPI generated,SUPPLEMENT
+Fig 9,Calibration reliability diagram,"Are model probabilities calibrated?",experiment_execution/neural_robustness/native_high_performance/figures/fig8_calibration_curve.png,READY - 300 DPI generated,SUPPLEMENT
+Fig 10,Probability distribution histogram (D3 transfer),"Why does the 4-feat transfer model fail on SCADA?",verification/probability_distribution.png,READY,SUPPLEMENT
+Fig 11,Confusion matrices at different operating points,"What are the practical error profiles at balanced vs high-precision thresholds?",Multiple confusion matrix CSVs,READY - data available; needs composite figure,SUPPLEMENT
+Fig 12,Protocol-aware D3 feature importance bar chart,"What protocol features drive SCADA detection?",verification reports / NR-04 figures,READY - data available,SUPPLEMENT (if protocol results included)
