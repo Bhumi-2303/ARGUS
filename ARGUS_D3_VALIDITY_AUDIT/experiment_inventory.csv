@@ -1,0 +1,10 @@
+Experiment,Status,Path
+D1->D3 CORAL,Exists,phase3_results/experiments/D1_D3_CORAL/
+D1->D3 DANN,Exists,experiment_execution/neural_robustness/domain_adaptation/DA02_DANN/
+Full ARGUS D3,Exists,experiment_execution/predictions/EXP01/D1_D3_seed42_predictions.csv
+REP-01,Exists,experiment_execution/neural_robustness/representation_extension/
+ARGUS-4 (R0),Exists,REP-01 internal representation
+Native SCADA (R1),Exists,REP-01 internal representation
+Protocol-aware (R2),Exists,REP-01 internal representation
+Temporal (R3),Exists,REP-01 internal representation
+FullCombined (R4),Exists,REP-01 internal representation

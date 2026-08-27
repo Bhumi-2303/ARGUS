@@ -1,0 +1,6 @@
+Representation,ROC_AUC,Leakage,Conclusion
+ARGUS-4,0.61-0.65,No,Baseline
+Native SCADA,0.64-0.67,No,Baseline
+Protocol-aware,0.9999,YES (y_sub in i_msg_ratio),Invalidated by Leakage
+Temporal,0.64-0.67,YES (Shuffled temporal),Invalidated by Shuffle
+FullCombined,0.9999,YES,Invalidated by Leakage

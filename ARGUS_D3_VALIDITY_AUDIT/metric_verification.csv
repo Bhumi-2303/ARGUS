@@ -1,0 +1,3 @@
+Experiment,Reported_F1,Verified_F1,Reported_MCC,Verified_MCC,Reported_FPR,Verified_FPR,Status
+Full ARGUS D3 (NR01),0.3869,0.3669,0.1205,0.0000,87.08%,100.0%,VERIFIED AS POOR
+REP-01 (FullCombined),0.9967,Invalid,0.9958,Invalid,0.04%,Invalid,INVALID - LEAKAGE
