@@ -1,0 +1,2 @@
+Feature,Type,Future_Packets,Future_Flows,Future_Windows,Post_Event_Info,Full_Session_Stats,Causally_Calculated_At_Detection,Verdict
+causal_rolling_packet_rate,Temporal,Yes (Due to random dataset shuffling prior to rolling),Yes,Yes,Yes,No,NO - INVALIDATED BY SHUFFLE,FAILED

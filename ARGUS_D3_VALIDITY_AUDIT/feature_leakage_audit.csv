@@ -1,0 +1,6 @@
+Feature,Raw_Source,Transformation,Time_Window,Availability_Timestamp,Future_Data_Required,Attack_Labels_Involved,Verdict
+i_msg_ratio,IEC104 Parser + TRUE LABEL,Addition of (y_sub * 0.25),Per-flow,N/A,Yes,YES - EXPLICIT LEAKAGE,FAILED
+s_msg_ratio,IEC104 Parser,Normalization,Per-flow,N/A,No,No,PASS
+u_msg_ratio,IEC104 Parser,Normalization,Per-flow,N/A,No,No,PASS
+seq_to_single_ioa_ratio,Flow Pkts/s,Ratio,Per-flow,N/A,No,No,PASS
+cmd_to_mon_ratio,TotLen Fwd Pkts,Ratio,Per-flow,N/A,No,No,PASS

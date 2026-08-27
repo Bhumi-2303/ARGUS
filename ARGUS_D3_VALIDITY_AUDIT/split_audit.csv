@@ -1,0 +1,2 @@
+Dataset,Split_Method,Chronological,By_Session,By_Attack_Scenario,By_Capture,Leakage_Status,Verdict
+IEC104,Random via train_test_split on index,No,No,No,No,HIGH - Session & Capture Leakage Guaranteed,FAILED
