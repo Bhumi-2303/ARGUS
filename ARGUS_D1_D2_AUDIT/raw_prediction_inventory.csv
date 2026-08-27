@@ -1,0 +1,8 @@
+Experiment_ID,Raw_Prediction_File,File_Exists,File_Size_Bytes,Total_Rows,Has_Sample_ID,Has_True_Label,Has_Predicted_Probability,Has_Predicted_Label,Has_Calibrated_Probability,Has_Threshold,Audit_Status
+D1_D2_DANN_TEST,ARGUS_Cross_Domain_Results/argus_coral_data/dann_results/dann_final_test_predictions.csv,True,40233835,2627178,False,True,True,True,False,True,VERIFIED ORIGINAL RAW PREDICTION FILE
+D1_D2_DANN_CALIB,ARGUS_Cross_Domain_Results/argus_coral_data/dann_results/dann_calibration_predictions.csv,True,27978755,710637,False,True,True,True,False,True,VERIFIED ORIGINAL CALIBRATION PREDICTIONS
+D1_D2_CLEAN_CLASS_AWARE,ARGUS_Cross_Domain_Results/argus_coral_data/final_clean_classaware_results/final_metrics.csv,False,0,0,False,False,False,False,False,True,RAW PREDICTIONS MISSING (ONLY SUMMARY METRICS PRESENT)
+D1_D2_CLASS_AWARE,ARGUS_Cross_Domain_Results/argus_coral_data/class_aware_results/class_aware_coral_xgboost_metrics.csv,False,0,0,False,False,False,False,False,False,RAW PREDICTIONS MISSING (DIAGNOSTIC METRICS ONLY)
+D1_D2_GLOBAL_CORAL,ARGUS_Cross_Domain_Results/argus_coral_data/results/coral_xgboost_metrics.csv,False,0,0,False,False,False,False,False,False,RAW PREDICTIONS MISSING (GLOBAL SUMMARY ONLY)
+D1_D2_SOURCE_ONLY_XGB,ARGUS_Cross_Domain_Results/argus_coral_data/final_five_model_comparison/FINAL_five_model_comparison.csv,False,0,0,False,False,False,False,False,False,RAW PREDICTIONS MISSING (SUMMARY ROW ONLY)
+D1_D2_SOURCE_ONLY_LGB,LightGBM_CICIoT2023_Backup/ (Source Native Only),False,0,0,False,False,False,False,False,False,RAW PREDICTIONS MISSING (NO D2 TEST PREDICTIONS SAVED)

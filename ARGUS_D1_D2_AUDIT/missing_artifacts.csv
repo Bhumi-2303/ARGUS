@@ -1,0 +1,5 @@
+Artifact_Name,Model,Domain_Pair,Expected_Location,Current_Status,Impact_Severity,Recommended_Action
+Source-only XGBoost Checkpoint,XGBoost,D1 -> D2,models/xgboost_d1_d2.json,MISSING,LOW,Reconstruct model if raw predictions are required.
+Source-only XGBoost Raw Predictions,XGBoost,D1 -> D2,ARGUS_Cross_Domain_Results/argus_coral_data/results/source_xgb_predictions.csv,MISSING,MEDIUM,Recompute from reconstructed model if needed.
+Global CORAL XGBoost Checkpoint,Global CORAL + XGBoost,D1 -> D2,models/global_coral_xgboost.json,MISSING,LOW,Covariance parameters present in coral_parameters.npz.
+Clean Class-aware CORAL Raw Predictions,Clean Class-aware CORAL,D1 -> D2,ARGUS_Cross_Domain_Results/argus_coral_data/final_clean_classaware_results/predictions.csv,MISSING,MEDIUM,Summary metrics verified in final_metrics.csv.
