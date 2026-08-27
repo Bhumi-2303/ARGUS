@@ -1,0 +1,11 @@
+Attribute,DANN_Result_Set_A_README,DANN_Result_Set_B_Predictions,Discrepancy_Status,Authoritative_Verdict,Resolution_Rationale
+Framework,PyTorch / Custom DANN,PyTorch (dann_model.py),MATCH,AUTHORITATIVE,Implementation code in training/trainers/dann_model.py
+Checkpoint Path,Not specified in text,dann_results/dann_best_model.pt,RESOLVED,AUTHORITATIVE,"Exact PyTorch state_dict found on disk (70,489 bytes)"
+Raw Prediction File,None provided for Result Set A,dann_results/dann_final_test_predictions.csv,RESOLVED,AUTHORITATIVE,"Bit-for-bit raw predictions file present (N=2,627,178)"
+Epochs / Checkpoint Epoch,Unspecified,Epoch 4 (out of 5 total trained),RESOLVED,AUTHORITATIVE,Confirmed in dann_calibration_metadata.csv & dann_training_history.csv
+Lambda Parameter,Unspecified,lambda = 0.775 (Epoch 4),RESOLVED,AUTHORITATIVE,Recorded in dann_training_history.csv
+Frozen Decision Threshold,0.60,0.60,MATCH,AUTHORITATIVE,Threshold 0.60 selected on NF-ToN calibration set
+ROC-AUC Metric,0.522573,0.33209554,DISCREPANCY (-0.190477),RESULT SET B IS AUTHORITATIVE,Recomputed ROC-AUC on dann_final_test_predictions.csv equals 0.33209554 exactly
+MCC Metric,0.088505,0.01285487,DISCREPANCY (-0.075650),RESULT SET B IS AUTHORITATIVE,Recomputed MCC on dann_final_test_predictions.csv equals 0.01285487 exactly
+Specificity Metric,0.010842,0.00064560,DISCREPANCY (-0.010196),RESULT SET B IS AUTHORITATIVE,Recomputed Specificity equals 0.00064560 exactly
+Overall Verdict Classification,INVALID / SUPERSEDED,AUTHORITATIVE,RESOLVED,AUTHORITATIVE,Result Set A in ARGUS_RESULTS_README.txt was a manual typo or unverified draft run
