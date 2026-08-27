@@ -1,88 +1,74 @@
-export type NodeStatus = 'secure' | 'at-risk' | 'compromised' | 'protected';
-
-export type NodeType =
-  | 'control-center'
-  | 'substation'
-  | 'rtu'
-  | 'iot-sensor'
-  | 'hmi'
-  | 'plc'
-  | 'scada'
-  | 'ied'
-  | 'field-device';
-
-export interface NetworkNode {
-  id: string;
-  name: string;
-  type: NodeType;
-  status: NodeStatus;
-  position: { x: number; y: number; z: number };
-  riskScore: number;
-  currentThreat?: string;
-  lastActivity: string;
-  connectedAssets: string[];
-}
-
-export interface NetworkConnection {
-  id: string;
-  sourceId: string;
-  targetId: string;
-  trafficType: 'normal' | 'suspicious';
-}
-
-export type Severity = 'critical' | 'high' | 'medium' | 'low';
+export type AlertSeverity = 'critical' | 'high' | 'medium' | 'low';
 
 export interface Alert {
   id: string;
-  severity: Severity;
-  attackType: string;
+  severity: AlertSeverity;
+  name: string;
   source: string;
   target: string;
   confidence: number;
-  riskScore: number;
   timestamp: string;
-  status: 'active' | 'investigating' | 'contained' | 'resolved';
 }
 
-export type AgentId = 'detection' | 'risk' | 'explainability' | 'response' | 'reporting';
-
-export interface Agent {
-  id: AgentId;
+export interface AttackCategory {
   name: string;
-  status: 'active' | 'idle' | 'error';
-  currentTask?: string;
-  responsibilities: string[];
-  input: string[];
-  output: string[];
+  count: number;
+  color: string;
 }
 
-export interface ModelMetrics {
-  name: 'XGBoost' | 'LightGBM' | 'FT-Transformer';
-  accuracy: number;
-  precision: number;
-  recall: number;
-  f1: number;
-  mcc: number;
+export interface ModelPerformance {
+  name: string;
   confidence: number;
+  color: string;
 }
 
-export interface ShapFeature {
-  feature: string;
-  contribution: number;
+export interface AttackTrend {
+  time: string;
+  volume: number;
+  isPeak?: boolean;
 }
 
-export interface Explanation {
-  alertId: string;
-  prediction: string;
-  confidence: number;
-  model: string;
-  features: ShapFeature[];
-  narrative: string;
+export interface AgentStatus {
+  id: string;
+  name: string;
+  status: 'Active' | 'Inactive';
+  uptime: number;
+  stage: string;
+  icon: any; // Lucide icon
 }
 
 export interface AuditEvent {
   id: string;
   timestamp: string;
-  agent: AgentId | 'system';
   message: string;
+  type: 'info' | 'warning' | 'error' | 'success';
+}
+
+export type AgentId = 'ag-detect' | 'ag-assess' | 'ag-explain' | 'ag-respond' | 'ag-report';
+
+export interface Agent {
+  id: AgentId;
+  name: string;
+  roleSummary: string;
+  status: 'Active' | 'Inactive';
+  currentTask: string;
+  responsibilities: string[];
+  input: string[];
+  processing: string;
+  output: string[];
+  receivesFrom: AgentId | 'Network Traffic';
+  sendsTo: AgentId | 'Audit Trail' | 'ag-detect'; // for reporting feedback
+  executionTrace: { timestamp: string; step: string }[];
+}
+
+export interface ModelMetrics {
+  id: string;
+  name: string;
+  accuracy: number;
+  precision: number;
+  recall: number;
+  f1: number;
+  mcc: number;
+  fpr: number;
+  fnr: number;
 }
