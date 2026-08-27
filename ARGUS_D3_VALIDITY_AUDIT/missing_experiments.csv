@@ -1,0 +1,4 @@
+Missing_Experiment,Reason
+Chronological Split D3 Training,"Current splits are random, causing session/capture leakage."
+Leakage-Free Protocol-Aware Model,y_sub (true labels) directly injected into i_msg_ratio.
+Risk-Aware Calibration,"Predictions all output ~0.959 probability, unable to provide confidence, risk scores, or calibrated probabilities."
