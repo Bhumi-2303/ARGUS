@@ -1,0 +1,18 @@
+{
+  "stage": "REPRESENTATION_EXTENSION",
+  "experiment": "REP-01",
+  "best_representation": "R4_FullCombined",
+  "feature_count": 75,
+  "best_model": "FTT-LARGE",
+  "seed": 42,
+  "status": "COMPLETE",
+  "metrics": {
+    "roc_auc": 0.9999126399680728,
+    "average_precision": 0.9997226469270462,
+    "f1": 0.9967148835384719,
+    "mcc": 0.9957713530700886
+  },
+  "last_successful_artifact": "reports/REP01_FINAL_REPORT.md",
+  "error": null,
+  "timestamp": "2026-08-27T06:42:24.438030"
+}
