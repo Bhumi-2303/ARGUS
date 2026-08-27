@@ -1,0 +1,7 @@
+Experiment,N,Same_IDs,Same_Ordering,Same_Labels,Same_Frozen_Test,Status
+Source-only XGBoost,2627178,True,True,True,True,VERIFIED IDENTICAL
+Source-only LightGBM,2627178,True,True,True,True,VERIFIED IDENTICAL
+Global CORAL + XGBoost,2627178,True,True,True,True,VERIFIED IDENTICAL
+Class-aware CORAL + XGBoost,2627178,True,True,True,True,VERIFIED IDENTICAL (DIAGNOSTIC)
+Clean Class-aware CORAL + XGBoost,2627178,True,True,True,True,VERIFIED IDENTICAL
+DANN,2627178,True,True,True,True,VERIFIED IDENTICAL (RAW MATCH)
