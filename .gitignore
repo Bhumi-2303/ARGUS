@@ -15,7 +15,8 @@ venv/
 .env
 .env.local
 .env.production
-data/
+/data/
+!frontend/src/data/
 *.db
 *.sqlite
 /logs/
