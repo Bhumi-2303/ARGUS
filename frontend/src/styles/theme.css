@@ -1,0 +1,23 @@
+:root {
+  --bg-void: #05070d;
+  --bg-surface: #0a0e17;
+  --bg-surface-raised: #10151f;
+  --border-muted: #1e2635;
+  --text-primary: #f2f5f9;
+  --text-secondary: #8b96a8;
+
+  --color-info: #22d3ee;      /* cyan — detection/system */
+  --color-safe: #22c55e;      /* green — secure/healthy */
+  --color-warn: #eab308;      /* gold — at-risk/medium */
+  --color-high: #f97316;      /* orange — high risk */
+  --color-critical: #ef4444;  /* red — critical/compromised */
+  --color-xai: #a855f7;       /* purple — explainability */
+
+  /* Glow variants for the neon-edge look on 3D nodes and status badges */
+  --glow-critical: 0 0 16px rgba(239, 68, 68, 0.5);
+  --glow-high: 0 0 16px rgba(249, 115, 22, 0.5);
+  --glow-warn: 0 0 16px rgba(234, 179, 8, 0.5);
+  --glow-safe: 0 0 16px rgba(34, 197, 94, 0.5);
+  --glow-info: 0 0 16px rgba(34, 211, 238, 0.5);
+  --glow-xai: 0 0 16px rgba(168, 85, 247, 0.5);
+}
