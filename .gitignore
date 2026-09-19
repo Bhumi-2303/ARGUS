@@ -67,3 +67,22 @@ experiment_execution/neural_robustness/native_representation/checkpoints/
 
 # Local experiment scratch repositories
 scratch/repo_*/
+
+# Large research datasets
+training/data/
+
+# Local research scratch directories
+scratch_nr04/
+scratch_rep01/
+
+# Large generated experiment predictions
+experiment_execution/**/predictions/
+phase4_results/experiments/**/predictions.csv
+artifacts/predictions/
+
+# Large research evidence / generated outputs
+ARGUS_Paper_Data/**/predictions/
+ARGUS_Paper_Data/5_SHAP_Values/
+phase4_results/*.zip
+phase4_results/prior_correction/*.npy
+experiment_execution/**/checkpoints/
