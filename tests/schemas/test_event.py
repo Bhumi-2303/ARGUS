@@ -2,7 +2,7 @@ import pytest
 from datetime import datetime
 from pydantic import ValidationError
 
-from argus.schemas.event import (
+from argus.core.events import (
     ArgusEvent, DetectorContract, RiskContract, KnowledgeContract, DecisionContract
 )
 
