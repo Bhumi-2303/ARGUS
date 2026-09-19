@@ -86,3 +86,7 @@ ARGUS_Paper_Data/5_SHAP_Values/
 phase4_results/*.zip
 phase4_results/prior_correction/*.npy
 experiment_execution/**/checkpoints/
+
+# Local-only ARGUS paper data dumps
+ARGUS_Paper_Data/1_DANN_Predictions/
+ARGUS_Paper_Data/4_Baseline_Predictions/
