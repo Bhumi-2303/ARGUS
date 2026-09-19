@@ -6,7 +6,6 @@ import { Box, Network as NetworkIcon, List } from 'lucide-react';
 
 import { NetworkNode, NetworkConnection } from '../../types';
 import { getNetworkNodes, getNetworkConnections } from '../../services/api';
-import { networkNodes as initialNodes, networkConnections as initialConnections } from '../../data/mockData';
 
 import Node3DModel from './Node3DModel';
 import Connection3DLine from './Connection3DLine';
@@ -47,34 +46,46 @@ export const Topology3D: React.FC<Topology3DProps> = ({
   className = '',
   initialSelectedNodeId
 }) => {
-  const [nodes, setNodes] = useState<NetworkNode[]>(initialNodes);
-  const [connections, setConnections] = useState<NetworkConnection[]>(initialConnections);
+  const [nodes, setNodes] = useState<NetworkNode[]>([]);
+  const [connections, setConnections] = useState<NetworkConnection[]>([]);
   const [selectedNode, setSelectedNode] = useState<NetworkNode | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('3d');
   const [reducedMotion, setReducedMotion] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [errorState, setErrorState] = useState<string | null>(null);
 
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
 
   // Fetch data asynchronously via api service
   useEffect(() => {
     let mounted = true;
-    async function loadData() {
+        async function loadData() {
       try {
+        setLoading(true);
+        setErrorState(null);
         const [fetchedNodes, fetchedConns] = await Promise.all([
           getNetworkNodes(),
           getNetworkConnections()
         ]);
-        if (mounted && fetchedNodes.length > 0) {
-          setNodes(fetchedNodes);
-          setConnections(fetchedConns);
-
-          if (initialSelectedNodeId) {
+        if (mounted) {
+          setNodes(fetchedNodes || []);
+          setConnections(fetchedConns || []);
+          if (initialSelectedNodeId && fetchedNodes) {
             const initial = fetchedNodes.find((n) => n.id === initialSelectedNodeId);
             if (initial) setSelectedNode(initial);
           }
+          setLoading(false);
         }
-      } catch (err) {
-        console.warn('Using mock data fallback for topology:', err);
+      } catch (err: any) {
+        if (mounted) {
+          console.error('Topology load failed:', err);
+          if (err.message && err.message.includes('Missing backend contract')) {
+             setErrorState('contract-unavailable');
+          } else {
+             setErrorState('backend-unavailable');
+          }
+          setLoading(false);
+        }
       }
     }
     loadData();
@@ -106,6 +117,46 @@ export const Topology3D: React.FC<Topology3DProps> = ({
   const handleSelectNode = (node: NetworkNode) => {
     setSelectedNode(node);
   };
+
+
+  if (loading) {
+    return (
+      <div className={`relative w-full h-full bg-slate-950 flex flex-col items-center justify-center ${className}`}>
+        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <span className="mt-4 text-blue-400 font-mono text-sm tracking-widest uppercase">Initializing Smart-Grid Topology...</span>
+      </div>
+    );
+  }
+
+  if (errorState === 'contract-unavailable') {
+    return (
+      <div className={`relative w-full h-full bg-slate-950 flex flex-col items-center justify-center p-8 text-center ${className}`}>
+        <NetworkIcon className="w-16 h-16 text-slate-700 mb-4" />
+        <h3 className="text-xl font-bold text-slate-300">Topology Contract Unavailable</h3>
+        <p className="mt-2 text-slate-500 max-w-md">The backend architecture currently does not provide a /network/nodes endpoint. This feature cannot be rendered without the corresponding data contract.</p>
+      </div>
+    );
+  }
+
+  if (errorState === 'backend-unavailable') {
+    return (
+      <div className={`relative w-full h-full bg-slate-950 flex flex-col items-center justify-center p-8 text-center ${className}`}>
+        <NetworkIcon className="w-16 h-16 text-red-500/50 mb-4 animate-pulse" />
+        <h3 className="text-xl font-bold text-red-400">Backend Unavailable</h3>
+        <p className="mt-2 text-red-400/70 max-w-md">Failed to fetch smart-grid topology. The backend server may be down or unreachable.</p>
+      </div>
+    );
+  }
+
+  if (nodes.length === 0 && !errorState) {
+    return (
+      <div className={`relative w-full h-full bg-slate-950 flex flex-col items-center justify-center p-8 text-center ${className}`}>
+        <NetworkIcon className="w-16 h-16 text-slate-600 mb-4" />
+        <h3 className="text-xl font-bold text-slate-300">Empty Network</h3>
+        <p className="mt-2 text-slate-500 max-w-md">The backend reported 0 nodes in the current topology.</p>
+      </div>
+    );
+  }
 
   return (
     <div className={`relative w-full h-full min-h-[500px] bg-bg-void overflow-hidden select-none ${className}`}>

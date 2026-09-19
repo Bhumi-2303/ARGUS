@@ -122,7 +122,7 @@ export const AlertsPage: React.FC = () => {
           alert.id.toLowerCase().includes(q) ||
           alert.attackType.toLowerCase().includes(q) ||
           alert.source.toLowerCase().includes(q) ||
-          alert.target.toLowerCase().includes(q);
+          (alert.target || '').toLowerCase().includes(q);
 
         // Severity Filter
         const matchesSeverity =
@@ -159,8 +159,8 @@ export const AlertsPage: React.FC = () => {
           compA = a.riskScore;
           compB = b.riskScore;
         } else if (sortField === 'confidence') {
-          compA = a.confidence;
-          compB = b.confidence;
+          compA = a.confidence || 0;
+          compB = b.confidence || 0;
         } else if (sortField === 'timestamp') {
           compA = new Date(a.timestamp).getTime();
           compB = new Date(b.timestamp).getTime();
@@ -456,19 +456,19 @@ export const AlertsPage: React.FC = () => {
                         <div className="text-text-primary truncate max-w-[240px]" title={alert.source}>
                           {alert.source}
                         </div>
-                        <div className="text-text-secondary flex items-center gap-1 mt-0.5 truncate max-w-[240px]" title={alert.target}>
-                          <span>→</span> {alert.target}
+                        <div className="text-text-secondary flex items-center gap-1 mt-0.5 truncate max-w-[240px]" title={alert.target || 'Not provided'}>
+                          <span>→</span> {alert.target || 'Not provided'}
                         </div>
                       </td>
 
                       {/* Confidence */}
                       <td className="p-3.5 font-mono font-bold">
                         <div className="flex items-center gap-2">
-                          <span className="text-text-primary">{(alert.confidence * 100).toFixed(0)}%</span>
+                          <span className="text-text-primary">{alert.confidence !== undefined ? `${(alert.confidence * 100).toFixed(0)}%` : 'N/A'}</span>
                           <div className="w-12 h-1.5 rounded-full bg-bg-surface-raised overflow-hidden">
                             <div
                               className="h-full bg-info"
-                              style={{ width: `${alert.confidence * 100}%` }}
+                              style={{ width: `${(alert.confidence || 0) * 100}%` }}
                             />
                           </div>
                         </div>

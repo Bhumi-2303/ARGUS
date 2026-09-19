@@ -205,7 +205,7 @@ export const AlertDetailPage: React.FC = () => {
               <span>→</span>
               <div>
                 <span className="opacity-70">TARGET:</span>{' '}
-                <span className="text-text-primary font-semibold">{alert.target}</span>
+                <span className="text-text-primary font-semibold">{alert.target || 'Not provided'}</span>
               </div>
             </div>
           </div>
@@ -216,7 +216,7 @@ export const AlertDetailPage: React.FC = () => {
             <div className="p-3 rounded-lg bg-bg-surface/80 border border-border-muted text-center min-w-[100px]">
               <span className="text-[10px] font-mono text-text-secondary uppercase block">CONFIDENCE</span>
               <span className="text-xl font-bold font-mono text-info mt-0.5 block">
-                {(alert.confidence * 100).toFixed(0)}%
+                {alert.confidence !== undefined ? `${(alert.confidence * 100).toFixed(0)}%` : 'Unavailable'}
               </span>
             </div>
 
@@ -324,12 +324,12 @@ export const AlertDetailPage: React.FC = () => {
                     <div className="space-y-1">
                       <div className="flex justify-between text-xs font-mono">
                         <span className="text-text-secondary">Model Confidence:</span>
-                        <span className="font-bold text-info">{(model.confidence * 100).toFixed(0)}%</span>
+                        <span className="font-bold text-info">{model.confidence !== undefined ? `${(model.confidence * 100).toFixed(0)}%` : 'N/A'}</span>
                       </div>
                       <div className="w-full h-2 rounded-full bg-bg-surface-raised overflow-hidden">
                         <div
                           className="h-full bg-info"
-                          style={{ width: `${model.confidence * 100}%` }}
+                          style={{ width: `${(model.confidence || 0) * 100}%` }}
                         />
                       </div>
                     </div>
@@ -551,13 +551,13 @@ export const AlertDetailPage: React.FC = () => {
             </div>
 
             <p className="text-sm text-text-primary leading-relaxed">
-              Automated containment policy recommendation based on high confidence ({(alert.confidence * 100).toFixed(0)}%) ASDU frame injection threat targeting primary substation relay interfaces. Isolating port 2404 prevents lateral command spooling across the 500kV feeder bus.
+              Automated containment policy recommendation based on high confidence ({alert.confidence !== undefined ? `${(alert.confidence * 100).toFixed(0)}%` : 'Unavailable'}) ASDU frame injection threat targeting primary substation relay interfaces. Isolating port 2404 prevents lateral command spooling across the 500kV feeder bus.
             </p>
 
             <div className="p-4 rounded-lg bg-bg-surface border border-border-muted space-y-2 font-mono text-xs">
               <div className="flex justify-between">
                 <span className="text-text-secondary">TARGET ASSET:</span>
-                <span className="text-text-primary font-bold">{alert.target}</span>
+                <span className="text-text-primary font-bold">{alert.target || 'Not provided'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-text-secondary">MITIGATION TYPE:</span>
@@ -632,7 +632,7 @@ export const AlertDetailPage: React.FC = () => {
 
             <div className="space-y-2 font-mono text-xs text-text-secondary">
               <p className="text-text-primary font-semibold">Action: ISOLATE SUBSTATION NORTH INGRESS PORT (TCP 2404)</p>
-              <p>Target: {alert.target}</p>
+              <p>Target: {alert.target || 'Not provided'}</p>
               <p>Requested by: Operator-01 (SOC Analyst)</p>
             </div>
 

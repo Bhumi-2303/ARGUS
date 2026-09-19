@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { Globe, ShieldAlert, Cpu, FileText, type LucideIcon } from 'lucide-react';
 import {
   Shield,
   Activity,
@@ -11,7 +12,7 @@ import {
 interface NavItem {
   name: string;
   path: string;
-  icon: React.ElementType;
+  icon: LucideIcon;
 }
 
 interface NavGroup {
@@ -19,12 +20,22 @@ interface NavGroup {
   items: NavItem[];
 }
 
+
 const navGroups: NavGroup[] = [
   {
     groupName: 'OPERATIONS',
     items: [
       { name: 'Command Center', path: '/', icon: Activity },
-      { name: 'Assets', path: '/assets', icon: Server }
+      { name: 'Incidents & Alerts', path: '/alerts', icon: ShieldAlert },
+      { name: 'Asset Intelligence', path: '/assets', icon: Server },
+      { name: 'Network Topology', path: '/network', icon: Globe }
+    ]
+  },
+  {
+    groupName: 'INTELLIGENCE',
+    items: [
+      { name: 'Explainability (XAI)', path: '/explainability', icon: Cpu },
+      { name: 'Audit Reports', path: '/reports', icon: FileText }
     ]
   },
   {
@@ -35,6 +46,7 @@ const navGroups: NavGroup[] = [
     ]
   }
 ];
+
 
 export const Sidebar: React.FC = () => {
   const location = useLocation();

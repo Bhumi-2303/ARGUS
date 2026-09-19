@@ -167,7 +167,7 @@ export const ExplainabilityPage: React.FC = () => {
                 <div className="p-3 rounded-lg bg-bg-surface border border-border-muted text-center min-w-[120px]">
                   <span className="text-[10px] font-mono text-text-secondary uppercase block">CONFIDENCE</span>
                   <span className="text-xl font-bold font-mono text-safe mt-0.5 block">
-                    {(activeExplanation.confidence * 100).toFixed(0)}%
+                    {activeExplanation.confidence !== undefined ? `${(activeExplanation.confidence * 100).toFixed(0)}%` : 'N/A'}
                   </span>
                 </div>
               </div>

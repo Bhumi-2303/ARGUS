@@ -1,3 +1,4 @@
+import { Alert, Severity, Explanation, ModelMetrics, AuditEvent, NetworkNode, NetworkConnection } from '../types';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
 const API_TOKEN = import.meta.env.VITE_API_TOKEN || '';
 
@@ -101,4 +102,77 @@ export async function fetchSystemHealth(): Promise<SystemHealth> {
   const response = await fetch(`${API_BASE_URL}/health`, { headers: getHeaders() });
   if (!response.ok) throw new Error('Failed to fetch health');
   return response.json();
+}
+
+// ---------------------------------------------------------
+// ADAPTERS FOR REMOTE FRONTEND FEATURES (XAI, Topology, etc.)
+// ---------------------------------------------------------
+
+/**
+ * Maps a backend Incident to a frontend Alert.
+ */
+function mapIncidentToAlert(incident: Incident): Alert {
+  return {
+    id: incident.incident_id,
+    severity: (incident.severity.toLowerCase() as Severity) || 'medium',
+    status: incident.status,
+    attackType: incident.detector_summary || 'Unknown Threat',
+    source: incident.asset || 'Unknown Source',
+    // target: undefined,
+    // confidence: undefined,
+    riskScore: incident.risk_score || 50,
+    timestamp: incident.created_at,
+  };
+}
+
+export async function getAlerts(): Promise<Alert[]> {
+  const incidents = await fetchIncidents();
+  return incidents.map(mapIncidentToAlert);
+}
+
+export async function getAlertById(id: string): Promise<Alert> {
+  const incident = await fetchIncident(id);
+  return mapIncidentToAlert(incident);
+}
+
+/**
+ * Audit events could ideally map to the system's global audit log, but currently
+ * the backend only exposes incident-specific timelines via /incidents/{id}/timeline.
+ *
+ * Reporting missing backend contract for global audit events.
+ */
+export async function getAuditEvents(): Promise<AuditEvent[]> {
+  throw new Error('Missing backend contract: No global /audit endpoint exists in the current backend architecture. Backend team needs to implement getAuditEvents.');
+}
+
+/**
+ * XAI / Explanations
+ * Reporting missing backend contract for explanations.
+ */
+export async function getExplanations(): Promise<Explanation[]> {
+  throw new Error('Missing backend contract: No /explanations endpoint exists in the current backend architecture.');
+}
+
+export async function getExplanationByAlertId(alertId: string): Promise<Explanation> {
+  throw new Error(`Missing backend contract: No /explanations endpoint exists for alert ${alertId}.`);
+}
+
+/**
+ * ML Models
+ * Reporting missing backend contract for model metrics.
+ */
+export async function getModels(): Promise<ModelMetrics[]> {
+  throw new Error('Missing backend contract: No /models endpoint exists in the current backend architecture.');
+}
+
+/**
+ * Smart-grid Network Topology
+ * Reporting missing backend contract for network nodes and connections.
+ */
+export async function getNetworkNodes(): Promise<NetworkNode[]> {
+  throw new Error('Missing backend contract: No /network/nodes endpoint exists in the current backend architecture.');
+}
+
+export async function getNetworkConnections(): Promise<NetworkConnection[]> {
+  throw new Error('Missing backend contract: No /network/connections endpoint exists in the current backend architecture.');
 }
