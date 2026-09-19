@@ -1,4 +1,4 @@
-from argus.policy.schemas import PolicyContext, ActionType
+from argus.policy.models import PolicyContext, ActionType
 
 def evaluate_risk(context: PolicyContext) -> str:
     """Evaluate risk context to determine deterministic action tier."""
@@ -18,3 +18,10 @@ def evaluate_risk(context: PolicyContext) -> str:
             
     # CRITICAL RULE: detector pred=1 does NOT override a low risk tier.
     return "MONITOR"
+
+def requires_approval(action: str, criticality: int) -> bool:
+    """Determine if human approval is required before execution."""
+    # Critical rule: High impact actions require human approval safely.
+    if action in ["ISOLATE", "ESCALATE"]:
+        return True
+    return False

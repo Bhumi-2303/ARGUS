@@ -1,12 +1,13 @@
-from argus.policy.schemas import PolicyContext, DecisionOutput, ActionType
-from argus.policy.risk_policy import evaluate_risk
-from argus.policy.approval_policy import requires_approval
+from argus.policy.models import PolicyContext, DecisionOutput, ActionType
+from argus.policy.rules import evaluate_risk, requires_approval
+from argus.policy.config import load_policy_config
 
 class PolicyEngine:
     """Deterministic security policy engine."""
     
     def __init__(self, version: str = "1.0.0"):
         self.version = version
+        self.config = load_policy_config()
 
     def evaluate(self, context: PolicyContext) -> DecisionOutput:
         # Fail-safe logic: If context is invalid/missing, default to safe monitoring
