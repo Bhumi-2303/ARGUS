@@ -1,5 +1,5 @@
 import pytest
-from argus.schemas.event import ArgusEvent, DetectorContract
+from argus.core.events import ArgusEvent, DetectorContract
 from tests.fixtures.events import fixture_high_criticality_attack
 
 def test_schema_validation():

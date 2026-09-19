@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 import uuid
-from argus.schemas.event import ArgusEvent, DetectorContract, RiskContract, KnowledgeContract, ExplainabilityContract, PolicyContract
+from argus.core.events import ArgusEvent, DetectorContract, RiskContract, KnowledgeContract, ExplainabilityContract, PolicyContract
 
 def get_base_event() -> ArgusEvent:
     return ArgusEvent(

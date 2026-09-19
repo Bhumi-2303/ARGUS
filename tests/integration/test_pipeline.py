@@ -1,6 +1,6 @@
 import pytest
 from tests.fixtures.events import FIXTURES
-from argus.schemas.event import RiskContract, PolicyContract
+from argus.core.events import RiskContract, PolicyContract
 
 def test_integration_low_criticality_benign():
     event = FIXTURES["low_criticality_benign"]()
