@@ -182,7 +182,17 @@ class DetectorAgent(BaseAgent):
                 "prediction": binary_pred,
                 "probability": prob,
                 "shap_values": shap_dict,
-                "flow_record": flow_record
+                "flow_record": flow_record,
+                "provenance": {
+                    "model_id": "LightGBM-D2-CORAL",
+                    "model_version": "1.0.0",
+                    "feature_schema_version": "v1-4tuple",
+                    "adaptation_method": "CORAL",
+                    "threshold": THRESHOLD,
+                    "training_dataset": "CICIoT2023_D2",
+                    "training_date": "2024-05",
+                    "calibration_version": "isotonic"
+                }
             },
             confidence=prob if binary_pred == 1 else 1.0 - prob,
             evidence={"shap": shap_dict},
