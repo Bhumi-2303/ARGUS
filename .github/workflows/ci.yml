@@ -116,7 +116,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: api/Dockerfile
+          file: Dockerfile
           push: false
           tags: argus/detector-api:ci-test
           cache-from: type=gha
