@@ -1,3 +1,5 @@
+> Note: Features documented here indicate what is strictly **IMPLEMENTED** unless explicitly tagged as **PLANNED**.
+
 # Incident Lifecycle
 
 The ARGUS incident lifecycle provides a structured, auditable workflow for managing security incidents.

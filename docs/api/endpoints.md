@@ -1,3 +1,5 @@
+> Note: Features documented here indicate what is strictly **IMPLEMENTED** unless explicitly tagged as **PLANNED**.
+
 # ARGUS API Contracts
 
 ## `GET /api/v1/incidents/`

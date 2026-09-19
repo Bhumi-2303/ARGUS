@@ -1,3 +1,5 @@
+> Note: Features documented here indicate what is strictly **IMPLEMENTED** unless explicitly tagged as **PLANNED**.
+
 # Agent Contracts
 
 ## Detector Agent
