@@ -64,12 +64,12 @@ jobs:
       - name: Run Unit Tests
         run: pytest tests/unit/ tests/schemas/ tests/policy/ tests/services/ --tb=short -v
         env:
-          PYTHONPATH: src
+          PYTHONPATH: "src:tests:."
 
       - name: Run Integration & E2E Tests
         run: pytest tests/integration/ tests/e2e/ --tb=short -v
         env:
-          PYTHONPATH: src
+          PYTHONPATH: "src:tests:."
 
   # --------------------------------------------------------------------------
   # Stage 3: Frontend Build
