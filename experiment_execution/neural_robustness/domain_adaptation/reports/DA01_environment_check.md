@@ -1,8 +1,8 @@
 # ARGUS DA-01 Phase DA-01A: Environment & Artifact Verification Report
-**Execution Timestamp**: 2026-08-23T22:38:06.062899
+**Execution Timestamp**: 2026-09-16T11:17:51.094339
 **Hardware Platform**: Apple M4 (16 GB Unified Memory)
-**PyTorch Device**: mps
-**PyTorch Version**: 2.13.0
+**PyTorch Device**: cpu
+**PyTorch Version**: 2.13.0+cu130
 
 ---
 

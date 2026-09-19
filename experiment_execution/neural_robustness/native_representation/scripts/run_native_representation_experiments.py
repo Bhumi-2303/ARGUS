@@ -34,7 +34,13 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-BASE = Path("/Volumes/BLACK-BOX/ARGUS")
+import os
+from pathlib import Path
+_curr = Path(__file__).resolve()
+while _curr.parent != _curr:
+    if (_curr / 'src' / 'argus').exists(): break
+    _curr = _curr.parent
+BASE = _curr
 EE = BASE / "experiment_execution"
 NR = EE / "neural_robustness"
 NR03 = NR / "native_representation"

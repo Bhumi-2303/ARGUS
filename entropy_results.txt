@@ -1,0 +1,3 @@
+Total flows: 714453
+Unique feature tuples: 1704
+Entropy: 2.0472 bits

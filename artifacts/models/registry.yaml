@@ -1,0 +1,42 @@
+models:
+  model_d2_coral:
+    model_id: "mod-d2-coral-001"
+    version: "1.0.0"
+    domain: "D2"
+    source_domain: "D1"
+    target_domain: "D2"
+    training_dataset: "D1_source_labeled.csv"
+    training_date: "2026-08-19"
+    feature_schema_version: "v1.1"
+    features: ["pkt_mean_to_max", "tcp_flag_density", "log_pkt_mean", "log_pkt_max", "fwd_bwd_bytes_ratio"]
+    adaptation_method: "CORAL"
+    threshold: 0.85
+    calibration_version: "platt-1.0"
+    seed: 42
+    artifact_path: "phase3_results/models/model_d2_coral.txt"
+    metrics:
+      f1_score: 0.942
+      mcc: 0.915
+      fpr: 0.021
+    status: "ACTIVE"
+
+  model_d1_baseline:
+    model_id: "mod-d1-base-001"
+    version: "1.0.0"
+    domain: "D1"
+    source_domain: "D1"
+    target_domain: "D1"
+    training_dataset: "D1_source_labeled.csv"
+    training_date: "2026-08-19"
+    feature_schema_version: "v1.0"
+    features: ["pkt_mean_to_max", "tcp_flag_density", "log_pkt_mean", "log_pkt_max", "fwd_bwd_bytes_ratio"]
+    adaptation_method: "NONE"
+    threshold: 0.85
+    calibration_version: "platt-1.0"
+    seed: 42
+    artifact_path: "phase3_results/models/model_d1_baseline.txt"
+    metrics:
+      f1_score: 0.930
+      mcc: 0.891
+      fpr: 0.030
+    status: "ARCHIVED"

@@ -1,0 +1,20 @@
+version: "1.0.0"
+policies:
+  isolation:
+    action: ISOLATE
+    min_criticality: 3
+    min_risk_tier: "high"
+    min_confidence: "high"
+    requires_approval: true
+  escalation:
+    action: ESCALATE
+    min_risk_tier: "high"
+    requires_approval: true
+  investigation:
+    action: INVESTIGATE
+    min_risk_tier: "medium"
+    requires_approval: false
+  monitoring:
+    action: MONITOR
+    min_risk_tier: "low"
+    requires_approval: false

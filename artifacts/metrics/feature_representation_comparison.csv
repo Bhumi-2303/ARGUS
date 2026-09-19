@@ -1,0 +1,3 @@
+Representation,Model,Evaluation,ROC-AUC,PR-AUC,F1,MCC,FPR,FNR,Recall,Precision
+Full/Native (70 features),LightGBM (EXP-04),In-Domain Ceiling (IEC104),0.6744,0.4066,0.4354,0.2494,0.722,0.0347,0.9653,0.2801
+ARGUS-4 (4 features),LightGBM Fusion (EXP05),Cross-Domain (CICIoT+NFToN -> IEC104),0.5017,,0.3869,0.1205,0.8708,0.0392,0.9608,0.2435

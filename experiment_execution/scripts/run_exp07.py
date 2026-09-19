@@ -9,7 +9,13 @@ from pathlib import Path
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-BASE = Path('/Users/tirthkosambia/Documents/ARGUS')
+import os
+from pathlib import Path
+_curr = Path(__file__).resolve()
+while _curr.parent != _curr:
+    if (_curr / 'src' / 'argus').exists(): break
+    _curr = _curr.parent
+BASE = _curr
 EE = BASE / 'experiment_execution'
 RAW_DATA_DIR = BASE / 'data/IEC104/extracted_csvs'
 sys.path.append(str(EE / 'scripts'))

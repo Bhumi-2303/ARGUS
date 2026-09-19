@@ -14,7 +14,13 @@ import pandas as pd
 import torch
 from datetime import datetime
 
-BASE = Path("/Volumes/BLACK-BOX/ARGUS")
+import os
+from pathlib import Path
+_curr = Path(__file__).resolve()
+while _curr.parent != _curr:
+    if (_curr / 'src' / 'argus').exists(): break
+    _curr = _curr.parent
+BASE = _curr
 EE = BASE / "experiment_execution"
 NR = EE / "neural_robustness"
 DA = NR / "domain_adaptation"

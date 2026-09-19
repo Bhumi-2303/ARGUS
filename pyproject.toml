@@ -16,8 +16,8 @@ keywords = ["cybersecurity", "smart-grid", "multi-agent", "ai", "security"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
     "Topic :: Security",
     "Framework :: FastAPI",
     "Typing :: Typed",
@@ -63,6 +63,10 @@ dependencies = [
     "joblib>=1.5.3",
     "torch>=2.0",
     "umap-learn>=0.5",
+    "requests>=2.31.0",
+    "kafka-python-ng>=2.2.0",
+    "sentence-transformers>=3.0.0",
+    "numpy>=1.26.0",
 ]
 
 [project.optional-dependencies]
@@ -86,14 +90,14 @@ docs = [
 ]
 
 [project.scripts]
-argus = "argus.main:run"
+argus = "argus.main:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/argus"]
 
 # --- Ruff Configuration ---
 [tool.ruff]
-target-version = "py312"
+target-version = "py311"
 line-length = 100
 src = ["src", "tests"]
 
@@ -117,7 +121,7 @@ known-first-party = ["argus"]
 
 # --- Pytest Configuration ---
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests", "src/argus/services"]
 asyncio_mode = "auto"
 markers = [
     "unit: Unit tests",
@@ -132,7 +136,7 @@ filterwarnings = [
 
 # --- MyPy Configuration ---
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.11"
 strict = true
 warn_return_any = true
 warn_unused_configs = true

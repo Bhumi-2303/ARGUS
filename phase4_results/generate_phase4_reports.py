@@ -17,7 +17,13 @@ from pathlib import Path
 from datetime import datetime
 import pandas as pd
 
-PROJECT_ROOT = Path("/Users/tirthkosambia/Documents/ARGUS")
+import os
+from pathlib import Path
+_curr = Path(__file__).resolve()
+while _curr.parent != _curr:
+    if (_curr / 'src' / 'argus').exists(): break
+    _curr = _curr.parent
+PROJECT_ROOT = _curr
 P4_RESULTS = PROJECT_ROOT / "phase4_results"
 
 def main():

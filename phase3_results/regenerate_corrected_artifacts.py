@@ -19,7 +19,13 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
-PROJECT_ROOT = Path("/Users/tirthkosambia/Documents/ARGUS")
+import os
+from pathlib import Path
+_curr = Path(__file__).resolve()
+while _curr.parent != _curr:
+    if (_curr / 'src' / 'argus').exists(): break
+    _curr = _curr.parent
+PROJECT_ROOT = _curr
 RESULTS_DIR = PROJECT_ROOT / "phase3_results"
 
 EXPERIMENT_IDS = [

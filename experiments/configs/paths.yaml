@@ -1,0 +1,32 @@
+# ARGUS Experiment Path Configuration
+
+root_resolution:
+  # The repository root is determined dynamically by searching upwards for 'src/argus'.
+  strategy: "dynamic_search"
+  marker: "src/argus"
+
+datasets:
+  # Default paths if ARGUS_DATA_ROOT is not set in the environment.
+  # The dataset paths are exactly matching the repository's current structure.
+  ciciot2023:
+    path: "data/CICIOT23"
+  nf_ton_iot:
+    path: "data/NFTONIoTV2"
+  iec104:
+    path: "data/IEC104"
+  coral_data:
+    path: "ARGUS_Cross_Domain_Results/argus_coral_data"
+
+artifacts:
+  # Default path if ARGUS_ARTIFACT_ROOT is not set.
+  root: "artifacts"
+  subdirectories:
+    models: "models"
+    predictions: "predictions"
+    metrics: "metrics"
+    figures: "figures"
+    reports: "reports"
+    logs: "logs"
+
+seeds:
+  default: 42

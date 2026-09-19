@@ -57,11 +57,17 @@ import shap
 import openpyxl
 
 # Set random seeds for reproducibility
-RANDOM_SEED = 42
+import sys; RANDOM_SEED = int(sys.argv[1]) if len(sys.argv) > 1 else 42
 np.random.seed(RANDOM_SEED)
 torch.manual_seed(RANDOM_SEED)
 
-PROJECT_ROOT = Path("/Users/tirthkosambia/Documents/ARGUS")
+import os
+from pathlib import Path
+_curr = Path(__file__).resolve()
+while _curr.parent != _curr:
+    if (_curr / 'src' / 'argus').exists(): break
+    _curr = _curr.parent
+PROJECT_ROOT = _curr
 CORAL_DATA_DIR = PROJECT_ROOT / "ARGUS_Cross_Domain_Results/argus_coral_data"
 RESULTS_DIR = PROJECT_ROOT / "phase3_results"
 

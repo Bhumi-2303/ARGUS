@@ -46,7 +46,13 @@ from sklearn.metrics import (
     brier_score_loss
 )
 
-BASE = Path("/Users/tirthkosambia/Documents/ARGUS")
+import os
+from pathlib import Path
+_curr = Path(__file__).resolve()
+while _curr.parent != _curr:
+    if (_curr / 'src' / 'argus').exists(): break
+    _curr = _curr.parent
+BASE = _curr
 EE = BASE / "experiment_execution"
 NR = EE / "neural_robustness"
 ABL = NR / "ablation"

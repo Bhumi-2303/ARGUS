@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 from config.settings import get_settings
 from argus.security.middleware import SecurityMiddleware
 from argus.api.routers import agents, tasks, health
+from argus.api.routers import monitoring
 from argus.schemas.health import SystemHealth
 
 logger = get_logger("argus.api")
@@ -43,6 +44,9 @@ app.add_middleware(SecurityMiddleware)
 app.include_router(agents.router, prefix="/api/v1/agents", tags=["agents"])
 app.include_router(tasks.router, prefix="/api/v1/tasks", tags=["tasks"])
 app.include_router(health.router, prefix="/api/v1/health", tags=["health"])
+app.include_router(monitoring.router, prefix="/api/v1/monitoring", tags=["Monitoring"])
+from argus.api.routers import incidents
+app.include_router(incidents.router, prefix="/api/v1/incidents", tags=["incidents"])
 
 @app.get("/health", response_model=SystemHealth)
 async def health_check():

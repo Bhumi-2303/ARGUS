@@ -13,7 +13,13 @@ import subprocess
 import platform
 from pathlib import Path
 
-BASE = Path("/Users/tirthkosambia/Documents/ARGUS")
+import os
+from pathlib import Path
+_curr = Path(__file__).resolve()
+while _curr.parent != _curr:
+    if (_curr / 'src' / 'argus').exists(): break
+    _curr = _curr.parent
+BASE = _curr
 EE = BASE / "experiment_execution"
 NR = EE / "neural_robustness"
 CORAL_DIR = BASE / "ARGUS_Cross_Domain_Results/argus_coral_data"

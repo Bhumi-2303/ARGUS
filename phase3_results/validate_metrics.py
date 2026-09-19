@@ -26,7 +26,13 @@ from sklearn.metrics import (
     log_loss, brier_score_loss, average_precision_score
 )
 
-PROJECT_ROOT = Path("/Users/tirthkosambia/Documents/ARGUS")
+import os
+from pathlib import Path
+_curr = Path(__file__).resolve()
+while _curr.parent != _curr:
+    if (_curr / 'src' / 'argus').exists(): break
+    _curr = _curr.parent
+PROJECT_ROOT = _curr
 RESULTS_DIR = PROJECT_ROOT / "phase3_results"
 CORAL_DATA_DIR = PROJECT_ROOT / "ARGUS_Cross_Domain_Results/argus_coral_data"
 EXPERIMENTS_DIR = RESULTS_DIR / "experiments"

@@ -1,0 +1,68 @@
+============================= test session starts ==============================
+platform linux -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0 -- /usr/bin/python
+cachedir: .pytest_cache
+rootdir: /home/bhumi/GitHub/ARGUS
+configfile: pyproject.toml
+plugins: anyio-4.13.0, asyncio-1.4.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 0 items / 5 errors
+
+==================================== ERRORS ====================================
+___________ ERROR collecting tests/agents/test_data_intelligence.py ____________
+ImportError while importing test module '/home/bhumi/GitHub/ARGUS/tests/agents/test_data_intelligence.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.14/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/agents/test_data_intelligence.py:4: in <module>
+    from argus.agents.data_intelligence.agent import DataIntelligenceAgent
+E   ModuleNotFoundError: No module named 'argus'
+___________ ERROR collecting tests/agents/test_knowledge_context.py ____________
+ImportError while importing test module '/home/bhumi/GitHub/ARGUS/tests/agents/test_knowledge_context.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.14/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/agents/test_knowledge_context.py:5: in <module>
+    from argus.agents.knowledge_context.agent import KnowledgeContextAgent
+E   ModuleNotFoundError: No module named 'argus'
+_______________ ERROR collecting tests/services/test_detector.py _______________
+ImportError while importing test module '/home/bhumi/GitHub/ARGUS/tests/services/test_detector.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.14/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/services/test_detector.py:7: in <module>
+    from argus.services.detector.main import app
+E   ModuleNotFoundError: No module named 'argus'
+_____________ ERROR collecting tests/services/test_orchestrator.py _____________
+ImportError while importing test module '/home/bhumi/GitHub/ARGUS/tests/services/test_orchestrator.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.14/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/services/test_orchestrator.py:12: in <module>
+    from argus.services.orchestrator.main import app
+E   ModuleNotFoundError: No module named 'argus'
+______________ ERROR collecting tests/services/test_streaming.py _______________
+ImportError while importing test module '/home/bhumi/GitHub/ARGUS/tests/services/test_streaming.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.14/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/services/test_streaming.py:8: in <module>
+    from argus.services.streaming.replay_producer import get_sample_data, run_replay_producer
+E   ModuleNotFoundError: No module named 'argus'
+=========================== short test summary info ============================
+ERROR tests/agents/test_data_intelligence.py
+ERROR tests/agents/test_knowledge_context.py
+ERROR tests/services/test_detector.py
+ERROR tests/services/test_orchestrator.py
+ERROR tests/services/test_streaming.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 5 errors during collection !!!!!!!!!!!!!!!!!!!!
+============================== 5 errors in 0.46s ===============================

@@ -29,7 +29,13 @@ from sklearn.model_selection import train_test_split
 
 warnings.filterwarnings("ignore")
 
-PROJECT_ROOT = Path("/Users/tirthkosambia/Documents/ARGUS")
+import os
+from pathlib import Path
+_curr = Path(__file__).resolve()
+while _curr.parent != _curr:
+    if (_curr / 'src' / 'argus').exists(): break
+    _curr = _curr.parent
+PROJECT_ROOT = _curr
 RAW_DATA_DIR = PROJECT_ROOT / "data/IEC104/extracted_csvs"
 MODELS_DIR = PROJECT_ROOT / "phase3_results/models"
 RESULTS_DIR = PROJECT_ROOT / "verification"

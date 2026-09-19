@@ -15,7 +15,13 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import roc_auc_score, average_precision_score, f1_score, confusion_matrix, matthews_corrcoef
 
-BASE = Path("/Volumes/BLACK-BOX/ARGUS")
+import os
+from pathlib import Path
+_curr = Path(__file__).resolve()
+while _curr.parent != _curr:
+    if (_curr / 'src' / 'argus').exists(): break
+    _curr = _curr.parent
+BASE = _curr
 EE = BASE / "experiment_execution"
 NR = EE / "neural_robustness"
 NR03 = NR / "native_representation"

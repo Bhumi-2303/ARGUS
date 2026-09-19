@@ -1,7 +1,0 @@
-{
-  "Group": "F",
-  "Source": "D1+D2",
-  "Method": "DANN + Prior Correction Fusion",
-  "w1": 0.0,
-  "w2": 1.0
-}

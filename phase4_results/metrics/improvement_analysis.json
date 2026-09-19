@@ -1,12 +1,12 @@
 {
   "Phase3_Best_Method": "D2 + CORAL + calibration",
-  "Phase3_Best_F1": 0.37703824744596337,
-  "Phase3_Best_MCC": 0.07886359922633979,
+  "Phase3_Best_F1": 0.3762674099083472,
+  "Phase3_Best_MCC": 0.07550590058623544,
   "Phase4_Best_Method": "D1+D2 CORAL + prior fusion",
-  "Phase4_Best_F1": 0.3869400761515252,
-  "Phase4_Best_MCC": 0.12051732120898538,
-  "Delta_F1": 0.009901828705561833,
-  "Delta_MCC": 0.041653721982645595,
-  "Improvement_F1_Pct": 2.626213327861638,
-  "Improvement_MCC_Pct": 52.81742450417302
+  "Phase4_Best_F1": 0.3869257462883181,
+  "Phase4_Best_MCC": 0.12045002740363928,
+  "Delta_F1": 0.010658336379970934,
+  "Delta_MCC": 0.04494412681740384,
+  "Improvement_F1_Pct": 2.8326493603491034,
+  "Improvement_MCC_Pct": 59.5239927852699
 }

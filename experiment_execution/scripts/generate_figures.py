@@ -7,7 +7,13 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from sklearn.metrics import roc_curve, precision_recall_curve, auc, average_precision_score
 
-BASE = Path('/Users/tirthkosambia/Documents/ARGUS')
+import os
+from pathlib import Path
+_curr = Path(__file__).resolve()
+while _curr.parent != _curr:
+    if (_curr / 'src' / 'argus').exists(): break
+    _curr = _curr.parent
+BASE = _curr
 EE = BASE / 'experiment_execution'
 os.environ['MPLCONFIGDIR'] = '/tmp/matplotlib_cache'
 

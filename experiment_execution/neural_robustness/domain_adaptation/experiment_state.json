@@ -1,27 +1,16 @@
 {
   "experiment_id": "DA-01",
   "experiment_name": "FTT-SMALL + CORAL Domain Adaptation Test",
-  "current_stage": "STAGE_DA01_COMPLETE",
+  "current_stage": "STAGE_DA01A_ENV_CHECK_COMPLETE",
   "completed_stages": [
-    "DA01A",
-    "DA01B",
-    "DA01C",
-    "DA01D",
-    "DA01E",
-    "DA01F"
+    "DA01A"
   ],
-  "current_seed": 1011,
-  "completed_seeds": [
-    42,
-    123,
-    456,
-    789,
-    1011
-  ],
-  "checkpoint_path": "experiment_execution/neural_robustness/domain_adaptation/checkpoints/DA01_FTT_CORAL_seed1011/best_model.pt",
-  "last_successful_artifact": "experiment_execution/neural_robustness/domain_adaptation/reports/DA01_COMPLETION_REPORT.md",
+  "current_seed": null,
+  "completed_seeds": [],
+  "checkpoint_path": null,
+  "last_successful_artifact": "experiment_execution/neural_robustness/domain_adaptation/reports/DA01_environment_check.md",
   "memory_safe_batch_size": 16384,
-  "status": "EXPERIMENT_DA01_FINISHED_PUBLICATION_READY",
+  "status": "READY_FOR_PHASE_DA01B",
   "error": null,
-  "timestamp": "2026-08-23T22:44:14.846463"
+  "timestamp": "2026-09-16T11:17:52.343628"
 }
