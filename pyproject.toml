@@ -49,20 +49,6 @@ dann = [
     "umap-learn>=0.5",
     "sentence-transformers>=3.0.0",
 ]
-google = [
-    "google-adk>=1.0.0",
-    "google-genai>=0.3.0",
-]
-db = [
-    "sqlalchemy[asyncio]>=2.0.30",
-    "aiosqlite>=0.20.0",
-    "chromadb>=0.5.0",
-]
-security = [
-    "cryptography>=42.0.0",
-    "python-jose[cryptography]>=3.3.0",
-    "passlib[bcrypt]>=1.7.4",
-]
 dev = [
     "ruff>=0.5.0",
     "mypy>=1.10.0",

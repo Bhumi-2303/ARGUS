@@ -3,7 +3,6 @@ from pathlib import Path
 from contextlib import asynccontextmanager
 from typing import List, Dict, Any, Optional
 
-import chromadb
 from chromadb.utils import embedding_functions
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
@@ -17,7 +16,6 @@ COLLECTION_NAME = os.getenv("COLLECTION_NAME", "mitre_attack_ics")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
 
 collection = None
-chroma_client = None
 
 class ContextQueryRequest(BaseModel):
     query: str = Field(..., description="Short text query or alert context describing the SCADA anomaly")
@@ -52,13 +50,11 @@ async def lifespan(app: FastAPI):
         raise FileNotFoundError(f"Chroma DB directory not found at: {CHROMA_DB_DIR}. Please run ingest_attack.py first.")
 
     print(f"[*] Connecting to local Chroma persistent DB at: {CHROMA_DB_DIR}")
-    chroma_client = chromadb.PersistentClient(path=str(chroma_path))
     
     print(f"[*] Loading embedding function: {EMBEDDING_MODEL}")
     ef = embedding_functions.SentenceTransformerEmbeddingFunction(model_name=EMBEDDING_MODEL)
 
     print(f"[*] Accessing collection '{COLLECTION_NAME}'...")
-    collection = chroma_client.get_collection(name=COLLECTION_NAME, embedding_function=ef)
     print(f"[+] Knowledge collection loaded successfully with {collection.count()} techniques.")
     
     yield

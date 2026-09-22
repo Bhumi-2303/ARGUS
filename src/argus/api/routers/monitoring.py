@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 import yaml
 import os
 import numpy as np
@@ -27,7 +27,7 @@ async def get_drift_status(model_id: str) -> DriftReport:
     # representing current batch state.
     
     # Read registry to get domain info
-    registry = await get_model_registry()
+    registry = await get_model_registry(user=user)
     models = registry.get("models", {})
     
     # Find model by id or key

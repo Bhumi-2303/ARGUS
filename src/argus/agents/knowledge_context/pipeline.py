@@ -14,7 +14,6 @@ from argus.agents.knowledge_context.tools import (
     CISATool,
     PlaybookTool,
     VectorSearchTool,
-    GeminiReasoner,
     KnowledgePublisher,
 )
 
@@ -46,7 +45,6 @@ class KnowledgePipeline:
         self.cisa = CISATool(resources_dir=rd)
         self.playbook = PlaybookTool(resources_dir=rd)
         self.vector = VectorSearchTool(resources_dir=rd)
-        self.reasoner = GeminiReasoner(resources_dir=rd)
         self.publisher = KnowledgePublisher(resources_dir=rd)
 
     async def initialize(self) -> None:
@@ -57,7 +55,6 @@ class KnowledgePipeline:
         await self.cisa.initialize()
         await self.playbook.initialize()
         await self.vector.initialize()
-        await self.reasoner.initialize()
         await self.publisher.initialize()
 
     async def shutdown(self) -> None:
@@ -68,7 +65,6 @@ class KnowledgePipeline:
         await self.cisa.shutdown()
         await self.playbook.shutdown()
         await self.vector.shutdown()
-        await self.reasoner.shutdown()
         await self.publisher.shutdown()
 
     def _normalize_attack_type(self, raw: str) -> str:
@@ -118,12 +114,11 @@ class KnowledgePipeline:
         )
 
         # Stage 8: Synthesis
-        synthesis = await self.reasoner.execute(enrichment_context=enrichment)
 
         # Stage 9: Build KnowledgeEvent
         duration_ms = (time.time() - start_time) * 1000.0
         event = await self.publisher.execute(
-            synthesis_result=synthesis,
+            synthesis_result="None",
             agent_id=self.agent_id,
             processing_duration_ms=duration_ms,
         )

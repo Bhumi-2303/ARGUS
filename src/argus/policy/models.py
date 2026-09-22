@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import List, Dict, Any, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class ActionType(str, Enum):
     MONITOR = "MONITOR"
@@ -9,12 +9,12 @@ class ActionType(str, Enum):
     ISOLATE = "ISOLATE"
 
 class PolicyContext(BaseModel):
-    risk_tier: str
+    risk_tier: str = Field(..., pattern="^(critical|high|medium|low|unknown)$")
     asset_type: str = "generic"
-    criticality: int = 1
-    confidence: str = "low"
+    criticality: int = Field(1, ge=1, le=5)
+    confidence: str = Field("low", pattern="^(high|medium|low)$")
     attack_category: str = "Benign"
-    detector_prediction: int = 0
+    detector_prediction: int = Field(0, ge=0, le=1)
     operational_constraints: Dict[str, Any] = {}
 
 class DecisionOutput(BaseModel):

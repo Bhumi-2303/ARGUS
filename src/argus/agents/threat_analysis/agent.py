@@ -18,7 +18,6 @@ from argus.agents.threat_analysis.tools.model_loader import ModelLoader
 from argus.agents.threat_analysis.tools.inference_engine import InferenceEngine
 from argus.agents.threat_analysis.tools.confidence_calculator import ConfidenceCalculator
 from argus.agents.threat_analysis.tools.evidence_collector import EvidenceCollector
-from argus.agents.threat_analysis.tools.gemini_reasoner import GeminiReasoner
 from argus.agents.threat_analysis.tools.threat_publisher import ThreatPublisher
 
 
@@ -44,7 +43,6 @@ class ThreatAnalysisAgent(BaseAgent):
         self.tool_inference = InferenceEngine()
         self.tool_confidence = ConfidenceCalculator()
         self.tool_evidence = EvidenceCollector()
-        self.tool_gemini = GeminiReasoner()
         self.tool_publisher = ThreatPublisher()
         
         self._active_model = None
@@ -59,7 +57,6 @@ class ThreatAnalysisAgent(BaseAgent):
         await self.tool_inference.initialize()
         await self.tool_confidence.initialize()
         await self.tool_evidence.initialize()
-        await self.tool_gemini.initialize()
         await self.tool_publisher.initialize()
         
         # Load the default model
@@ -148,16 +145,6 @@ class ThreatAnalysisAgent(BaseAgent):
         
         gemini_analysis = None
         recommended_actions = []
-        
-        # Only invoke Gemini for notable threats
-        if config.gemini_enabled and confidence.confidence_score >= config.confidence_threshold:
-            gemini_result = await self.tool_gemini.execute(
-                confidence_result=confidence,
-                evidence=evidence,
-                event_id=event.event_id
-            )
-            gemini_analysis = gemini_result.get("analysis")
-            recommended_actions = gemini_result.get("recommended_actions", [])
             
         return {
             "event": event,
@@ -229,5 +216,4 @@ class ThreatAnalysisAgent(BaseAgent):
         await self.tool_inference.shutdown()
         await self.tool_confidence.shutdown()
         await self.tool_evidence.shutdown()
-        await self.tool_gemini.shutdown()
         await self.tool_publisher.shutdown()

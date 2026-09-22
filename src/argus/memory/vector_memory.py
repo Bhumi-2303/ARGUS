@@ -21,8 +21,6 @@ class VectorMemory:
             
         if self._client is None:
             try:
-                import chromadb
-                self._client = chromadb.PersistentClient(path=self.settings.db.chromadb_path)
                 self._collection = self._client.get_or_create_collection(name=self.collection_name)
             except Exception as e:
                 logger.error("chromadb_init_failed", error=str(e))
