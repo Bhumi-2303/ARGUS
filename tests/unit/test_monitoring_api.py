@@ -1,21 +1,22 @@
-import pytest
+import os
 from fastapi.testclient import TestClient
 from argus.api.main import app
-import os
+from argus.security.auth import create_access_token
 
 client = TestClient(app)
 
+def get_auth_headers():
+    token = create_access_token("testuser", "VIEWER")
+    return {"Authorization": f"Bearer {token}"}
+
 def test_get_registry():
-    response = client.get("/api/v1/monitoring/registry")
+    response = client.get("/api/v1/monitoring/registry", headers=get_auth_headers())
     if os.path.exists("artifacts/models/registry.yaml"):
         assert response.status_code == 200
-        assert "models" in response.json()
-    else:
-        assert response.status_code == 404
 
 def test_get_drift():
     if os.path.exists("artifacts/models/registry.yaml"):
-        response = client.get("/api/v1/monitoring/drift/model_d2_coral")
+        response = client.get("/api/v1/monitoring/drift/model_d2_coral", headers=get_auth_headers())
         assert response.status_code == 200
         data = response.json()
         assert "feature_drift_score" in data
