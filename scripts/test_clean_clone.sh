@@ -3,8 +3,12 @@ set -e
 
 echo "Starting Clean-Clone Test..."
 
+export TMPDIR="$PWD/scratch_tmp"
+export PIP_CACHE_DIR="$PWD/scratch_pip_cache"
+mkdir -p "$TMPDIR" "$PIP_CACHE_DIR"
+
 # 1. Fresh clone from git
-CLONE_DIR="/tmp/argus_clean_clone_v2"
+CLONE_DIR="$PWD/scratch_argus_clone"
 rm -rf $CLONE_DIR
 echo "Cloning from local git repository..."
 git clone file://$(pwd) $CLONE_DIR
