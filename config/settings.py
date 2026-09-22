@@ -21,6 +21,18 @@ class SecuritySettings(BaseSettings):
     cors_origins: List[str] = Field(default=["http://localhost:5173", "http://localhost:3000"])
     rate_limit_requests: int = Field(default=100)
     rate_limit_window_seconds: int = Field(default=60)
+    
+    # OIDC Configuration
+    oidc_enabled: bool = Field(default=False)
+    oidc_issuer: str = Field(default="https://example.com/issuer")
+    oidc_audience: str = Field(default="argus-api")
+    oidc_algorithms: List[str] = Field(default=["RS256"])
+    oidc_jwks_url: str = Field(default="https://example.com/issuer/.well-known/jwks.json")
+    
+    # SIEM Configuration
+    siem_enabled: bool = Field(default=False)
+    siem_endpoint: str = Field(default="")
+    siem_timeout_seconds: int = Field(default=3)
 
 
 class AgentSettings(BaseSettings):

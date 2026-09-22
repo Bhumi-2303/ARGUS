@@ -32,24 +32,40 @@ def find_best_threshold(y_true, y_prob):
             best_th = th
     return best_th, best_mcc
 
+from sklearn.model_selection import train_test_split
+
 def main():
-    X_src, y_src = load_data(f"{DATA_DIR}/ciciot_train_features.csv")
-    model_source = train_xgb(X_src, y_src)
+    X_src_full, y_src_full = load_data(f"{DATA_DIR}/ciciot_train_features.csv")
+    X_adapt_full, y_adapt_full = load_data(f"{DATA_DIR}/ciciot_train_clean_class_aware_coral.csv")
+    
+    # Create a 20% strictly held-out CICIoT calibration split for Candidate A
+    X_src_train, X_src_cal, y_src_train, y_src_cal = train_test_split(
+        X_src_full, y_src_full, test_size=0.20, random_state=42, stratify=y_src_full
+    )
+    # Apply the exact same split to the adapted features
+    X_adapt_train, _, y_adapt_train, _ = train_test_split(
+        X_adapt_full, y_adapt_full, test_size=0.20, random_state=42, stratify=y_adapt_full
+    )
+    
+    model_source = train_xgb(X_src_train, y_src_train)
     model_source.save_model("artifacts/models/xgb_source.json")
     
-    X_adapt, y_adapt = load_data(f"{DATA_DIR}/ciciot_train_clean_class_aware_coral.csv")
-    model_adapted = train_xgb(X_adapt, y_adapt)
+    model_adapted = train_xgb(X_adapt_train, y_adapt_train)
     model_adapted.save_model("artifacts/models/xgb_adapted.json")
     
-    del X_src, y_src, X_adapt, y_adapt
+    del X_src_full, y_src_full, X_adapt_full, y_adapt_full, X_src_train, y_src_train, X_adapt_train, y_adapt_train
 
     X_cal, y_cal = load_data(f"{DATA_DIR}/nfton_train_calibration.csv")
     
+    # Candidate A calibrated ONLY on source
+    print("Evaluating Candidate A (Source Only)...")
+    p_src_cal = model_source.predict_proba(X_src_cal)[:, 1]
+    th_A, mcc_A = find_best_threshold(y_src_cal, p_src_cal)
+    
+    # Candidate B & D calibrated on target calibration
     p_src = model_source.predict_proba(X_cal)[:, 1]
     p_adapt = model_adapted.predict_proba(X_cal)[:, 1]
-    
-    print("Evaluating Candidate A (Source Only)...")
-    th_A, mcc_A = find_best_threshold(y_cal, p_src)
+
     
     print("Evaluating Candidate B (Adapted Only)...")
     th_B, mcc_B = find_best_threshold(y_cal, p_adapt)
