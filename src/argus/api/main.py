@@ -48,10 +48,60 @@ app.include_router(monitoring.router, prefix="/api/v1/monitoring", tags=["Monito
 from argus.api.routers import incidents
 app.include_router(incidents.router, prefix="/api/v1/incidents", tags=["incidents"])
 
-@app.get("/health", response_model=SystemHealth)
+from pydantic import BaseModel
+from typing import List, Dict, Any
+import hashlib
+import os
+from argus.orchestrator.state_machine import OrchestratorStateMachine
+from argus.agents.explainability.agent import ExplainabilityAgent
+# We don't have implementations for Risk/Knowledge, so we pass None
+# We also don't have a DataIntelligence/ThreatAnalysis fully wired for the state machine yet, so we just mock them or leave as None to be flagged.
+
+class FlowBatch(BaseModel):
+    flows: List[Dict[str, float]]
+
+@app.post("/analyze")
+async def analyze_flows(batch: FlowBatch):
+    explainability_agent = ExplainabilityAgent()
+    await explainability_agent.initialize()
+    
+    agents = {
+        "Explainability": explainability_agent,
+        "Risk": None,
+        "Knowledge": None,
+        "DataIntelligence": None,
+        "ThreatAnalysis": None
+    }
+    
+    orchestrator = OrchestratorStateMachine(agents=agents)
+    # Orchestrator expects input data; we can pass the flows directly
+    result = await orchestrator.run(batch.flows)
+    return result
+
+def get_file_hash(filepath):
+    if not os.path.exists(filepath):
+        return None
+    with open(filepath, "rb") as f:
+        return hashlib.sha256(f.read()).hexdigest()
+
+import time
+from datetime import datetime, timezone
+
+# Record start time when module loads
+APP_START_TIME = time.time()
+
+@app.get("/health")
 async def health_check():
     """System health check endpoint."""
-    return SystemHealth(status="healthy", uptime=100.0, timestamp="2025-01-01T00:00:00Z")
+    return {
+        "status": "healthy",
+        "uptime": time.time() - APP_START_TIME,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "models": {
+            "source": get_file_hash("artifacts/models/xgb_source.json"),
+            "adapted": get_file_hash("artifacts/models/xgb_adapted.json")
+        }
+    }
 
 @app.websocket("/ws/dashboard")
 async def dashboard_websocket(websocket: WebSocket):
