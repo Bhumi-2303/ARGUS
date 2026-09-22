@@ -31,7 +31,7 @@ fi
 
 # 4. Run pytest
 echo "Running pytest..."
-pytest tests/e2e/test_day3.py
+PYTHONPATH=.:src pytest tests/
 
 # 5. Start API
 echo "Starting API..."
@@ -41,11 +41,11 @@ sleep 5
 
 # 6. Run smoke request
 echo "Running smoke request..."
-curl -X POST http://127.0.0.1:8000/analyze \
-    -H "Content-Type: application/json" \
-    -d '{"flows": [{"pkt_mean_to_max": 0.5, "tcp_flag_density": 1, "log_pkt_mean": 2.1, "log_pkt_max": 3.4}]}'
+curl -f -sS -X POST "http://127.0.0.1:8000/analyze" \
+     -H "Content-Type: application/json" \
+     -d '{"flows": [{"pkt_mean_to_max": 0.5, "tcp_flag_density": 1, "log_pkt_mean": 2.1, "log_pkt_max": 3.4}]}' || { echo "Smoke test failed!"; exit 1; }
 
-curl -X GET http://127.0.0.1:8000/health
+curl -f -sS "http://127.0.0.1:8000/health" || { echo "Health check failed!"; exit 1; }
 
 # 7. Launch dashboard headless
 echo "Launching dashboard headless..."

@@ -40,24 +40,21 @@ class SecurityMiddleware(BaseHTTPMiddleware):
         
         try:
             response = await call_next(request)
+            status_code = response.status_code
+        except Exception as e:
+            logger.error("request_failed", error=str(e), path=request.url.path)
+            status_code = 500
+            raise
+        finally:
             process_time = time.time() - start_time
-            
-            # Audit Logging for modifying requests
             if settings.features.audit_logging and request.method in ["POST", "PUT", "DELETE", "PATCH"]:
-                # Attempt to get user from request state if authentication middleware set it
                 actor = getattr(request.state, "user_id", "anonymous")
                 AuditLogger.log(
                     actor=actor,
                     action=request.method,
                     resource=request.url.path,
-                    outcome=f"HTTP {response.status_code}",
+                    outcome=f"HTTP {status_code}",
                     details=f"Process time: {process_time:.4f}s",
                     ip_address=request.client.host if request.client else "unknown"
                 )
-                
-            return response
-            
-        except Exception as e:
-            logger.error("request_failed", error=str(e), path=request.url.path)
-            # You might want to log failed requests to audit log here as well
-            raise
+        return response
