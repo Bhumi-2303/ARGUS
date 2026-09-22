@@ -75,7 +75,7 @@ async def analyze_flows(batch: FlowBatch):
     
     orchestrator = OrchestratorStateMachine(agents=agents)
     # Orchestrator expects input data; we can pass the flows directly
-    result = await orchestrator.run(batch.flows)
+    result = await orchestrator.run({"flows": [f.model_dump() for f in batch.flows]})
     return result
 
 def get_file_hash(filepath):
