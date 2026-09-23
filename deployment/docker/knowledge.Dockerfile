@@ -2,6 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -29,7 +30,9 @@ ENV CHROMA_DB_DIR=/app/knowledge_agent/chroma_db
 ENV COLLECTION_NAME=mitre_attack_ics
 ENV EMBEDDING_MODEL=all-MiniLM-L6-v2
 ENV PYTHONPATH=/app/src
+RUN groupadd -r argus && useradd -r -g argus argus && chown -R argus:argus /app
 
+USER argus
 EXPOSE 8003
 
 CMD ["uvicorn", "argus.services.knowledge_agent.main:app", "--host", "0.0.0.0", "--port", "8003"]

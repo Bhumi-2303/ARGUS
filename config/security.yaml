@@ -1,27 +1,33 @@
 roles:
-  admin:
+  SECURITY_ADMIN:
     permissions:
+      - "system:admin"
       - "*"
   
-  operator:
+  INCIDENT_RESPONDER:
     permissions:
-      - "read:*"
-      - "write:tasks"
-      - "write:blackboard"
-      - "execute:actions"
+      - "events:read"
+      - "events:write"
+      - "incidents:read"
+      - "incidents:update"
+      - "incidents:close"
+      - "policy:read"
+      - "response:request"
+      - "response:approve"
+      - "audit:read"
   
-  agent:
+  ANALYST:
     permissions:
-      - "read:tasks"
-      - "write:tasks"
-      - "read:blackboard"
-      - "write:blackboard"
-      - "execute:tools"
+      - "events:read"
+      - "incidents:read"
+      - "incidents:update"
+      - "policy:read"
+      - "response:request"
+      - "audit:read"
   
-  viewer:
+  VIEWER:
     permissions:
-      - "read:*"
-  
-  tool:
-    permissions:
-      - "read:context"
+      - "events:read"
+      - "incidents:read"
+      - "policy:read"
+      - "audit:read"

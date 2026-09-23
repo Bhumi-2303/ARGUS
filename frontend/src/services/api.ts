@@ -1,11 +1,13 @@
 import { Alert, Severity, Explanation, ModelMetrics, AuditEvent, NetworkNode, NetworkConnection } from '../types';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
-const API_TOKEN = import.meta.env.VITE_API_TOKEN || '';
 
-const getHeaders = () => ({
-  'Content-Type': 'application/json',
-  'Authorization': `Bearer ${API_TOKEN}`,
-});
+const getHeaders = () => {
+  const token = localStorage.getItem('argus_token') || sessionStorage.getItem('argus_token') || '';
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
+  };
+};
 
 export interface Incident {
   incident_id: string;

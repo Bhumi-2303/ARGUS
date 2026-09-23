@@ -2,6 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+
 # Install only the dependencies this service needs
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir \
@@ -22,6 +23,8 @@ ENV KAFKA_BOOTSTRAP_SERVERS=kafka:9092
 ENV KAFKA_TOPIC=argus-flows
 ENV ORCHESTRATOR_API_URL=http://orchestrator:8004/process_alert
 ENV PYTHONPATH=/app/src
+RUN groupadd -r argus && useradd -r -g argus argus && chown -R argus:argus /app
 
 # Default command: run stream consumer worker
+USER argus
 CMD ["python", "-m", "argus.services.streaming.stream_consumer"]

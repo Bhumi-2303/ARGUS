@@ -1,46 +1,76 @@
+# Python
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
-*.egg-info/
-dist/
-build/
-.eggs/
-.venv/
-venv/
-.idea/
-.vscode/
-*.swp
-*.swo
-.env
-.env.local
-.env.production
-/data/
-!frontend/src/data/
-*.db
-*.sqlite
-/logs/
-*.log
-node_modules/
-frontend/node_modules/
-.DS_Store
-Thumbs.db
-.coverage
-htmlcov/
+*.pyo
+*.pyd
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.coverage
+htmlcov/
+*$py.class
+*.so
 catboost_info/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment/secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+credentials.json
+secrets.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+._*
+**/._*
+
+# Logs
+*.log
+logs/
+/logs/
+
+# Build/package artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+node_modules/
+frontend/node_modules/
 training/exports/
 training/graphs/
 training/reports/
 
-# AppleDouble and metadata files
-._*
-**/._*
-**/.DS_Store
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
 
-# Large data and checkpoint artifacts
+# Jupyter
+.ipynb_checkpoints/
+
+# ML/model artifacts
+checkpoints/
+runs/
+wandb/
+mlruns/
 ARGUS_Cross_Domain_Results/
 LightGBM_CICIoT2023_Backup/
 TF_ToN_IoT_LightGBM_Final/
@@ -48,45 +78,64 @@ TF_ToN_IoT_XGBoost/
 training/archive_leaked_run/
 phase3_results/checkpoints/
 phase3_results/experiments/
-phase3_results/*.zip
 models/best_model/
-
-# Experiment execution large prediction & checkpoint artifacts
-experiment_execution/predictions/
-experiment_execution/neural_robustness/predictions/
-experiment_execution/neural_robustness/checkpoints/
-experiment_execution/neural_robustness/domain_adaptation/predictions/
-experiment_execution/neural_robustness/domain_adaptation/checkpoints/
-experiment_execution/neural_robustness/domain_adaptation/DA02_DANN/predictions/
-experiment_execution/neural_robustness/domain_adaptation/DA02_DANN/checkpoints/
-experiment_execution/neural_robustness/native_high_performance/predictions/
-experiment_execution/neural_robustness/native_high_performance/checkpoints/
-experiment_execution/neural_robustness/native_representation/predictions/
-experiment_execution/neural_robustness/native_representation/checkpoints/
-*.zip
+experiment_execution/**/predictions/
+experiment_execution/**/checkpoints/
+phase4_results/experiments/**/predictions.csv
+artifacts/predictions/
+ARGUS_Paper_Data/**/predictions/
+ARGUS_Paper_Data/1_DANN_Predictions/
+ARGUS_Paper_Data/4_Baseline_Predictions/
+ARGUS_Paper_Data/5_SHAP_Values/
+phase4_results/prior_correction/*.npy
 
 # Local experiment scratch repositories
 scratch/repo_*/
-
-# Large research datasets
-training/data/
-
-# Local research scratch directories
 scratch_nr04/
 scratch_rep01/
+scratch_argus_clone/
+scratch_pip_cache/
 
-# Large generated experiment predictions
-experiment_execution/**/predictions/
-phase4_results/experiments/**/predictions.csv
-artifacts/predictions/
+# Large dataset archives
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.rar
 
-# Large research evidence / generated outputs
-ARGUS_Paper_Data/**/predictions/
-ARGUS_Paper_Data/5_SHAP_Values/
-phase4_results/*.zip
-phase4_results/prior_correction/*.npy
-experiment_execution/**/checkpoints/
+# Raw data
+*.pcap
+*.pcapng
+*.parquet
 
-# Local-only ARGUS paper data dumps
-ARGUS_Paper_Data/1_DANN_Predictions/
-ARGUS_Paper_Data/4_Baseline_Predictions/
+# Large CSV/data files
+# Ignore actual downloaded datasets while preserving metadata.
+data/**/raw/**
+data/**/processed/**/*.csv
+data/**/train_test/**/*.csv
+data/**/network_timestamped/**/*.csv
+data/**/security_events/**/*.csv
+
+# Dataset-specific downloaded files
+data/cic_iot_2023/**
+!data/cic_iot_2023/metadata/
+!data/cic_iot_2023/metadata/**
+data/nf_ton_iot/**
+!data/nf_ton_iot/metadata/
+!data/nf_ton_iot/metadata/**
+data/ton_iot/**
+!data/ton_iot/metadata/
+!data/ton_iot/metadata/**
+data/hai/**
+!data/hai/metadata/
+!data/hai/metadata/**
+
+# Allow specific metadata in root data folder
+!data/FINAL_DATASET_MANIFEST.json
+!data/FINAL_DATASET_READINESS.md
+!data/DATASET_COMPLETION_REPORT.md
+!data/DATASET_MANIFEST.json
+!data/DATASET_ACQUISITION_REPORT.md
+!data/CROSS_DATASET_COMPATIBILITY.md
+data/**/metadata/downloads/

@@ -2,6 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+
 # Install only the dependencies this service needs
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir \
@@ -23,7 +24,9 @@ ENV OLLAMA_API_URL=http://ollama:11434
 ENV OLLAMA_MODEL=llama3.2
 ENV PROMPT_PATH=/app/prompts/decision_support_system_prompt.txt
 ENV PYTHONPATH=/app/src
+RUN groupadd -r argus && useradd -r -g argus argus && chown -R argus:argus /app
 
+USER argus
 EXPOSE 8001
 
 CMD ["uvicorn", "argus.services.decision_agent.main:app", "--host", "0.0.0.0", "--port", "8001"]

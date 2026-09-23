@@ -2,6 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -29,7 +30,9 @@ COPY config/ ./config/
 ENV MODEL_PATH=/app/models/model_d2_coral.txt
 ENV THRESHOLD=0.50
 ENV PYTHONPATH=/app/src
+RUN groupadd -r argus && useradd -r -g argus argus && chown -R argus:argus /app
 
+USER argus
 EXPOSE 8000
 
 # Start Uvicorn server

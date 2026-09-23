@@ -2,6 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+
 # Install only the dependencies this service needs
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir \
@@ -22,7 +23,9 @@ ENV RISK_API_URL=http://risk-agent:8002/risk_score
 ENV KNOWLEDGE_API_URL=http://knowledge-agent:8003/context
 ENV DECISION_API_URL=http://decision-agent:8001/explain
 ENV PYTHONPATH=/app/src
+RUN groupadd -r argus && useradd -r -g argus argus && chown -R argus:argus /app
 
+USER argus
 EXPOSE 8004
 
 CMD ["uvicorn", "argus.services.orchestrator.main:app", "--host", "0.0.0.0", "--port", "8004"]
