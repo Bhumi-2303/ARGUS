@@ -1,15 +1,18 @@
-# Python
+# Temporary execution outputs
+final_eval_output.txt
+run1.csv
+
+# Temporary dataset acquisition / profiling tooling
+scratch/
+
+# Python/cache/build artifacts
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 .coverage
 htmlcov/
-*$py.class
-*.so
 catboost_info/
 
 # Virtual environments
@@ -61,10 +64,17 @@ tmp/
 temp/
 *.tmp
 *.bak
-*.swp
 
 # Jupyter
 .ipynb_checkpoints/
+
+# Temporary/archive files
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.rar
 
 # ML/model artifacts
 checkpoints/
@@ -90,48 +100,47 @@ ARGUS_Paper_Data/5_SHAP_Values/
 phase4_results/prior_correction/*.npy
 
 # Local experiment scratch repositories
-scratch/repo_*/
 scratch_nr04/
 scratch_rep01/
 scratch_argus_clone/
 scratch_pip_cache/
 
-# Large dataset archives
-*.zip
-*.tar
-*.tar.gz
-*.tgz
-*.7z
-*.rar
-
-# Raw data
+# Raw packet captures
 *.pcap
 *.pcapng
 *.parquet
 
 # Large CSV/data files
-# Ignore actual downloaded datasets while preserving metadata.
 data/**/raw/**
 data/**/processed/**/*.csv
 data/**/train_test/**/*.csv
 data/**/network_timestamped/**/*.csv
 data/**/security_events/**/*.csv
 
-# Dataset-specific downloaded files
+# Large dataset files
 data/cic_iot_2023/**
+data/nf_ton_iot/**
+data/ton_iot/**
+data/hai/**
+
+# Explicitly unignore metadata directories
+!data/cic_iot_2023/
 !data/cic_iot_2023/metadata/
 !data/cic_iot_2023/metadata/**
-data/nf_ton_iot/**
+
+!data/nf_ton_iot/
 !data/nf_ton_iot/metadata/
 !data/nf_ton_iot/metadata/**
-data/ton_iot/**
+
+!data/ton_iot/
 !data/ton_iot/metadata/
 !data/ton_iot/metadata/**
-data/hai/**
+
+!data/hai/
 !data/hai/metadata/
 !data/hai/metadata/**
 
-# Allow specific metadata in root data folder
+# Explicitly unignore root research artifacts
 !data/FINAL_DATASET_MANIFEST.json
 !data/FINAL_DATASET_READINESS.md
 !data/DATASET_COMPLETION_REPORT.md

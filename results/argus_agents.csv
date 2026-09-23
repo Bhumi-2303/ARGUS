@@ -1,0 +1,6 @@
+agent,role,input,output,communicates_with,implementation_status,source_file
+data_intelligence,Data Intelligence,Network Flow Features,Preprocessed Data,"risk_prediction, threat_analysis",IMPLEMENTED,src/argus/agents/data_intelligence/
+decision_support,Decision Support,"Threat Analysis, Risk Score",Mitigation Actions,"threat_analysis, risk_prediction",IMPLEMENTED,src/argus/agents/decision_support/
+knowledge_context,Knowledge Context,Threat Indicators,Contextual Knowledge,threat_analysis,IMPLEMENTED,src/argus/agents/knowledge_context/
+risk_prediction,Risk Prediction,Anomaly Scores,Risk Scores,decision_support,IMPLEMENTED,src/argus/agents/risk_prediction/
+threat_analysis,Threat Analysis,"Preprocessed Data, Knowledge",Threat Identifications,decision_support,IMPLEMENTED,src/argus/agents/threat_analysis/

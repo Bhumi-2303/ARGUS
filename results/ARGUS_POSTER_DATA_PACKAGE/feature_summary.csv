@@ -1,0 +1,8 @@
+feature,status,description,units
+pkt_mean_to_max,Selected (ARGUS-4),pkt_mean / pkt_max (0 if max=0),"Ratio [0,1]"
+tcp_flag_density,Selected (ARGUS-4),"sum of TCP flags (FIN, SYN, RST, PSH, ACK, URG, ECE, CWR)","Count [0,8]"
+log_pkt_mean,Selected (ARGUS-4),log(1 + pkt_mean),Log Bytes
+log_pkt_max,Selected (ARGUS-4),log(1 + pkt_max),Log Bytes
+ARGUS-4,Representation Setup,"4 features, 1574 unique tuples",-
+ARGUS-6,Representation Setup,"6 features, 1574 unique tuples",-
+ARGUS-8,Representation Setup,"8 features, 1574 unique tuples",-

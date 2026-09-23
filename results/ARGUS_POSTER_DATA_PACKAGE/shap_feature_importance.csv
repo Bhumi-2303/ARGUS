@@ -1,0 +1,5 @@
+Feature,Column_Name,Mean_Abs_SHAP,Relative_Importance_Pct,Gain_Importance,Split_Importance
+Log Packet Length Max,log_pkt_max,2.1145573207950483,37.48356338590084,5761231.269428869,1688
+TCP Flag Multiplicity,tcp_flag_density,1.5950434106808595,28.274433707495767,2201940.759118317,1674
+Log Packet Length Mean,log_pkt_mean,1.555345453835148,27.57073044673124,767490.0922109052,1472
+Packet Mean-to-Max Ratio,pkt_mean_to_max,0.3763459699337771,6.671272459872159,342677.90316687786,1166

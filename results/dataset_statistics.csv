@@ -1,0 +1,4 @@
+dataset,samples,features,classes,domain
+CICIoT2023,6668822,4,2,D1
+NF-ToN-IoT-v2,13135881,4,2,D2
+IEC 60870-5-104 (SCADA),3572265,70,2,D3
