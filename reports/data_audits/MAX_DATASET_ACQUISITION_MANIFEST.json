@@ -1,0 +1,93 @@
+{
+  "datasets": [
+    {
+      "name": "CICIoT2023",
+      "status": "COMPLETE",
+      "expected_size": "8.66 GB",
+      "actual_size": "8.66 GB",
+      "source": "HuggingFace (bencorn/CIC-IoT-2023)",
+      "source_url": "https://huggingface.co/datasets/bencorn/CIC-IoT-2023",
+      "modality": "Network",
+      "labels": "33 Attack scenarios across 7 categories",
+      "timestamp_availability": "Yes",
+      "completeness": "COMPLETE (63 merged CSVs)",
+      "dg_role": "SOURCE DOMAIN"
+    },
+    {
+      "name": "NF-ToN-IoT",
+      "status": "COMPLETE",
+      "expected_size": "9.1 MB",
+      "actual_size": "9.1 MB",
+      "source": "Existing",
+      "source_url": "Local",
+      "modality": "Network (NetFlow)",
+      "labels": "Attack types",
+      "timestamp_availability": "Yes",
+      "completeness": "COMPLETE",
+      "dg_role": "SOURCE DOMAIN"
+    },
+    {
+      "name": "TON_IoT",
+      "status": "PARTIAL",
+      "expected_size": "Multiple GBs",
+      "actual_size": "175 MB (zipped)",
+      "source": "Existing Local / UNSW",
+      "source_url": "https://research.unsw.edu.au/projects/toniot-datasets",
+      "modality": "Network, IoT Telemetry, Host (Windows/Linux)",
+      "labels": "Attack categories",
+      "timestamp_availability": "Yes",
+      "completeness": "PARTIAL (SecurityEvents_GroundTruth_datasets missing, blocked by source)",
+      "dg_role": "MULTIMODAL SOURCE / UNSEEN TARGET"
+    },
+    {
+      "name": "HAI",
+      "status": "COMPLETE",
+      "expected_size": "690 MB (v21.03)",
+      "actual_size": "690 MB",
+      "source": "Provided Local ZIP (hai-master.zip)",
+      "source_url": "Local",
+      "modality": "Industrial / OT",
+      "labels": "Anomalies/Attacks",
+      "timestamp_availability": "Yes",
+      "completeness": "COMPLETE (Extracted full 21.03 train/test CSVs. 23.05 missing due to Git LFS pointer extraction limitation)",
+      "dg_role": "INDUSTRIAL VALIDATION / UNSEEN TARGET"
+    },
+    {
+      "name": "BoT-IoT",
+      "status": "COMPLETE",
+      "expected_size": "~2.1 GB",
+      "actual_size": "2.1 GB",
+      "source": "Provided Local ZIP",
+      "source_url": "Local",
+      "modality": "Network",
+      "labels": "Attack categories (DoS, DDoS, Reconnaissance, Theft)",
+      "timestamp_availability": "Yes (stime, ltime)",
+      "completeness": "COMPLETE (Extracted 11 CSV files representing the dataset chunk)",
+      "dg_role": "UNSEEN TARGET DOMAIN"
+    }
+  ],
+  "blocked_sources": [
+    {
+      "source": "CloudStor (AARNet) / UNSW",
+      "reason": "Host could not be resolved (Service retired). Could not locate the raw SecurityEvents_GroundTruth_datasets folder reliably on Kaggle mirrors.",
+      "dataset": "TON_IoT SecurityEvents_GroundTruth_datasets"
+    },
+    {
+      "source": "GitHub LFS Zip Download (icsdataset/hai)",
+      "reason": "The provided hai-master.zip was downloaded via GitHub's 'Download ZIP' feature, which replaces massive LFS files (hai-22.04, hai-23.05) with 130-byte text pointers.",
+      "dataset": "HAI 22.04 & 23.05"
+    }
+  ],
+  "additional_datasets_evaluated": [
+    {
+      "name": "WUSTL-IIOT",
+      "size": "~500 MB",
+      "modality": "Network / IIoT",
+      "labels": "Attack types",
+      "domain": "IIoT/SCADA",
+      "dg_usefulness": "High",
+      "acquisition_difficulty": "Medium",
+      "downloaded": false
+    }
+  ]
+}
