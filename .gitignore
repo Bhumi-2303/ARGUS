@@ -148,3 +148,7 @@ data/hai/**
 !data/DATASET_ACQUISITION_REPORT.md
 !data/CROSS_DATASET_COMPATIBILITY.md
 data/**/metadata/downloads/
+data/raw/
+data/interim/
+data/processed/
+results/raw_predictions/
