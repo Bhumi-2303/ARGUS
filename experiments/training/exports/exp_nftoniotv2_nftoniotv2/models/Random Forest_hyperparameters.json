@@ -1,0 +1,5 @@
+{
+    "n_estimators": 279,
+    "max_depth": 24,
+    "min_samples_split": 4
+}

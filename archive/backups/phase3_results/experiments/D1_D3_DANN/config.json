@@ -1,0 +1,7 @@
+{
+  "Source": "D1",
+  "Target": "D3",
+  "Model": "DANN Neural Net",
+  "Epochs": 10,
+  "Batch_Size": 1024
+}

@@ -1,0 +1,35 @@
+{
+    "DANN": {
+        "F1": 0.47740624897383516,
+        "Balanced_Accuracy": 0.7333957734930564,
+        "Accuracy": 0.7250128248974008,
+        "MCC": 0.1601968446015131,
+        "Kappa": 0.07562788255338393,
+        "ROC_AUC": 0.8278275696826722,
+        "PR_AUC": 0.994924173843448,
+        "domain_auc": 0.9997048614525786,
+        "domain_auc_std": 0.0002576143304651414,
+        "domain_verdict": "POOR - Features are still domain-specific (AUC > 0.75)"
+    },
+    "_training_history": {
+        "final_label_loss": 0.0405298229927818,
+        "final_domain_loss": 1.3861865936181483,
+        "epochs_trained": 17
+    },
+    "_domain_invariance": {
+        "domain_auc_mean": 0.9997048614525786,
+        "domain_auc_std": 0.0002576143304651414,
+        "domain_accuracy_mean": 0.997399859962001,
+        "fold_aucs": [
+            0.9999974810076977,
+            0.999746509281577,
+            0.9993705940684613
+        ],
+        "fold_accs": [
+            0.9988002399520096,
+            0.9957995799579958,
+            0.9975997599759976
+        ],
+        "verdict": "POOR - Features are still domain-specific (AUC > 0.75)"
+    }
+}

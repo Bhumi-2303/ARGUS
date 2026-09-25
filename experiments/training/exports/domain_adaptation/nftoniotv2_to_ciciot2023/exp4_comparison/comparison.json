@@ -1,0 +1,72 @@
+[
+    {
+        "Experiment": "Exp1_Baseline",
+        "Model": "xgboost",
+        "Approach": "Zero-Padded (No Adaptation)",
+        "F1": 0.49374540103016923,
+        "Balanced_Accuracy": 0.5,
+        "Accuracy": 0.9752906976744186,
+        "MCC": 0.0,
+        "Kappa": 0.0,
+        "ROC_AUC": 0.5,
+        "PR_AUC": 0.9876453488372092,
+        "Training_Time_s": 1.242393970489502,
+        "Inference_Time_s": 1.2718441486358643
+    },
+    {
+        "Experiment": "Exp1_Baseline",
+        "Model": "lightgbm",
+        "Approach": "Zero-Padded (No Adaptation)",
+        "F1": 0.49374540103016923,
+        "Balanced_Accuracy": 0.5,
+        "Accuracy": 0.9752906976744186,
+        "MCC": 0.0,
+        "Kappa": 0.0,
+        "ROC_AUC": 0.5,
+        "PR_AUC": 0.9876453488372092,
+        "Training_Time_s": 2.399949073791504,
+        "Inference_Time_s": 2.53186297416687
+    },
+    {
+        "Experiment": "Exp2_Aligned",
+        "Model": "xgboost",
+        "Approach": "UFS-Aligned Features",
+        "F1": 0.2449261246416377,
+        "Balanced_Accuracy": 0.4188391802763009,
+        "Accuracy": 0.302218707250342,
+        "MCC": -0.05497878476092313,
+        "Kappa": -0.011339096616876931,
+        "ROC_AUC": 0.2754057333823127,
+        "PR_AUC": 0.9462340893620957,
+        "Training_Time_s": 0.8180806636810303,
+        "Inference_Time_s": 0.027193069458007812
+    },
+    {
+        "Experiment": "Exp2_Aligned",
+        "Model": "lightgbm",
+        "Approach": "UFS-Aligned Features",
+        "F1": 0.5735966539300819,
+        "Balanced_Accuracy": 0.7910390420742681,
+        "Accuracy": 0.8736320109439124,
+        "MCC": 0.26323204619153845,
+        "Kappa": 0.18167478931544423,
+        "ROC_AUC": 0.8342449417176304,
+        "PR_AUC": 0.9627372427830556,
+        "Training_Time_s": 2.243319034576416,
+        "Inference_Time_s": 0.07620596885681152
+    },
+    {
+        "Experiment": "Exp3_DANN",
+        "Model": "DANN",
+        "Approach": "Domain-Adversarial NN",
+        "F1": 0.47740624897383516,
+        "Balanced_Accuracy": 0.7333957734930564,
+        "Accuracy": 0.7250128248974008,
+        "MCC": 0.1601968446015131,
+        "Kappa": 0.07562788255338393,
+        "ROC_AUC": 0.8278275696826722,
+        "PR_AUC": 0.994924173843448,
+        "domain_auc": 0.9997048614525786,
+        "domain_auc_std": 0.0002576143304651414
+    }
+]

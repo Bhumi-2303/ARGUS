@@ -1,0 +1,10 @@
+{
+    "Dataset": "nftoniotv2",
+    "Processing_Date": "2026-07-08T23:07:47.870706",
+    "Number_of_Features": 45,
+    "Scaling_Method": "StandardScaler",
+    "Encoding_Method": "LabelEncoding",
+    "Target_Leakage_Handled": true,
+    "Data_Leakage_Handled": true,
+    "Split": "80/10/10"
+}

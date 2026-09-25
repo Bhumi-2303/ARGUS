@@ -1,0 +1,618 @@
+[2026-08-19 23:25:57] [INFO] [GLOBAL] ================================================================================
+[2026-08-19 23:25:57] [INFO] [GLOBAL] ARGUS PHASE 4 — ADAPTIVE MULTI-SOURCE CROSS-DOMAIN DETECTION
+[2026-08-19 23:25:57] [INFO] [GLOBAL] Started: 2026-08-19T23:25:57.633122
+[2026-08-19 23:25:57] [INFO] [GLOBAL] ================================================================================
+[2026-08-19 23:25:57] [INFO] [GLOBAL] Loading D3 target domain data...
+[2026-08-19 23:25:57] [INFO] [GLOBAL]   D3 test: 714453 samples, 0.2247 attack rate
+[2026-08-19 23:25:57] [INFO] [GLOBAL]   D3 calib: 571563 samples, 0.2247 attack rate
+[2026-08-19 23:25:58] [INFO] [GLOBAL]   D3 adapt: 2286249 samples, 0.2247 attack rate
+[2026-08-19 23:25:58] [INFO] [GLOBAL]   Target prior P_T(Attack) = 0.224661 (from 2857812 calib+adapt samples)
+[2026-08-19 23:25:58] [INFO] [GLOBAL]   Source priors: P_S1(Attack) = 0.976421, P_S2(Attack) = 0.725844
+[2026-08-19 23:25:58] [INFO] [GLOBAL] 
+Loading Phase 3 saved test predictions...
+[2026-08-19 23:25:58] [INFO] [GLOBAL]   Loaded D1_D3_BASELINE: 714453 predictions, range [0.072707, 0.999998]
+[2026-08-19 23:25:58] [INFO] [GLOBAL]   Loaded D2_D3_BASELINE: 714453 predictions, range [0.004967, 0.955996]
+[2026-08-19 23:25:58] [INFO] [GLOBAL]   Loaded D1_D3_CORAL: 714453 predictions, range [0.578179, 0.999987]
+[2026-08-19 23:25:58] [INFO] [GLOBAL]   Loaded D2_D3_CORAL: 714453 predictions, range [0.002519, 0.934454]
+[2026-08-19 23:25:58] [INFO] [GLOBAL]   Loaded D1_D3_DANN: 714453 predictions, range [0.275806, 0.999923]
+[2026-08-19 23:25:58] [INFO] [GLOBAL]   Loaded D2_D3_DANN: 714453 predictions, range [0.203325, 0.985280]
+[2026-08-19 23:25:58] [INFO] [GLOBAL] 
+Recomputing calibration set predictions from saved models...
+[2026-08-19 23:25:58] [INFO] [GLOBAL]   D1_D3_BASELINE: calib predictions (571563) in 0.25s
+[2026-08-19 23:25:59] [INFO] [GLOBAL]   D2_D3_BASELINE: calib predictions (571563) in 0.42s
+[2026-08-19 23:25:59] [INFO] [GLOBAL]   D1_D3_CORAL: calib predictions (571563) in 0.44s
+[2026-08-19 23:26:00] [INFO] [GLOBAL]   D2_D3_CORAL: calib predictions (571563) in 0.46s
+[2026-08-19 23:26:00] [INFO] [GLOBAL]   DANN device: cpu
+[2026-08-19 23:31:59] [INFO] [GLOBAL] ================================================================================
+[2026-08-19 23:31:59] [INFO] [GLOBAL] ARGUS PHASE 4 — ADAPTIVE MULTI-SOURCE CROSS-DOMAIN DETECTION
+[2026-08-19 23:31:59] [INFO] [GLOBAL] Started: 2026-08-19T23:31:59.914749
+[2026-08-19 23:31:59] [INFO] [GLOBAL] ================================================================================
+[2026-08-19 23:31:59] [INFO] [GLOBAL] Loading D3 target domain data...
+[2026-08-19 23:32:00] [INFO] [GLOBAL]   D3 test: 714453 samples, 0.2247 attack rate
+[2026-08-19 23:32:00] [INFO] [GLOBAL]   D3 calib: 571563 samples, 0.2247 attack rate
+[2026-08-19 23:32:00] [INFO] [GLOBAL]   D3 adapt: 2286249 samples, 0.2247 attack rate
+[2026-08-19 23:32:00] [INFO] [GLOBAL]   Target prior P_T(Attack) = 0.224661 (from 2857812 calib+adapt samples)
+[2026-08-19 23:32:00] [INFO] [GLOBAL]   Source priors: P_S1(Attack) = 0.976421, P_S2(Attack) = 0.725844
+[2026-08-19 23:32:00] [INFO] [GLOBAL] 
+Loading Phase 3 saved test predictions...
+[2026-08-19 23:32:00] [INFO] [GLOBAL]   Loaded D1_D3_BASELINE: 714453 predictions, range [0.072707, 0.999998]
+[2026-08-19 23:32:00] [INFO] [GLOBAL]   Loaded D2_D3_BASELINE: 714453 predictions, range [0.004967, 0.955996]
+[2026-08-19 23:32:00] [INFO] [GLOBAL]   Loaded D1_D3_CORAL: 714453 predictions, range [0.578179, 0.999987]
+[2026-08-19 23:32:00] [INFO] [GLOBAL]   Loaded D2_D3_CORAL: 714453 predictions, range [0.002519, 0.934454]
+[2026-08-19 23:32:00] [INFO] [GLOBAL]   Loaded D1_D3_DANN: 714453 predictions, range [0.275806, 0.999923]
+[2026-08-19 23:32:00] [INFO] [GLOBAL]   Loaded D2_D3_DANN: 714453 predictions, range [0.203325, 0.985280]
+[2026-08-19 23:32:00] [INFO] [GLOBAL] 
+Recomputing calibration set predictions from saved models...
+[2026-08-19 23:32:01] [INFO] [GLOBAL]   D1_D3_BASELINE: calib predictions (571563) in 0.24s
+[2026-08-19 23:32:01] [INFO] [GLOBAL]   D2_D3_BASELINE: calib predictions (571563) in 0.42s
+[2026-08-19 23:32:02] [INFO] [GLOBAL]   D1_D3_CORAL: calib predictions (571563) in 0.44s
+[2026-08-19 23:32:02] [INFO] [GLOBAL]   D2_D3_CORAL: calib predictions (571563) in 0.47s
+[2026-08-19 23:32:02] [INFO] [GLOBAL]   DANN device: cpu
+[2026-08-19 23:37:10] [INFO] [GLOBAL] ================================================================================
+[2026-08-19 23:37:10] [INFO] [GLOBAL] ARGUS PHASE 4 — ADAPTIVE MULTI-SOURCE CROSS-DOMAIN DETECTION
+[2026-08-19 23:37:10] [INFO] [GLOBAL] Started: 2026-08-19T23:37:10.590450
+[2026-08-19 23:37:10] [INFO] [GLOBAL] ================================================================================
+[2026-08-19 23:37:10] [INFO] [GLOBAL] Loading D3 target domain data...
+[2026-08-19 23:37:10] [INFO] [GLOBAL]   D3 test: 714453 samples, 0.2247 attack rate
+[2026-08-19 23:37:10] [INFO] [GLOBAL]   D3 calib: 571563 samples, 0.2247 attack rate
+[2026-08-19 23:37:11] [INFO] [GLOBAL]   D3 adapt: 2286249 samples, 0.2247 attack rate
+[2026-08-19 23:37:11] [INFO] [GLOBAL]   Target prior P_T(Attack) = 0.224661 (from 2857812 calib+adapt samples)
+[2026-08-19 23:37:11] [INFO] [GLOBAL]   Source priors: P_S1(Attack) = 0.976421, P_S2(Attack) = 0.725844
+[2026-08-19 23:37:11] [INFO] [GLOBAL] 
+Loading Phase 3 saved test predictions...
+[2026-08-19 23:37:11] [INFO] [GLOBAL]   Loaded D1_D3_BASELINE: 714453 predictions, range [0.072707, 0.999998]
+[2026-08-19 23:37:11] [INFO] [GLOBAL]   Loaded D2_D3_BASELINE: 714453 predictions, range [0.004967, 0.955996]
+[2026-08-19 23:37:11] [INFO] [GLOBAL]   Loaded D1_D3_CORAL: 714453 predictions, range [0.578179, 0.999987]
+[2026-08-19 23:37:11] [INFO] [GLOBAL]   Loaded D2_D3_CORAL: 714453 predictions, range [0.002519, 0.934454]
+[2026-08-19 23:37:11] [INFO] [GLOBAL]   Loaded D1_D3_DANN: 714453 predictions, range [0.275806, 0.999923]
+[2026-08-19 23:37:11] [INFO] [GLOBAL]   Loaded D2_D3_DANN: 714453 predictions, range [0.203325, 0.985280]
+[2026-08-19 23:37:11] [INFO] [GLOBAL] 
+Recomputing calibration set predictions from saved models...
+[2026-08-19 23:37:11] [INFO] [GLOBAL]   D1_D3_BASELINE: calib predictions (571563) in 0.25s
+[2026-08-19 23:37:12] [INFO] [GLOBAL]   D2_D3_BASELINE: calib predictions (571563) in 0.42s
+[2026-08-19 23:37:12] [INFO] [GLOBAL]   D1_D3_CORAL: calib predictions (571563) in 0.44s
+[2026-08-19 23:37:13] [INFO] [GLOBAL]   D2_D3_CORAL: calib predictions (571563) in 0.45s
+[2026-08-19 23:37:13] [INFO] [GLOBAL]   DANN device: cpu
+[2026-08-19 23:37:35] [INFO] [GLOBAL] ================================================================================
+[2026-08-19 23:37:35] [INFO] [GLOBAL] ARGUS PHASE 4 — ADAPTIVE MULTI-SOURCE CROSS-DOMAIN DETECTION
+[2026-08-19 23:37:35] [INFO] [GLOBAL] Started: 2026-08-19T23:37:35.966021
+[2026-08-19 23:37:35] [INFO] [GLOBAL] ================================================================================
+[2026-08-19 23:37:35] [INFO] [GLOBAL] Loading D3 target domain data...
+[2026-08-19 23:37:36] [INFO] [GLOBAL]   D3 test: 714453 samples, 0.2247 attack rate
+[2026-08-19 23:37:36] [INFO] [GLOBAL]   D3 calib: 571563 samples, 0.2247 attack rate
+[2026-08-19 23:37:36] [INFO] [GLOBAL]   D3 adapt: 2286249 samples, 0.2247 attack rate
+[2026-08-19 23:37:36] [INFO] [GLOBAL]   Target prior P_T(Attack) = 0.224661 (from 2857812 calib+adapt samples)
+[2026-08-19 23:37:36] [INFO] [GLOBAL]   Source priors: P_S1(Attack) = 0.976421, P_S2(Attack) = 0.725844
+[2026-08-19 23:37:36] [INFO] [GLOBAL] 
+Loading Phase 3 saved test predictions...
+[2026-08-19 23:37:36] [INFO] [GLOBAL]   Loaded D1_D3_BASELINE: 714453 predictions, range [0.072707, 0.999998]
+[2026-08-19 23:37:36] [INFO] [GLOBAL]   Loaded D2_D3_BASELINE: 714453 predictions, range [0.004967, 0.955996]
+[2026-08-19 23:37:36] [INFO] [GLOBAL]   Loaded D1_D3_CORAL: 714453 predictions, range [0.578179, 0.999987]
+[2026-08-19 23:37:36] [INFO] [GLOBAL]   Loaded D2_D3_CORAL: 714453 predictions, range [0.002519, 0.934454]
+[2026-08-19 23:37:36] [INFO] [GLOBAL]   Loaded D1_D3_DANN: 714453 predictions, range [0.275806, 0.999923]
+[2026-08-19 23:37:36] [INFO] [GLOBAL]   Loaded D2_D3_DANN: 714453 predictions, range [0.203325, 0.985280]
+[2026-08-19 23:37:36] [INFO] [GLOBAL] 
+Recomputing calibration set predictions from saved models...
+[2026-08-19 23:37:37] [INFO] [GLOBAL]   D1_D3_BASELINE: calib predictions (571563) in 0.26s
+[2026-08-19 23:37:37] [INFO] [GLOBAL]   D2_D3_BASELINE: calib predictions (571563) in 0.42s
+[2026-08-19 23:37:38] [INFO] [GLOBAL]   D1_D3_CORAL: calib predictions (571563) in 0.43s
+[2026-08-19 23:37:38] [INFO] [GLOBAL]   D2_D3_CORAL: calib predictions (571563) in 0.47s
+[2026-08-19 23:37:38] [INFO] [GLOBAL]   DANN device: cpu
+[2026-08-19 23:39:54] [INFO] [GLOBAL] ================================================================================
+[2026-08-19 23:39:54] [INFO] [GLOBAL] ARGUS PHASE 4 — ADAPTIVE MULTI-SOURCE CROSS-DOMAIN DETECTION
+[2026-08-19 23:39:54] [INFO] [GLOBAL] Started: 2026-08-19T23:39:54.755478
+[2026-08-19 23:39:54] [INFO] [GLOBAL] ================================================================================
+[2026-08-19 23:39:54] [INFO] [GLOBAL] Loading D3 target domain data...
+[2026-08-19 23:39:54] [INFO] [GLOBAL]   D3 test: 714453 samples, 0.2247 attack rate
+[2026-08-19 23:39:54] [INFO] [GLOBAL]   D3 calib: 571563 samples, 0.2247 attack rate
+[2026-08-19 23:39:55] [INFO] [GLOBAL]   D3 adapt: 2286249 samples, 0.2247 attack rate
+[2026-08-19 23:39:55] [INFO] [GLOBAL]   Target prior P_T(Attack) = 0.224661 (from 2857812 calib+adapt samples)
+[2026-08-19 23:39:55] [INFO] [GLOBAL]   Source priors: P_S1(Attack) = 0.976421, P_S2(Attack) = 0.725844
+[2026-08-19 23:39:55] [INFO] [GLOBAL] 
+Loading Phase 3 saved test predictions...
+[2026-08-19 23:39:55] [INFO] [GLOBAL]   Loaded D1_D3_BASELINE: 714453 predictions, range [0.072707, 0.999998]
+[2026-08-19 23:39:55] [INFO] [GLOBAL]   Loaded D2_D3_BASELINE: 714453 predictions, range [0.004967, 0.955996]
+[2026-08-19 23:39:55] [INFO] [GLOBAL]   Loaded D1_D3_CORAL: 714453 predictions, range [0.578179, 0.999987]
+[2026-08-19 23:39:55] [INFO] [GLOBAL]   Loaded D2_D3_CORAL: 714453 predictions, range [0.002519, 0.934454]
+[2026-08-19 23:39:55] [INFO] [GLOBAL]   Loaded D1_D3_DANN: 714453 predictions, range [0.275806, 0.999923]
+[2026-08-19 23:39:55] [INFO] [GLOBAL]   Loaded D2_D3_DANN: 714453 predictions, range [0.203325, 0.985280]
+[2026-08-19 23:39:55] [INFO] [GLOBAL] 
+Recomputing calibration set predictions from saved models...
+[2026-08-19 23:39:55] [INFO] [GLOBAL]   D1_D3_BASELINE: calib predictions (571563) in 0.25s
+[2026-08-19 23:39:56] [INFO] [GLOBAL]   D2_D3_BASELINE: calib predictions (571563) in 0.41s
+[2026-08-19 23:39:56] [INFO] [GLOBAL]   D1_D3_CORAL: calib predictions (571563) in 0.46s
+[2026-08-19 23:39:57] [INFO] [GLOBAL]   D2_D3_CORAL: calib predictions (571563) in 0.47s
+[2026-08-19 23:39:57] [INFO] [GLOBAL]   DANN device: cpu
+[2026-08-19 23:49:03] [INFO] [GLOBAL] ================================================================================
+[2026-08-19 23:49:03] [INFO] [GLOBAL] ARGUS PHASE 4 — ADAPTIVE MULTI-SOURCE CROSS-DOMAIN DETECTION
+[2026-08-19 23:49:03] [INFO] [GLOBAL] Started: 2026-08-19T23:49:03.754001
+[2026-08-19 23:49:03] [INFO] [GLOBAL] ================================================================================
+[2026-08-19 23:49:03] [INFO] [GLOBAL] Loading D3 target domain data...
+[2026-08-19 23:49:03] [INFO] [GLOBAL]   D3 test: 714453 samples, 0.2247 attack rate
+[2026-08-19 23:49:03] [INFO] [GLOBAL]   D3 calib: 571563 samples, 0.2247 attack rate
+[2026-08-19 23:49:04] [INFO] [GLOBAL]   D3 adapt: 2286249 samples, 0.2247 attack rate
+[2026-08-19 23:49:04] [INFO] [GLOBAL]   Target prior P_T(Attack) = 0.224661 (from 2857812 calib+adapt samples)
+[2026-08-19 23:49:04] [INFO] [GLOBAL]   Source priors: P_S1(Attack) = 0.976421, P_S2(Attack) = 0.725844
+[2026-08-19 23:49:04] [INFO] [GLOBAL] 
+Loading Phase 3 saved test predictions...
+[2026-08-19 23:49:04] [INFO] [GLOBAL]   Loaded D1_D3_BASELINE: 714453 predictions, range [0.072707, 0.999998]
+[2026-08-19 23:49:04] [INFO] [GLOBAL]   Loaded D2_D3_BASELINE: 714453 predictions, range [0.004967, 0.955996]
+[2026-08-19 23:49:04] [INFO] [GLOBAL]   Loaded D1_D3_CORAL: 714453 predictions, range [0.578179, 0.999987]
+[2026-08-19 23:49:04] [INFO] [GLOBAL]   Loaded D2_D3_CORAL: 714453 predictions, range [0.002519, 0.934454]
+[2026-08-19 23:49:04] [INFO] [GLOBAL]   Loaded D1_D3_DANN: 714453 predictions, range [0.275806, 0.999923]
+[2026-08-19 23:49:04] [INFO] [GLOBAL]   Loaded D2_D3_DANN: 714453 predictions, range [0.203325, 0.985280]
+[2026-08-19 23:49:04] [INFO] [GLOBAL] 
+Recomputing calibration set predictions from saved models...
+[2026-08-19 23:49:04] [INFO] [GLOBAL]   D1_D3_BASELINE: calib predictions (571563) in 0.24s
+[2026-08-19 23:49:05] [INFO] [GLOBAL]   D2_D3_BASELINE: calib predictions (571563) in 0.41s
+[2026-08-19 23:49:05] [INFO] [GLOBAL]   D1_D3_CORAL: calib predictions (571563) in 0.43s
+[2026-08-19 23:49:06] [INFO] [GLOBAL]   D2_D3_CORAL: calib predictions (571563) in 0.47s
+[2026-08-19 23:49:06] [INFO] [GLOBAL]   DANN device: cpu
+[2026-08-19 23:52:17] [INFO] [GLOBAL] ================================================================================
+[2026-08-19 23:52:17] [INFO] [GLOBAL] ARGUS PHASE 4 — ADAPTIVE MULTI-SOURCE CROSS-DOMAIN DETECTION
+[2026-08-19 23:52:17] [INFO] [GLOBAL] Started: 2026-08-19T23:52:17.692885
+[2026-08-19 23:52:17] [INFO] [GLOBAL] ================================================================================
+[2026-08-19 23:52:17] [INFO] [GLOBAL] Loading D3 target domain data...
+[2026-08-19 23:52:17] [INFO] [GLOBAL]   D3 test: 714453 samples, 0.2247 attack rate
+[2026-08-19 23:52:17] [INFO] [GLOBAL]   D3 calib: 571563 samples, 0.2247 attack rate
+[2026-08-19 23:52:18] [INFO] [GLOBAL]   D3 adapt: 2286249 samples, 0.2247 attack rate
+[2026-08-19 23:52:18] [INFO] [GLOBAL]   Target prior P_T(Attack) = 0.224661 (from 2857812 calib+adapt samples)
+[2026-08-19 23:52:18] [INFO] [GLOBAL]   Source priors: P_S1(Attack) = 0.976421, P_S2(Attack) = 0.725844
+[2026-08-19 23:52:18] [INFO] [GLOBAL] 
+Loading Phase 3 saved test predictions...
+[2026-08-19 23:52:18] [INFO] [GLOBAL]   Loaded D1_D3_BASELINE: 714453 predictions, range [0.072707, 0.999998]
+[2026-08-19 23:52:18] [INFO] [GLOBAL]   Loaded D2_D3_BASELINE: 714453 predictions, range [0.004967, 0.955996]
+[2026-08-19 23:52:18] [INFO] [GLOBAL]   Loaded D1_D3_CORAL: 714453 predictions, range [0.578179, 0.999987]
+[2026-08-19 23:52:18] [INFO] [GLOBAL]   Loaded D2_D3_CORAL: 714453 predictions, range [0.002519, 0.934454]
+[2026-08-19 23:52:18] [INFO] [GLOBAL]   Loaded D1_D3_DANN: 714453 predictions, range [0.275806, 0.999923]
+[2026-08-19 23:52:18] [INFO] [GLOBAL]   Loaded D2_D3_DANN: 714453 predictions, range [0.203325, 0.985280]
+[2026-08-19 23:52:18] [INFO] [GLOBAL] 
+Recomputing calibration set predictions from saved models...
+[2026-08-19 23:52:18] [INFO] [GLOBAL]   D1_D3_BASELINE: calib predictions (571563) in 0.25s
+[2026-08-19 23:52:19] [INFO] [GLOBAL]   D2_D3_BASELINE: calib predictions (571563) in 0.41s
+[2026-08-19 23:52:19] [INFO] [GLOBAL]   D1_D3_CORAL: calib predictions (571563) in 0.44s
+[2026-08-19 23:52:20] [INFO] [GLOBAL]   D2_D3_CORAL: calib predictions (571563) in 0.48s
+[2026-08-19 23:52:20] [INFO] [GLOBAL]   DANN device: cpu
+[2026-08-20 00:02:04] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:02:04] [INFO] [GLOBAL] ARGUS PHASE 4 — ADAPTIVE MULTI-SOURCE CROSS-DOMAIN DETECTION
+[2026-08-20 00:02:04] [INFO] [GLOBAL] Started: 2026-08-20T00:02:04.277805
+[2026-08-20 00:02:04] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:02:04] [INFO] [GLOBAL] Loading D3 target domain data...
+[2026-08-20 00:02:04] [INFO] [GLOBAL]   D3 test: 714453 samples, 0.2247 attack rate
+[2026-08-20 00:02:04] [INFO] [GLOBAL]   D3 calib: 571563 samples, 0.2247 attack rate
+[2026-08-20 00:02:04] [INFO] [GLOBAL]   D3 adapt: 2286249 samples, 0.2247 attack rate
+[2026-08-20 00:02:04] [INFO] [GLOBAL]   Target prior P_T(Attack) = 0.224661 (from 2857812 calib+adapt samples)
+[2026-08-20 00:02:04] [INFO] [GLOBAL]   Source priors: P_S1(Attack) = 0.976421, P_S2(Attack) = 0.725844
+[2026-08-20 00:02:04] [INFO] [GLOBAL] 
+Loading Phase 3 saved test predictions...
+[2026-08-20 00:02:04] [INFO] [GLOBAL]   Loaded D1_D3_BASELINE: 714453 predictions, range [0.072707, 0.999998]
+[2026-08-20 00:02:04] [INFO] [GLOBAL]   Loaded D2_D3_BASELINE: 714453 predictions, range [0.004967, 0.955996]
+[2026-08-20 00:02:05] [INFO] [GLOBAL]   Loaded D1_D3_CORAL: 714453 predictions, range [0.578179, 0.999987]
+[2026-08-20 00:02:05] [INFO] [GLOBAL]   Loaded D2_D3_CORAL: 714453 predictions, range [0.002519, 0.934454]
+[2026-08-20 00:02:05] [INFO] [GLOBAL]   Loaded D1_D3_DANN: 714453 predictions, range [0.275806, 0.999923]
+[2026-08-20 00:02:05] [INFO] [GLOBAL]   Loaded D2_D3_DANN: 714453 predictions, range [0.203325, 0.985280]
+[2026-08-20 00:02:05] [INFO] [GLOBAL] 
+Recomputing calibration set predictions from saved models...
+[2026-08-20 00:02:05] [INFO] [GLOBAL]   D1_D3_BASELINE: calib predictions (571563) in 0.24s
+[2026-08-20 00:02:06] [INFO] [GLOBAL]   D2_D3_BASELINE: calib predictions (571563) in 0.41s
+[2026-08-20 00:02:06] [INFO] [GLOBAL]   D1_D3_CORAL: calib predictions (571563) in 0.43s
+[2026-08-20 00:02:07] [INFO] [GLOBAL]   D2_D3_CORAL: calib predictions (571563) in 0.46s
+[2026-08-20 00:02:07] [INFO] [GLOBAL]   DANN device: cpu
+[2026-08-20 00:02:07] [INFO] [GLOBAL]   Initializing DANN scaler for D1_D3_DANN...
+[2026-08-20 00:02:07] [INFO] [GLOBAL]   Predicting D1_D3_DANN on calib set...
+[2026-08-20 00:07:34] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:07:34] [INFO] [GLOBAL] ARGUS PHASE 4 — ADAPTIVE MULTI-SOURCE CROSS-DOMAIN DETECTION
+[2026-08-20 00:07:34] [INFO] [GLOBAL] Started: 2026-08-20T00:07:34.100307
+[2026-08-20 00:07:34] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:07:34] [INFO] [GLOBAL] Loading D3 target domain data...
+[2026-08-20 00:07:34] [INFO] [GLOBAL]   D3 test: 714453 samples, 0.2247 attack rate
+[2026-08-20 00:07:34] [INFO] [GLOBAL]   D3 calib: 571563 samples, 0.2247 attack rate
+[2026-08-20 00:07:34] [INFO] [GLOBAL]   D3 adapt: 2286249 samples, 0.2247 attack rate
+[2026-08-20 00:07:34] [INFO] [GLOBAL]   Target prior P_T(Attack) = 0.224661 (from 2857812 calib+adapt samples)
+[2026-08-20 00:07:34] [INFO] [GLOBAL]   Source priors: P_S1(Attack) = 0.976421, P_S2(Attack) = 0.725844
+[2026-08-20 00:07:34] [INFO] [GLOBAL] 
+Loading Phase 3 saved test predictions...
+[2026-08-20 00:07:34] [INFO] [GLOBAL]   Loaded D1_D3_BASELINE: 714453 predictions, range [0.072707, 0.999998]
+[2026-08-20 00:07:34] [INFO] [GLOBAL]   Loaded D2_D3_BASELINE: 714453 predictions, range [0.004967, 0.955996]
+[2026-08-20 00:07:34] [INFO] [GLOBAL]   Loaded D1_D3_CORAL: 714453 predictions, range [0.578179, 0.999987]
+[2026-08-20 00:07:34] [INFO] [GLOBAL]   Loaded D2_D3_CORAL: 714453 predictions, range [0.002519, 0.934454]
+[2026-08-20 00:07:34] [INFO] [GLOBAL]   Loaded D1_D3_DANN: 714453 predictions, range [0.275806, 0.999923]
+[2026-08-20 00:07:35] [INFO] [GLOBAL]   Loaded D2_D3_DANN: 714453 predictions, range [0.203325, 0.985280]
+[2026-08-20 00:07:35] [INFO] [GLOBAL] 
+Recomputing calibration set predictions from saved models...
+[2026-08-20 00:07:35] [INFO] [GLOBAL]   D1_D3_BASELINE: calib predictions (571563) in 0.24s
+[2026-08-20 00:07:35] [INFO] [GLOBAL]   D2_D3_BASELINE: calib predictions (571563) in 0.41s
+[2026-08-20 00:07:36] [INFO] [GLOBAL]   D1_D3_CORAL: calib predictions (571563) in 0.45s
+[2026-08-20 00:07:36] [INFO] [GLOBAL]   D2_D3_CORAL: calib predictions (571563) in 0.45s
+[2026-08-20 00:07:36] [INFO] [GLOBAL]   DANN device: cpu
+[2026-08-20 00:07:36] [INFO] [GLOBAL]   Initializing DANN scaler for D1_D3_DANN...
+[2026-08-20 00:07:36] [INFO] [GLOBAL]   Predicting D1_D3_DANN on calib set...
+[2026-08-20 00:08:29] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:08:29] [INFO] [GLOBAL] ARGUS PHASE 4 — ADAPTIVE MULTI-SOURCE CROSS-DOMAIN DETECTION
+[2026-08-20 00:08:29] [INFO] [GLOBAL] Started: 2026-08-20T00:08:29.526319
+[2026-08-20 00:08:29] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:08:29] [INFO] [GLOBAL] Loading D3 target domain data...
+[2026-08-20 00:08:29] [INFO] [GLOBAL]   D3 test: 714453 samples, 0.2247 attack rate
+[2026-08-20 00:08:29] [INFO] [GLOBAL]   D3 calib: 571563 samples, 0.2247 attack rate
+[2026-08-20 00:08:30] [INFO] [GLOBAL]   D3 adapt: 2286249 samples, 0.2247 attack rate
+[2026-08-20 00:08:30] [INFO] [GLOBAL]   Target prior P_T(Attack) = 0.224661 (from 2857812 calib+adapt samples)
+[2026-08-20 00:08:30] [INFO] [GLOBAL]   Source priors: P_S1(Attack) = 0.976421, P_S2(Attack) = 0.725844
+[2026-08-20 00:08:30] [INFO] [GLOBAL] 
+Loading Phase 3 saved test predictions...
+[2026-08-20 00:08:30] [INFO] [GLOBAL]   Loaded D1_D3_BASELINE: 714453 predictions, range [0.072707, 0.999998]
+[2026-08-20 00:08:30] [INFO] [GLOBAL]   Loaded D2_D3_BASELINE: 714453 predictions, range [0.004967, 0.955996]
+[2026-08-20 00:08:30] [INFO] [GLOBAL]   Loaded D1_D3_CORAL: 714453 predictions, range [0.578179, 0.999987]
+[2026-08-20 00:08:30] [INFO] [GLOBAL]   Loaded D2_D3_CORAL: 714453 predictions, range [0.002519, 0.934454]
+[2026-08-20 00:08:30] [INFO] [GLOBAL]   Loaded D1_D3_DANN: 714453 predictions, range [0.275806, 0.999923]
+[2026-08-20 00:08:30] [INFO] [GLOBAL]   Loaded D2_D3_DANN: 714453 predictions, range [0.203325, 0.985280]
+[2026-08-20 00:08:30] [INFO] [GLOBAL] 
+Recomputing calibration set predictions from saved models...
+[2026-08-20 00:08:30] [INFO] [GLOBAL]   D1_D3_BASELINE: calib predictions (571563) in 0.25s
+[2026-08-20 00:08:31] [INFO] [GLOBAL]   D2_D3_BASELINE: calib predictions (571563) in 0.46s
+[2026-08-20 00:08:31] [INFO] [GLOBAL]   D1_D3_CORAL: calib predictions (571563) in 0.43s
+[2026-08-20 00:08:32] [INFO] [GLOBAL]   D2_D3_CORAL: calib predictions (571563) in 0.50s
+[2026-08-20 00:08:32] [INFO] [GLOBAL]   DANN device: cpu
+[2026-08-20 00:08:32] [INFO] [GLOBAL]   Initializing DANN scaler for D1_D3_DANN...
+[2026-08-20 00:08:32] [INFO] [GLOBAL]   Predicting D1_D3_DANN on calib set...
+[2026-08-20 00:11:43] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:11:43] [INFO] [GLOBAL] ARGUS PHASE 4 — ADAPTIVE MULTI-SOURCE CROSS-DOMAIN DETECTION
+[2026-08-20 00:11:43] [INFO] [GLOBAL] Started: 2026-08-20T00:11:43.751443
+[2026-08-20 00:11:43] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:11:43] [INFO] [GLOBAL] Loading D3 target domain data...
+[2026-08-20 00:11:43] [INFO] [GLOBAL]   D3 test: 714453 samples, 0.2247 attack rate
+[2026-08-20 00:11:43] [INFO] [GLOBAL]   D3 calib: 571563 samples, 0.2247 attack rate
+[2026-08-20 00:11:44] [INFO] [GLOBAL]   D3 adapt: 2286249 samples, 0.2247 attack rate
+[2026-08-20 00:11:44] [INFO] [GLOBAL]   Target prior P_T(Attack) = 0.224661 (from 2857812 calib+adapt samples)
+[2026-08-20 00:11:44] [INFO] [GLOBAL]   Source priors: P_S1(Attack) = 0.976421, P_S2(Attack) = 0.725844
+[2026-08-20 00:11:44] [INFO] [GLOBAL] 
+Loading Phase 3 saved test predictions...
+[2026-08-20 00:11:44] [INFO] [GLOBAL]   Loaded D1_D3_BASELINE: 714453 predictions, range [0.072707, 0.999998]
+[2026-08-20 00:11:44] [INFO] [GLOBAL]   Loaded D2_D3_BASELINE: 714453 predictions, range [0.004967, 0.955996]
+[2026-08-20 00:11:44] [INFO] [GLOBAL]   Loaded D1_D3_CORAL: 714453 predictions, range [0.578179, 0.999987]
+[2026-08-20 00:11:44] [INFO] [GLOBAL]   Loaded D2_D3_CORAL: 714453 predictions, range [0.002519, 0.934454]
+[2026-08-20 00:11:44] [INFO] [GLOBAL]   Loaded D1_D3_DANN: 714453 predictions, range [0.275806, 0.999923]
+[2026-08-20 00:11:44] [INFO] [GLOBAL]   Loaded D2_D3_DANN: 714453 predictions, range [0.203325, 0.985280]
+[2026-08-20 00:11:44] [INFO] [GLOBAL] 
+Recomputing calibration set predictions from saved models...
+[2026-08-20 00:11:44] [INFO] [GLOBAL]   D1_D3_BASELINE: calib predictions (571563) in 0.26s
+[2026-08-20 00:11:45] [INFO] [GLOBAL]   D2_D3_BASELINE: calib predictions (571563) in 0.42s
+[2026-08-20 00:11:46] [INFO] [GLOBAL]   D1_D3_CORAL: calib predictions (571563) in 0.50s
+[2026-08-20 00:11:46] [INFO] [GLOBAL]   D2_D3_CORAL: calib predictions (571563) in 0.46s
+[2026-08-20 00:11:46] [INFO] [GLOBAL]   DANN device: cpu
+[2026-08-20 00:11:46] [INFO] [GLOBAL]   Initializing DANN scaler for D1_D3_DANN...
+[2026-08-20 00:11:46] [INFO] [GLOBAL]   Predicting D1_D3_DANN on calib set...
+[2026-08-20 00:13:26] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:13:26] [INFO] [GLOBAL] ARGUS PHASE 4 — ADAPTIVE MULTI-SOURCE CROSS-DOMAIN DETECTION
+[2026-08-20 00:13:26] [INFO] [GLOBAL] Started: 2026-08-20T00:13:26.273683
+[2026-08-20 00:13:26] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:13:26] [INFO] [GLOBAL] Loading D3 target domain data...
+[2026-08-20 00:13:26] [INFO] [GLOBAL]   D3 test: 714453 samples, 0.2247 attack rate
+[2026-08-20 00:13:26] [INFO] [GLOBAL]   D3 calib: 571563 samples, 0.2247 attack rate
+[2026-08-20 00:13:27] [INFO] [GLOBAL]   D3 adapt: 2286249 samples, 0.2247 attack rate
+[2026-08-20 00:13:27] [INFO] [GLOBAL]   Target prior P_T(Attack) = 0.224661 (from 2857812 calib+adapt samples)
+[2026-08-20 00:13:27] [INFO] [GLOBAL]   Source priors: P_S1(Attack) = 0.976421, P_S2(Attack) = 0.725844
+[2026-08-20 00:13:27] [INFO] [GLOBAL] 
+Loading Phase 3 saved test predictions...
+[2026-08-20 00:13:27] [INFO] [GLOBAL]   Loaded D1_D3_BASELINE: 714453 predictions, range [0.072707, 0.999998]
+[2026-08-20 00:13:27] [INFO] [GLOBAL]   Loaded D2_D3_BASELINE: 714453 predictions, range [0.004967, 0.955996]
+[2026-08-20 00:13:27] [INFO] [GLOBAL]   Loaded D1_D3_CORAL: 714453 predictions, range [0.578179, 0.999987]
+[2026-08-20 00:13:27] [INFO] [GLOBAL]   Loaded D2_D3_CORAL: 714453 predictions, range [0.002519, 0.934454]
+[2026-08-20 00:13:27] [INFO] [GLOBAL]   Loaded D1_D3_DANN: 714453 predictions, range [0.275806, 0.999923]
+[2026-08-20 00:13:28] [INFO] [GLOBAL]   Loaded D2_D3_DANN: 714453 predictions, range [0.203325, 0.985280]
+[2026-08-20 00:13:28] [INFO] [GLOBAL] 
+Recomputing calibration set predictions from saved models...
+[2026-08-20 00:13:28] [INFO] [GLOBAL]   D1_D3_BASELINE: calib predictions (571563) in 0.44s
+[2026-08-20 00:13:29] [INFO] [GLOBAL]   D2_D3_BASELINE: calib predictions (571563) in 0.76s
+[2026-08-20 00:13:30] [INFO] [GLOBAL]   D1_D3_CORAL: calib predictions (571563) in 0.78s
+[2026-08-20 00:13:31] [INFO] [GLOBAL]   D2_D3_CORAL: calib predictions (571563) in 0.89s
+[2026-08-20 00:13:31] [INFO] [GLOBAL]   DANN device: cpu
+[2026-08-20 00:13:31] [INFO] [GLOBAL]   Initializing DANN scaler for D1_D3_DANN...
+[2026-08-20 00:13:31] [INFO] [GLOBAL]   Predicting D1_D3_DANN on calib set...
+[2026-08-20 00:14:23] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:14:23] [INFO] [GLOBAL] ARGUS PHASE 4 — ADAPTIVE MULTI-SOURCE CROSS-DOMAIN DETECTION
+[2026-08-20 00:14:23] [INFO] [GLOBAL] Started: 2026-08-20T00:14:23.293301
+[2026-08-20 00:14:23] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:14:23] [INFO] [GLOBAL] Loading D3 target domain data...
+[2026-08-20 00:14:23] [INFO] [GLOBAL]   D3 test: 714453 samples, 0.2247 attack rate
+[2026-08-20 00:14:23] [INFO] [GLOBAL]   D3 calib: 571563 samples, 0.2247 attack rate
+[2026-08-20 00:14:23] [INFO] [GLOBAL]   D3 adapt: 2286249 samples, 0.2247 attack rate
+[2026-08-20 00:14:23] [INFO] [GLOBAL]   Target prior P_T(Attack) = 0.224661 (from 2857812 calib+adapt samples)
+[2026-08-20 00:14:23] [INFO] [GLOBAL]   Source priors: P_S1(Attack) = 0.976421, P_S2(Attack) = 0.725844
+[2026-08-20 00:14:23] [INFO] [GLOBAL] 
+Loading Phase 3 saved test predictions...
+[2026-08-20 00:14:23] [INFO] [GLOBAL]   Loaded D1_D3_BASELINE: 714453 predictions, range [0.072707, 0.999998]
+[2026-08-20 00:14:24] [INFO] [GLOBAL]   Loaded D2_D3_BASELINE: 714453 predictions, range [0.004967, 0.955996]
+[2026-08-20 00:14:24] [INFO] [GLOBAL]   Loaded D1_D3_CORAL: 714453 predictions, range [0.578179, 0.999987]
+[2026-08-20 00:14:24] [INFO] [GLOBAL]   Loaded D2_D3_CORAL: 714453 predictions, range [0.002519, 0.934454]
+[2026-08-20 00:14:24] [INFO] [GLOBAL]   Loaded D1_D3_DANN: 714453 predictions, range [0.275806, 0.999923]
+[2026-08-20 00:14:24] [INFO] [GLOBAL]   Loaded D2_D3_DANN: 714453 predictions, range [0.203325, 0.985280]
+[2026-08-20 00:14:24] [INFO] [GLOBAL] 
+Recomputing calibration set predictions from saved models...
+[2026-08-20 00:14:25] [INFO] [GLOBAL]   D1_D3_BASELINE: calib predictions (571563) in 1.29s
+[2026-08-20 00:14:27] [INFO] [GLOBAL]   D2_D3_BASELINE: calib predictions (571563) in 2.02s
+[2026-08-20 00:14:29] [INFO] [GLOBAL]   D1_D3_CORAL: calib predictions (571563) in 2.08s
+[2026-08-20 00:14:32] [INFO] [GLOBAL]   D2_D3_CORAL: calib predictions (571563) in 2.27s
+[2026-08-20 00:14:32] [INFO] [GLOBAL]   DANN device: cpu
+[2026-08-20 00:14:32] [INFO] [GLOBAL]   Initializing DANN scaler for D1_D3_DANN...
+[2026-08-20 00:14:32] [INFO] [GLOBAL]   Predicting D1_D3_DANN on calib set...
+[2026-08-20 00:14:32] [INFO] [GLOBAL]   D1_D3_DANN: calib predictions (571563) in 0.11s
+[2026-08-20 00:14:32] [INFO] [GLOBAL]   Initializing DANN scaler for D2_D3_DANN...
+[2026-08-20 00:14:32] [INFO] [GLOBAL]   Predicting D2_D3_DANN on calib set...
+[2026-08-20 00:14:32] [INFO] [GLOBAL]   D2_D3_DANN: calib predictions (571563) in 0.08s
+[2026-08-20 00:14:32] [INFO] [GLOBAL] 
+================================================================================
+[2026-08-20 00:14:32] [INFO] [GLOBAL] GROUP A — SINGLE-SOURCE BASELINES (Phase 3 reference)
+[2026-08-20 00:14:32] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:14:32] [START] [A1_D1_baseline] Running experiment A1_D1_baseline
+[2026-08-20 00:14:32] [EVAL] [A1_D1_baseline]   Uncalibrated θ=0.50: F1=0.3697 MCC=0.0463
+[2026-08-20 00:14:33] [EVAL] [A1_D1_baseline]   Calibrated F1 θ*=0.63: F1=0.3724 MCC=0.0650
+[2026-08-20 00:14:33] [EVAL] [A1_D1_baseline]   Calibrated MCC θ*=0.63: F1=0.3724 MCC=0.0650
+[2026-08-20 00:14:33] [EVAL] [A1_D1_baseline]   Calibrated Balanced_Accuracy θ*=0.63: F1=0.3724 MCC=0.0650
+[2026-08-20 00:14:33] [EVAL] [A1_D1_baseline]   Calibrated Recall_Constrained θ*=0.63: F1=0.3724 MCC=0.0650
+[2026-08-20 00:14:34] [COMPLETE] [A1_D1_baseline] Completed A1_D1_baseline
+[2026-08-20 00:14:34] [START] [A2_D2_baseline] Running experiment A2_D2_baseline
+[2026-08-20 00:14:34] [EVAL] [A2_D2_baseline]   Uncalibrated θ=0.50: F1=0.1091 MCC=0.0732
+[2026-08-20 00:14:34] [EVAL] [A2_D2_baseline]   Calibrated F1 θ*=0.01: F1=0.3648 MCC=0.0031
+[2026-08-20 00:14:35] [EVAL] [A2_D2_baseline]   Calibrated MCC θ*=0.34: F1=0.1580 MCC=0.0793
+[2026-08-20 00:14:35] [EVAL] [A2_D2_baseline]   Calibrated Balanced_Accuracy θ*=0.34: F1=0.1580 MCC=0.0793
+[2026-08-20 00:14:35] [EVAL] [A2_D2_baseline]   Calibrated Recall_Constrained θ*=0.01: F1=0.3648 MCC=0.0031
+[2026-08-20 00:14:36] [COMPLETE] [A2_D2_baseline] Completed A2_D2_baseline
+[2026-08-20 00:14:36] [START] [A5_D1_CORAL] Running experiment A5_D1_CORAL
+[2026-08-20 00:14:36] [EVAL] [A5_D1_CORAL]   Uncalibrated θ=0.50: F1=0.3669 MCC=0.0000
+[2026-08-20 00:14:36] [EVAL] [A5_D1_CORAL]   Calibrated F1 θ*=0.92: F1=0.3709 MCC=0.0489
+[2026-08-20 00:14:37] [EVAL] [A5_D1_CORAL]   Calibrated MCC θ*=0.92: F1=0.3709 MCC=0.0489
+[2026-08-20 00:14:37] [EVAL] [A5_D1_CORAL]   Calibrated Balanced_Accuracy θ*=0.92: F1=0.3709 MCC=0.0489
+[2026-08-20 00:14:37] [EVAL] [A5_D1_CORAL]   Calibrated Recall_Constrained θ*=0.92: F1=0.3709 MCC=0.0489
+[2026-08-20 00:14:38] [COMPLETE] [A5_D1_CORAL] Completed A5_D1_CORAL
+[2026-08-20 00:14:38] [START] [A6_D2_CORAL] Running experiment A6_D2_CORAL
+[2026-08-20 00:14:38] [EVAL] [A6_D2_CORAL]   Uncalibrated θ=0.50: F1=0.3687 MCC=0.0373
+[2026-08-20 00:14:38] [EVAL] [A6_D2_CORAL]   Calibrated F1 θ*=0.68: F1=0.3770 MCC=0.0789
+[2026-08-20 00:14:39] [EVAL] [A6_D2_CORAL]   Calibrated MCC θ*=0.68: F1=0.3770 MCC=0.0789
+[2026-08-20 00:14:39] [EVAL] [A6_D2_CORAL]   Calibrated Balanced_Accuracy θ*=0.68: F1=0.3770 MCC=0.0789
+[2026-08-20 00:14:39] [EVAL] [A6_D2_CORAL]   Calibrated Recall_Constrained θ*=0.68: F1=0.3770 MCC=0.0789
+[2026-08-20 00:14:40] [COMPLETE] [A6_D2_CORAL] Completed A6_D2_CORAL
+[2026-08-20 00:14:40] [INFO] [GLOBAL] 
+================================================================================
+[2026-08-20 00:14:40] [INFO] [GLOBAL] GROUP B — TARGET PRIOR CORRECTION
+[2026-08-20 00:14:40] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:14:40] [INFO] [GLOBAL]   D1 prior correction: test prob range [0.000548, 0.999778]
+[2026-08-20 00:14:40] [START] [B1_D1_prior] Running experiment B1_D1_prior
+[2026-08-20 00:14:40] [EVAL] [B1_D1_prior]   Uncalibrated θ=0.50: F1=0.3724 MCC=0.0650
+[2026-08-20 00:14:40] [EVAL] [B1_D1_prior]   Calibrated F1 θ*=0.95: F1=0.3728 MCC=0.0668
+[2026-08-20 00:14:40] [EVAL] [B1_D1_prior]   Calibrated MCC θ*=0.95: F1=0.3728 MCC=0.0668
+[2026-08-20 00:14:41] [EVAL] [B1_D1_prior]   Calibrated Balanced_Accuracy θ*=0.95: F1=0.3728 MCC=0.0668
+[2026-08-20 00:14:41] [EVAL] [B1_D1_prior]   Calibrated Recall_Constrained θ*=0.98: F1=0.3701 MCC=0.0439
+[2026-08-20 00:14:41] [COMPLETE] [B1_D1_prior] Completed B1_D1_prior
+[2026-08-20 00:14:41] [INFO] [GLOBAL]   D2 prior correction: test prob range [0.000546, 0.703937]
+[2026-08-20 00:14:41] [START] [B2_D2_prior] Running experiment B2_D2_prior
+[2026-08-20 00:14:42] [EVAL] [B2_D2_prior]   Uncalibrated θ=0.50: F1=0.0485 MCC=0.0144
+[2026-08-20 00:14:42] [EVAL] [B2_D2_prior]   Calibrated F1 θ*=0.05: F1=0.1580 MCC=0.0790
+[2026-08-20 00:14:42] [EVAL] [B2_D2_prior]   Calibrated MCC θ*=0.05: F1=0.1580 MCC=0.0790
+[2026-08-20 00:14:43] [EVAL] [B2_D2_prior]   Calibrated Balanced_Accuracy θ*=0.05: F1=0.1580 MCC=0.0790
+[2026-08-20 00:14:43] [EVAL] [B2_D2_prior]   Calibrated Recall_Constrained θ*=0.50: F1=0.0485 MCC=0.0144
+[2026-08-20 00:14:43] [COMPLETE] [B2_D2_prior] Completed B2_D2_prior
+[2026-08-20 00:14:43] [INFO] [GLOBAL] 
+================================================================================
+[2026-08-20 00:14:43] [INFO] [GLOBAL] GROUP C — CORAL + PRIOR CORRECTION
+[2026-08-20 00:14:43] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:14:43] [START] [C1_D1_CORAL_prior] Running experiment C1_D1_CORAL_prior
+[2026-08-20 00:14:44] [EVAL] [C1_D1_CORAL_prior]   Uncalibrated θ=0.50: F1=0.3707 MCC=0.0472
+[2026-08-20 00:14:44] [EVAL] [C1_D1_CORAL_prior]   Calibrated F1 θ*=0.52: F1=0.3733 MCC=0.0637
+[2026-08-20 00:14:44] [EVAL] [C1_D1_CORAL_prior]   Calibrated MCC θ*=0.52: F1=0.3733 MCC=0.0637
+[2026-08-20 00:14:45] [EVAL] [C1_D1_CORAL_prior]   Calibrated Balanced_Accuracy θ*=0.52: F1=0.3733 MCC=0.0637
+[2026-08-20 00:14:45] [EVAL] [C1_D1_CORAL_prior]   Calibrated Recall_Constrained θ*=0.52: F1=0.3733 MCC=0.0637
+[2026-08-20 00:14:45] [COMPLETE] [C1_D1_CORAL_prior] Completed C1_D1_CORAL_prior
+[2026-08-20 00:14:45] [START] [C4_D2_CORAL_prior] Running experiment C4_D2_CORAL_prior
+[2026-08-20 00:14:46] [EVAL] [C4_D2_CORAL_prior]   Uncalibrated θ=0.50: F1=0.0576 MCC=-0.1235
+[2026-08-20 00:14:46] [EVAL] [C4_D2_CORAL_prior]   Calibrated F1 θ*=0.19: F1=0.3770 MCC=0.0789
+[2026-08-20 00:14:46] [EVAL] [C4_D2_CORAL_prior]   Calibrated MCC θ*=0.19: F1=0.3770 MCC=0.0789
+[2026-08-20 00:14:47] [EVAL] [C4_D2_CORAL_prior]   Calibrated Balanced_Accuracy θ*=0.19: F1=0.3770 MCC=0.0789
+[2026-08-20 00:14:47] [EVAL] [C4_D2_CORAL_prior]   Calibrated Recall_Constrained θ*=0.19: F1=0.3770 MCC=0.0789
+[2026-08-20 00:14:47] [COMPLETE] [C4_D2_CORAL_prior] Completed C4_D2_CORAL_prior
+[2026-08-20 00:14:47] [INFO] [GLOBAL] 
+================================================================================
+[2026-08-20 00:14:47] [INFO] [GLOBAL] GROUP D — MULTI-SOURCE PROBABILITY FUSION
+[2026-08-20 00:14:47] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:14:47] [START] [D3_fusion_equal] Running experiment D3_fusion_equal
+[2026-08-20 00:14:48] [EVAL] [D3_fusion_equal]   Uncalibrated θ=0.50: F1=0.3724 MCC=0.0649
+[2026-08-20 00:14:48] [EVAL] [D3_fusion_equal]   Calibrated F1 θ*=0.47: F1=0.3724 MCC=0.0649
+[2026-08-20 00:14:48] [EVAL] [D3_fusion_equal]   Calibrated MCC θ*=0.67: F1=0.1579 MCC=0.0795
+[2026-08-20 00:14:49] [EVAL] [D3_fusion_equal]   Calibrated Balanced_Accuracy θ*=0.67: F1=0.1579 MCC=0.0795
+[2026-08-20 00:14:49] [EVAL] [D3_fusion_equal]   Calibrated Recall_Constrained θ*=0.47: F1=0.3724 MCC=0.0649
+[2026-08-20 00:14:49] [COMPLETE] [D3_fusion_equal] Completed D3_fusion_equal
+[2026-08-20 00:14:49] [INFO] [GLOBAL]   Optimizing fusion weights on D3 calibration set (MCC criterion)...
+[2026-08-20 00:14:49] [INFO] [GLOBAL]     w1=0.0, w2=1.0, θ*=0.34: MCC_calib=0.0772, F1_calib=0.1560
+[2026-08-20 00:14:49] [INFO] [GLOBAL]     w1=0.1, w2=0.9, θ*=0.41: MCC_calib=0.0772, F1_calib=0.1560
+[2026-08-20 00:14:49] [INFO] [GLOBAL]     w1=0.2, w2=0.8, θ*=0.47: MCC_calib=0.0772, F1_calib=0.1560
+[2026-08-20 00:14:50] [INFO] [GLOBAL]     w1=0.3, w2=0.7, θ*=0.54: MCC_calib=0.0771, F1_calib=0.1559
+[2026-08-20 00:14:50] [INFO] [GLOBAL]     w1=0.4, w2=0.6, θ*=0.60: MCC_calib=0.0770, F1_calib=0.1559
+[2026-08-20 00:14:50] [INFO] [GLOBAL]     w1=0.5, w2=0.5, θ*=0.67: MCC_calib=0.0775, F1_calib=0.1560
+[2026-08-20 00:14:50] [INFO] [GLOBAL]     w1=0.6, w2=0.4, θ*=0.72: MCC_calib=0.0773, F1_calib=0.1560
+[2026-08-20 00:14:50] [INFO] [GLOBAL]     w1=0.7, w2=0.3, θ*=0.80: MCC_calib=0.0775, F1_calib=0.1560
+[2026-08-20 00:14:50] [INFO] [GLOBAL]     w1=0.8, w2=0.2, θ*=0.86: MCC_calib=0.0773, F1_calib=0.1560
+[2026-08-20 00:14:50] [INFO] [GLOBAL]     w1=0.9, w2=0.1, θ*=0.93: MCC_calib=0.0773, F1_calib=0.1560
+[2026-08-20 00:14:50] [INFO] [GLOBAL]     w1=1.0, w2=0.0, θ*=0.63: MCC_calib=0.0647, F1_calib=0.3724
+[2026-08-20 00:14:50] [INFO] [GLOBAL]   Selected weights: w1=0.5, w2=0.5 (MCC_calib=0.0775)
+[2026-08-20 00:14:50] [START] [D4_fusion_optimal] Running experiment D4_fusion_optimal
+[2026-08-20 00:14:50] [EVAL] [D4_fusion_optimal]   Uncalibrated θ=0.50: F1=0.3724 MCC=0.0649
+[2026-08-20 00:14:51] [EVAL] [D4_fusion_optimal]   Calibrated F1 θ*=0.47: F1=0.3724 MCC=0.0649
+[2026-08-20 00:14:51] [EVAL] [D4_fusion_optimal]   Calibrated MCC θ*=0.67: F1=0.1579 MCC=0.0795
+[2026-08-20 00:14:51] [EVAL] [D4_fusion_optimal]   Calibrated Balanced_Accuracy θ*=0.67: F1=0.1579 MCC=0.0795
+[2026-08-20 00:14:51] [EVAL] [D4_fusion_optimal]   Calibrated Recall_Constrained θ*=0.47: F1=0.3724 MCC=0.0649
+[2026-08-20 00:14:52] [COMPLETE] [D4_fusion_optimal] Completed D4_fusion_optimal
+[2026-08-20 00:14:52] [INFO] [GLOBAL] 
+================================================================================
+[2026-08-20 00:14:52] [INFO] [GLOBAL] GROUP E — MULTI-SOURCE + CORAL (Full ARGUS Pipeline)
+[2026-08-20 00:14:52] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:14:52] [INFO] [GLOBAL]   Optimizing CORAL fusion weights on D3 calibration set (MCC criterion)...
+[2026-08-20 00:14:53] [INFO] [GLOBAL]   Selected CORAL fusion weights: w1=0.8, w2=0.2
+[2026-08-20 00:14:53] [START] [E3_fusion_CORAL] Running experiment E3_fusion_CORAL
+[2026-08-20 00:14:53] [EVAL] [E3_fusion_CORAL]   Uncalibrated θ=0.50: F1=0.3695 MCC=0.0447
+[2026-08-20 00:14:53] [EVAL] [E3_fusion_CORAL]   Calibrated F1 θ*=0.93: F1=0.3816 MCC=0.0943
+[2026-08-20 00:14:53] [EVAL] [E3_fusion_CORAL]   Calibrated MCC θ*=0.93: F1=0.3816 MCC=0.0943
+[2026-08-20 00:14:54] [EVAL] [E3_fusion_CORAL]   Calibrated Balanced_Accuracy θ*=0.93: F1=0.3816 MCC=0.0943
+[2026-08-20 00:14:54] [EVAL] [E3_fusion_CORAL]   Calibrated Recall_Constrained θ*=0.93: F1=0.3816 MCC=0.0943
+[2026-08-20 00:14:54] [COMPLETE] [E3_fusion_CORAL] Completed E3_fusion_CORAL
+[2026-08-20 00:14:54] [INFO] [GLOBAL]   Applying per-source prior correction before CORAL fusion...
+[2026-08-20 00:14:54] [INFO] [GLOBAL]   Optimizing prior-corrected CORAL fusion weights (MCC criterion)...
+[2026-08-20 00:14:55] [INFO] [GLOBAL]   Selected Full ARGUS weights: w1=0.9, w2=0.1
+[2026-08-20 00:14:55] [START] [E5_fusion_CORAL_prior] Running experiment E5_fusion_CORAL_prior
+[2026-08-20 00:14:55] [EVAL] [E5_fusion_CORAL_prior]   Uncalibrated θ=0.50: F1=0.3869 MCC=0.1205
+[2026-08-20 00:14:56] [EVAL] [E5_fusion_CORAL_prior]   Calibrated F1 θ*=0.50: F1=0.3869 MCC=0.1205
+[2026-08-20 00:14:56] [EVAL] [E5_fusion_CORAL_prior]   Calibrated MCC θ*=0.50: F1=0.3869 MCC=0.1205
+[2026-08-20 00:14:56] [EVAL] [E5_fusion_CORAL_prior]   Calibrated Balanced_Accuracy θ*=0.50: F1=0.3869 MCC=0.1205
+[2026-08-20 00:14:57] [EVAL] [E5_fusion_CORAL_prior]   Calibrated Recall_Constrained θ*=0.50: F1=0.3869 MCC=0.1205
+[2026-08-20 00:14:57] [COMPLETE] [E5_fusion_CORAL_prior] Completed E5_fusion_CORAL_prior
+[2026-08-20 00:14:57] [INFO] [GLOBAL] 
+================================================================================
+[2026-08-20 00:14:57] [INFO] [GLOBAL] GROUP F — DANN ALTERNATIVE
+[2026-08-20 00:14:57] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:14:57] [INFO] [GLOBAL]   Optimizing DANN fusion weights (MCC criterion)...
+[2026-08-20 00:14:58] [INFO] [GLOBAL]   Selected DANN fusion weights: w1=0.4, w2=0.6
+[2026-08-20 00:14:58] [START] [F1_fusion_DANN] Running experiment F1_fusion_DANN
+[2026-08-20 00:14:58] [EVAL] [F1_fusion_DANN]   Uncalibrated θ=0.50: F1=0.3669 MCC=0.0000
+[2026-08-20 00:14:58] [EVAL] [F1_fusion_DANN]   Calibrated F1 θ*=0.78: F1=0.1323 MCC=-0.0745
+[2026-08-20 00:14:59] [EVAL] [F1_fusion_DANN]   Calibrated MCC θ*=0.78: F1=0.1323 MCC=-0.0745
+[2026-08-20 00:14:59] [EVAL] [F1_fusion_DANN]   Calibrated Balanced_Accuracy θ*=0.78: F1=0.1323 MCC=-0.0745
+[2026-08-20 00:14:59] [EVAL] [F1_fusion_DANN]   Calibrated Recall_Constrained θ*=0.78: F1=0.1323 MCC=-0.0745
+[2026-08-20 00:14:59] [COMPLETE] [F1_fusion_DANN] Completed F1_fusion_DANN
+[2026-08-20 00:15:00] [START] [F3_fusion_DANN_prior] Running experiment F3_fusion_DANN_prior
+[2026-08-20 00:15:00] [EVAL] [F3_fusion_DANN_prior]   Uncalibrated θ=0.50: F1=0.1015 MCC=-0.0822
+[2026-08-20 00:15:01] [EVAL] [F3_fusion_DANN_prior]   Calibrated F1 θ*=0.16: F1=0.1318 MCC=-0.0972
+[2026-08-20 00:15:01] [EVAL] [F3_fusion_DANN_prior]   Calibrated MCC θ*=0.16: F1=0.1318 MCC=-0.0972
+[2026-08-20 00:15:01] [EVAL] [F3_fusion_DANN_prior]   Calibrated Balanced_Accuracy θ*=0.16: F1=0.1318 MCC=-0.0972
+[2026-08-20 00:15:02] [EVAL] [F3_fusion_DANN_prior]   Calibrated Recall_Constrained θ*=0.16: F1=0.1318 MCC=-0.0972
+[2026-08-20 00:15:02] [COMPLETE] [F3_fusion_DANN_prior] Completed F3_fusion_DANN_prior
+[2026-08-20 00:15:02] [INFO] [GLOBAL] 
+================================================================================
+[2026-08-20 00:15:02] [INFO] [GLOBAL] INCREMENTAL ABLATION ANALYSIS
+[2026-08-20 00:15:02] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:15:02] [INFO] [GLOBAL] 
+  Ablation Analysis:
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     M0: D2 Baseline (uncalib)                     F1=0.1091  MCC=0.0732  BAcc=0.5167
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     M1: + Calibration                             F1=0.1580  MCC=0.0793  BAcc=0.5235
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     M2: + CORAL (uncalib)                         F1=0.3687  MCC=0.0373  BAcc=0.5116
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     M3: + Prior Correction (uncalib)              F1=0.0485  MCC=0.0144  BAcc=0.5026
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     M4: + Multi-source Fusion (uncalib)           F1=0.3724  MCC=0.0649  BAcc=0.5127
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     M5: CORAL + Calibration                       F1=0.3770  MCC=0.0789  BAcc=0.5356
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     M6: CORAL + Prior Correction (uncalib)        F1=0.0576  MCC=-0.1235  BAcc=0.4523
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     M7: Full ARGUS                                F1=0.3869  MCC=0.1205  BAcc=0.5450
+[2026-08-20 00:15:02] [INFO] [GLOBAL] 
+================================================================================
+[2026-08-20 00:15:02] [INFO] [GLOBAL] BUILDING FINAL COMPARISON TABLE
+[2026-08-20 00:15:02] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:15:02] [INFO] [GLOBAL] 
+  Final Comparison Table:
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     D1 baseline                                F1=0.3697  MCC=0.0463  BAcc=0.5065  FPR=0.9832  FNR=0.0038
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     D2 baseline                                F1=0.1091  MCC=0.0732  BAcc=0.5167  FPR=0.0303  FNR=0.9363
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     D1 + calibration                           F1=0.3724  MCC=0.0650  BAcc=0.5127  FPR=0.9668  FNR=0.0077
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     D2 + calibration                           F1=0.1580  MCC=0.0793  BAcc=0.5235  FPR=0.0551  FNR=0.8979
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     D1 + CORAL + calibration                   F1=0.3709  MCC=0.0489  BAcc=0.5114  FPR=0.9555  FNR=0.0217
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     D2 + CORAL + calibration                   F1=0.3770  MCC=0.0789  BAcc=0.5356  FPR=0.8129  FNR=0.1159
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     D1 + prior correction                      F1=0.3724  MCC=0.0650  BAcc=0.5127  FPR=0.9668  FNR=0.0077
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     D2 + prior correction                      F1=0.0485  MCC=0.0144  BAcc=0.5026  FPR=0.0215  FNR=0.9733
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     D1 + prior correction + calibration        F1=0.3728  MCC=0.0668  BAcc=0.5136  FPR=0.9642  FNR=0.0086
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     D2 + prior correction + calibration        F1=0.1580  MCC=0.0790  BAcc=0.5235  FPR=0.0552  FNR=0.8979
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     D2 + CORAL + prior correction              F1=0.0576  MCC=-0.1235  BAcc=0.4523  FPR=0.1394  FNR=0.9561
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     D2 + CORAL + prior correction + calib      F1=0.3770  MCC=0.0789  BAcc=0.5356  FPR=0.8129  FNR=0.1159
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     D1+D2 fusion (equal)                       F1=0.3724  MCC=0.0649  BAcc=0.5127  FPR=0.9670  FNR=0.0077
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     D1+D2 fusion (optimal)                     F1=0.1579  MCC=0.0795  BAcc=0.5236  FPR=0.0549  FNR=0.8980
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     D1+D2 CORAL fusion                         F1=0.3816  MCC=0.0943  BAcc=0.5424  FPR=0.8112  FNR=0.1039
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     D1+D2 CORAL + prior fusion                 F1=0.3869  MCC=0.1205  BAcc=0.5450  FPR=0.8708  FNR=0.0392
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     D1+D2 DANN fusion                          F1=0.1323  MCC=-0.0745  BAcc=0.4667  FPR=0.1818  FNR=0.8848
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     D1+D2 DANN + prior fusion                  F1=0.1318  MCC=-0.0972  BAcc=0.4539  FPR=0.2150  FNR=0.8771
+[2026-08-20 00:15:02] [INFO] [GLOBAL] 
+================================================================================
+[2026-08-20 00:15:02] [INFO] [GLOBAL] MODEL SELECTION & IMPROVEMENT ANALYSIS
+[2026-08-20 00:15:02] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:15:02] [INFO] [GLOBAL] 
+  Phase 3 Best: D2 + CORAL + calibration
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     F1  = 0.377038
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     MCC = 0.078864
+[2026-08-20 00:15:02] [INFO] [GLOBAL] 
+  Phase 4 Best (by MCC): D1+D2 CORAL + prior fusion
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     F1  = 0.386940
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     MCC = 0.120517
+[2026-08-20 00:15:02] [INFO] [GLOBAL] 
+  ΔF1  = +0.009902
+[2026-08-20 00:15:02] [INFO] [GLOBAL]   ΔMCC = +0.041654
+[2026-08-20 00:15:02] [INFO] [GLOBAL] 
+================================================================================
+[2026-08-20 00:15:02] [INFO] [GLOBAL] COMPONENT CONTRIBUTION ANALYSIS (§17 — Threshold Gaming Guard)
+[2026-08-20 00:15:02] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:15:02] [INFO] [GLOBAL]   CORAL effect (θ=0.50 fixed):
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     D2 Baseline:      F1=0.1091  MCC=0.0732
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     D2 CORAL:         F1=0.3687  MCC=0.0373
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     ΔCORAL:           F1=+0.2597  MCC=-0.0359
+[2026-08-20 00:15:02] [INFO] [GLOBAL] 
+  Prior Correction effect (θ=0.50 fixed):
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     D2 Baseline:      F1=0.1091  MCC=0.0732
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     D2 + Prior Corr:  F1=0.0485  MCC=0.0144
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     ΔPrior:           F1=-0.0606  MCC=-0.0587
+[2026-08-20 00:15:02] [INFO] [GLOBAL] 
+  Calibration effect (θ=0.50 → θ*):
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     D2 Uncalibrated:  F1=0.1091  MCC=0.0732
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     D2 Calibrated:    F1=0.1580  MCC=0.0793
+[2026-08-20 00:15:02] [INFO] [GLOBAL]     ΔCalibration:     F1=+0.0490  MCC=+0.0061
+[2026-08-20 00:15:02] [INFO] [GLOBAL] 
+================================================================================
+[2026-08-20 00:15:02] [INFO] [GLOBAL] GENERATING PLOTS
+[2026-08-20 00:15:02] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:15:03] [INFO] [GLOBAL]   Plots saved to phase4_results/plots/
+[2026-08-20 00:15:03] [INFO] [GLOBAL] 
+================================================================================
+[2026-08-20 00:15:03] [INFO] [GLOBAL] COMPUTATIONAL EFFICIENCY
+[2026-08-20 00:15:03] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:15:03] [INFO] [GLOBAL]   D1 Baseline LightGBM: 691.9 KB
+[2026-08-20 00:15:03] [INFO] [GLOBAL]   D2 Baseline LightGBM: 696.1 KB
+[2026-08-20 00:15:03] [INFO] [GLOBAL]   D1 CORAL LightGBM: 692.3 KB
+[2026-08-20 00:15:03] [INFO] [GLOBAL]   D2 CORAL LightGBM: 697.0 KB
+[2026-08-20 00:15:03] [INFO] [GLOBAL]   D1 DANN: 62.5 KB
+[2026-08-20 00:15:03] [INFO] [GLOBAL]   D2 DANN: 62.5 KB
+[2026-08-20 00:15:03] [INFO] [GLOBAL]   DANN trainable params: 13506
+[2026-08-20 00:15:03] [INFO] [GLOBAL] 
+================================================================================
+[2026-08-20 00:15:03] [INFO] [GLOBAL] GENERATING EXCEL WORKBOOK
+[2026-08-20 00:15:03] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:15:03] [INFO] [GLOBAL]   Excel saved: /Users/tirthkosambia/Documents/ARGUS/phase4_results/ARGUS_Phase4_Results.xlsx
+[2026-08-20 00:15:03] [INFO] [GLOBAL] 
+================================================================================
+[2026-08-20 00:15:03] [INFO] [GLOBAL] ARGUS PHASE 4 STATUS
+[2026-08-20 00:15:03] [INFO] [GLOBAL] ================================================================================
+[2026-08-20 00:15:03] [INFO] [GLOBAL] 
+D1 baseline: COMPLETE
+[2026-08-20 00:15:03] [INFO] [GLOBAL] D2 baseline: COMPLETE
+[2026-08-20 00:15:03] [INFO] [GLOBAL] 
+Prior correction:
+[2026-08-20 00:15:03] [INFO] [GLOBAL]   D1: COMPLETE
+[2026-08-20 00:15:03] [INFO] [GLOBAL]   D2: COMPLETE
+[2026-08-20 00:15:03] [INFO] [GLOBAL] 
+Multi-source fusion: COMPLETE
+[2026-08-20 00:15:03] [INFO] [GLOBAL] 
+CORAL:
+[2026-08-20 00:15:03] [INFO] [GLOBAL]   Single-source: COMPLETE
+[2026-08-20 00:15:03] [INFO] [GLOBAL]   Multi-source: COMPLETE
+[2026-08-20 00:15:03] [INFO] [GLOBAL] 
+DANN:
+[2026-08-20 00:15:03] [INFO] [GLOBAL]   Single-source: COMPLETE (from Phase 3)
+[2026-08-20 00:15:03] [INFO] [GLOBAL]   Multi-source: COMPLETE
+[2026-08-20 00:15:03] [INFO] [GLOBAL] 
+Calibration: COMPLETE (4 objectives × all experiments)
+[2026-08-20 00:15:03] [INFO] [GLOBAL] 
+Full ARGUS: COMPLETE
+[2026-08-20 00:15:03] [INFO] [GLOBAL] 
+Phase 3 best F1:  0.377038
+[2026-08-20 00:15:03] [INFO] [GLOBAL] Phase 4 best F1:  0.386940
+[2026-08-20 00:15:03] [INFO] [GLOBAL] F1 improvement:   +0.009902
+[2026-08-20 00:15:03] [INFO] [GLOBAL] 
+Phase 3 best MCC: 0.078864
+[2026-08-20 00:15:03] [INFO] [GLOBAL] Phase 4 best MCC: 0.120517
+[2026-08-20 00:15:03] [INFO] [GLOBAL] MCC improvement:  +0.041654
+[2026-08-20 00:15:03] [INFO] [GLOBAL] 
+Final FPR: 0.870796
+[2026-08-20 00:15:03] [INFO] [GLOBAL] Final FNR: 0.039219
+[2026-08-20 00:15:03] [INFO] [GLOBAL] 
+Excel: /Users/tirthkosambia/Documents/ARGUS/phase4_results/ARGUS_Phase4_Results.xlsx
+[2026-08-20 00:15:03] [INFO] [GLOBAL] 
+Total execution time: 39.8s
+[2026-08-20 00:15:03] [INFO] [GLOBAL] ================================================================================

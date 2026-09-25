@@ -1,0 +1,6 @@
+{
+  "Source": "D2",
+  "Target": "D3",
+  "Model": "CORAL + LightGBM",
+  "Reg": 1e-06
+}

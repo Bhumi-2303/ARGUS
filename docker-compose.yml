@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  argus-platform:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: argus-platform
+    ports:
+      - "${ARGUS_PORT:-8000}:8000"
+    environment:
+      - ARGUS_MODE=${ARGUS_MODE:-demo}
+      - ARGUS_HOST=${ARGUS_HOST:-0.0.0.0}
+      - ARGUS_PORT=${ARGUS_PORT:-8000}
+      - ARGUS_ALLOWED_ORIGINS=${ARGUS_ALLOWED_ORIGINS:-http://localhost,http://localhost:8000,http://127.0.0.1,http://127.0.0.1:8000}
+      - PYTHONPATH=/app/src
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2.00'
+          memory: 2048M
+        reservations:
+          cpus: '0.50'
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
