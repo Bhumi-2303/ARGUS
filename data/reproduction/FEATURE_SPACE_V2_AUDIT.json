@@ -1,0 +1,21 @@
+{
+  "status": "V2 Approved",
+  "v2_features": [
+    "duration",
+    "total_pkts",
+    "total_bytes",
+    "protocol",
+    "bytes_per_packet",
+    "packet_rate",
+    "byte_rate"
+  ],
+  "v3_features": [],
+  "excluded_due_to_incompatibility": [
+    "src_pkts",
+    "dst_pkts",
+    "tcp_flags",
+    "header_length",
+    "srate",
+    "drate"
+  ]
+}
