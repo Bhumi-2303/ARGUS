@@ -1,118 +1,162 @@
-"""FastAPI application entry point."""
-from fastapi import FastAPI, Depends, WebSocket, WebSocketDisconnect
-from fastapi.middleware.cors import CORSMiddleware
-from structlog import get_logger
-import uvicorn
+"""FastAPI application entry point for ARGUS v1 API.
+
+Provides production-ready configuration management, startup artifact verification,
+CORS locking, request size limiting, and static SPA serving.
+"""
+
+import os
+import sys
 from contextlib import asynccontextmanager
+from fastapi import FastAPI, Request, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+import structlog
 
-from config.settings import get_settings
-from argus.security.middleware import SecurityMiddleware
-from argus.api.routers import agents, tasks, health
-from argus.api.routers import monitoring
-from argus.schemas.health import SystemHealth
+from argus.registry.model_registry import model_registry
+from argus.api.routers.stream import global_bus
+from argus.api.routers import health, domains, models, results, predict, stream, shift, explain, onboard, agents
 
-logger = get_logger("argus.api")
+logger = structlog.get_logger("argus.api")
+
+# Configuration Management via Environment Variables
+ARGUS_HOST = os.getenv("ARGUS_HOST", "0.0.0.0")
+ARGUS_PORT = int(os.getenv("ARGUS_PORT", "8000"))
+ARGUS_MODE = os.getenv("ARGUS_MODE", "demo").lower()  # "demo" or "production"
+ALLOWED_ORIGINS_ENV = os.getenv(
+    "ARGUS_ALLOWED_ORIGINS",
+    "http://localhost,http://localhost:8000,http://localhost:3000,http://localhost:5173,http://127.0.0.1,http://127.0.0.1:8000,http://127.0.0.1:3000,http://127.0.0.1:5173"
+)
+ALLOWED_ORIGINS = [o.strip() for o in ALLOWED_ORIGINS_ENV.split(",") if o.strip()]
+
+# Maximum allowed payload size for API endpoints (1 MB limit)
+MAX_PAYLOAD_BYTES = 1024 * 1024
+
+
+def verify_required_artifacts():
+    """Verify that all required model artifacts, verified results, and sample files exist.
+    
+    Refuses to start and raises RuntimeError if any file is missing.
+    """
+    logger.info("startup_artifact_verification_initiated", mode=ARGUS_MODE)
+    required_files = [
+        "results/verified/five_model_complete_comparison.csv",
+        "results/verified/dann_final_test_metrics.csv",
+        "results/verified/d3_native_threshold_sweep.csv",
+        "results/verified/SHAP_vs_Target_Gain.csv",
+        "artifacts/models/model_d1_baseline.txt",
+        "artifacts/models/model_d2_coral.txt",
+        "artifacts/models/model_d3_native.txt",
+        "artifacts/models/xgb_source.json",
+        "artifacts/models/xgb_adapted.json",
+        "data/samples/ciciot.parquet",
+        "data/samples/nfton.parquet",
+        "data/samples/iec104.parquet"
+    ]
+
+    missing = [f for f in required_files if not os.path.exists(f)]
+    if missing:
+        error_msg = f"CRITICAL STARTUP FAILURE: {len(missing)} required artifact/sample file(s) missing:\n"
+        for m in missing:
+            error_msg += f"  - Missing file: '{m}'\n"
+        logger.critical("startup_verification_failed", missing_files=missing)
+        raise RuntimeError(error_msg)
+
+    logger.info("startup_artifact_verification_passed", total_verified=len(required_files))
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Initialize DB, Bus, Blackboard, Orchestrator
-    logger.info("api_startup")
+    """Application lifespan managing model registry startup and message bus lifecycle."""
+    logger.info("api_startup_initiating", mode=ARGUS_MODE)
+
+    # 1. Startup Verification
+    verify_required_artifacts()
+
+    # 2. Load model artifacts into memory (fails loudly if invalid)
+    model_registry.load_all()
+
+    # 3. Start message bus for streaming pipeline
+    await global_bus.start()
+
+    logger.info("api_startup_complete", models_loaded=len(model_registry.loaded_models), mode=ARGUS_MODE)
     yield
-    # Shutdown: Cleanup resources
-    logger.info("api_shutdown")
+    # Shutdown logic
+    logger.info("api_shutdown_initiating")
+    await global_bus.stop()
+    logger.info("api_shutdown_complete")
+
 
 app = FastAPI(
-    title="ARGUS Platform API",
-    description="Autonomous Risk-aware Grid Understanding & Security",
-    version="0.1.0",
-    lifespan=lifespan
+    title="ARGUS Cybersecurity Platform API",
+    description="Autonomous Risk-aware Grid Understanding & Security Framework",
+    version="1.0.0",
+    lifespan=lifespan,
+    docs_url="/docs" if ARGUS_MODE == "demo" else None,
+    redoc_url="/redoc" if ARGUS_MODE == "demo" else None,
 )
 
-settings = get_settings()
-
-# Middleware
+# Hardened CORS restricted strictly to configured origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.security.cors_origins,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
-app.add_middleware(SecurityMiddleware)
 
-# Routers
-app.include_router(agents.router, prefix="/api/v1/agents", tags=["agents"])
-app.include_router(tasks.router, prefix="/api/v1/tasks", tags=["tasks"])
-app.include_router(health.router, prefix="/api/v1/health", tags=["health"])
-app.include_router(monitoring.router, prefix="/api/v1/monitoring", tags=["Monitoring"])
-from argus.api.routers import incidents
-app.include_router(incidents.router, prefix="/api/v1/incidents", tags=["incidents"])
 
-from pydantic import BaseModel
-from typing import List, Dict, Any
-import hashlib
-import os
-from argus.orchestrator.state_machine import OrchestratorStateMachine
-from argus.agents.explainability.agent import ExplainabilityAgent
-# We don't have implementations for Risk/Knowledge, so we pass None
-# We also don't have a DataIntelligence/ThreatAnalysis fully wired for the state machine yet, so we just mock them or leave as None to be flagged.
+# Request Payload Size Limit Middleware for /api/v1/predict and /api/v1/onboard
+@app.middleware("http")
+async def limit_request_payload_size(request: Request, call_next):
+    if request.method in ["POST", "PUT", "PATCH"]:
+        content_length = request.headers.get("content-length")
+        if content_length and int(content_length) > MAX_PAYLOAD_BYTES:
+            return JSONResponse(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                content={"detail": f"Payload size exceeds max limit of {MAX_PAYLOAD_BYTES} bytes."}
+            )
+    return await call_next(request)
 
-class FlowBatch(BaseModel):
-    flows: List[Dict[str, float]]
 
-@app.post("/analyze")
-async def analyze_flows(batch: FlowBatch):
-    explainability_agent = ExplainabilityAgent()
-    await explainability_agent.initialize()
-    
-    agents = {
-        "Explainability": explainability_agent,
-        "Risk": None,
-        "Knowledge": None,
-        "DataIntelligence": None,
-        "ThreatAnalysis": None
-    }
-    
-    orchestrator = OrchestratorStateMachine(agents=agents)
-    # Orchestrator expects input data; we can pass the flows directly
-    result = await orchestrator.run({"flows": batch.flows})
-    return result
+# Root Health check
+app.include_router(health.router)
 
-def get_file_hash(filepath):
-    if not os.path.exists(filepath):
-        return None
-    with open(filepath, "rb") as f:
-        return hashlib.sha256(f.read()).hexdigest()
+# Versioned API v1 Routers
+app.include_router(domains.router, prefix="/api/v1")
+app.include_router(models.router, prefix="/api/v1")
+app.include_router(results.router, prefix="/api/v1")
+app.include_router(predict.router, prefix="/api/v1")
+app.include_router(stream.router, prefix="/api/v1")
+app.include_router(shift.router, prefix="/api/v1")
+app.include_router(explain.router, prefix="/api/v1")
+app.include_router(onboard.router, prefix="/api/v1")
+app.include_router(agents.router, prefix="/api/v1/agents")
 
-import time
-from datetime import datetime, timezone
+# Mount Static Frontend SPA if built web/dist exists
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
-# Record start time when module loads
-APP_START_TIME = time.time()
+web_dist_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../web/dist"))
 
-@app.get("/health")
-async def health_check():
-    """System health check endpoint."""
-    return {
-        "status": "healthy",
-        "uptime": time.time() - APP_START_TIME,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "models": {
-            "source": get_file_hash("artifacts/models/xgb_source.json"),
-            "adapted": get_file_hash("artifacts/models/xgb_adapted.json")
-        }
-    }
+if os.path.exists(web_dist_path):
+    assets_path = os.path.join(web_dist_path, "assets")
+    if os.path.exists(assets_path):
+        app.mount("/assets", StaticFiles(directory=assets_path), name="assets")
 
-@app.websocket("/ws/dashboard")
-async def dashboard_websocket(websocket: WebSocket):
-    """WebSocket endpoint for real-time SOC dashboard updates."""
-    await websocket.accept()
-    try:
-        while True:
-            data = await websocket.receive_text()
-            # Handle incoming WS messages
-    except WebSocketDisconnect:
-        logger.info("websocket_disconnected")
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        if full_path.startswith("api/") or full_path == "health" or full_path.startswith("docs") or full_path.startswith("redoc"):
+            return None
+        file_path = os.path.join(web_dist_path, full_path)
+        if os.path.exists(file_path) and os.path.isfile(file_path):
+            return FileResponse(file_path)
+        index_file = os.path.join(web_dist_path, "index.html")
+        if os.path.exists(index_file):
+            return FileResponse(index_file)
+        return {"error": "Frontend build index.html not found"}
+
 
 if __name__ == "__main__":
-    uvicorn.run("argus.api.main:app", host=settings.host, port=settings.port, reload=settings.debug)
+    import uvicorn
+    uvicorn.run("argus.api.main:app", host=ARGUS_HOST, port=ARGUS_PORT, reload=False)

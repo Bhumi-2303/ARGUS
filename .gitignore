@@ -1,122 +1,56 @@
-# Temporary execution outputs
-final_eval_output.txt
-run1.csv
-
-# Temporary dataset acquisition / profiling tooling
-scratch/
-
-# Python/cache/build artifacts
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+*$py.class
+
+# Caches
 .pytest_cache/
-.mypy_cache/
-.ruff_cache/
 .coverage
 htmlcov/
+.mypy_cache/
+.ruff_cache/
 catboost_info/
 
-# Virtual environments
+# Environments & IDEs
 .venv/
 venv/
-env/
 ENV/
-
-# Environment/secrets
-.env
-.env.*
-!.env.example
-*.pem
-*.key
-*.crt
-credentials.json
-secrets.json
-
-# IDE
-.vscode/
+env/
 .idea/
+.vscode/
 *.swp
 *.swo
 
-# OS
-.DS_Store
-Thumbs.db
-._*
-**/._*
-
-# Logs
-*.log
-logs/
-/logs/
-
-# Build/package artifacts
-build/
-dist/
-*.egg-info/
-.eggs/
-node_modules/
-frontend/node_modules/
-training/exports/
-training/graphs/
-training/reports/
-
-# Temporary files
-tmp/
-temp/
-*.tmp
-*.bak
-
-# Jupyter
-.ipynb_checkpoints/
-
-# Temporary/archive files
-*.zip
-*.tar
-*.tar.gz
-*.tgz
+# Data & Large Artifacts
+data/
+*.parquet
 *.7z
-*.rar
+*.zip
+*.tar.gz
+*.pkl
+*.joblib
+*.h5
+*.onnx
 
-# ML/model artifacts
-checkpoints/
-runs/
-wandb/
-mlruns/
+# Raw dataset dumps & heavy cross-domain CSV backups (keep verified summary CSVs in results/verified/)
 ARGUS_Cross_Domain_Results/
+BoT-IoT dataset/
 LightGBM_CICIoT2023_Backup/
 TF_ToN_IoT_LightGBM_Final/
 TF_ToN_IoT_XGBoost/
-training/archive_leaked_run/
-phase3_results/checkpoints/
-phase3_results/experiments/
-models/best_model/
-experiment_execution/**/predictions/
-experiment_execution/**/checkpoints/
-phase4_results/experiments/**/predictions.csv
-artifacts/predictions/
-ARGUS_Paper_Data/**/predictions/
-ARGUS_Paper_Data/1_DANN_Predictions/
-ARGUS_Paper_Data/4_Baseline_Predictions/
-ARGUS_Paper_Data/5_SHAP_Values/
-phase4_results/prior_correction/*.npy
+!results/verified/*.csv
 
-# Local experiment scratch repositories
-scratch_nr04/
-scratch_rep01/
-scratch_argus_clone/
-scratch_pip_cache/
 
-# Raw packet captures
-*.pcap
-*.pcapng
-*.parquet
+# Frontend & Web
+node_modules/
+dist/
+.next/
 
-# Large CSV/data files
-data/**/raw/**
-data/**/processed/**/*.csv
-data/**/train_test/**/*.csv
-data/**/network_timestamped/**/*.csv
-data/**/security_events/**/*.csv
+# macOS / System
+.DS_Store
+._*
 
+<<<<<<< HEAD
 # Large dataset files
 data/cic_iot_2023/**
 data/nf_ton_iot/**
@@ -152,3 +86,5 @@ data/raw/
 data/interim/
 data/processed/
 results/raw_predictions/
+=======
+>>>>>>> origin/main

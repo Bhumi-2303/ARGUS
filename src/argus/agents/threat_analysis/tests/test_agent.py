@@ -12,7 +12,8 @@ async def test_agent_initialization():
     agent.tool_inference.initialize = AsyncMock()
     agent.tool_confidence.initialize = AsyncMock()
     agent.tool_evidence.initialize = AsyncMock()
-    agent.tool_gemini.initialize = AsyncMock()
+    if hasattr(agent, "tool_gemini"):
+        agent.tool_gemini.initialize = AsyncMock()
     agent.tool_publisher.initialize = AsyncMock()
 
     await agent.initialize()

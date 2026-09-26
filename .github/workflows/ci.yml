@@ -61,6 +61,11 @@ jobs:
       run: pytest tests/integration/ tests/e2e/ --tb=short -v
       env:
         PYTHONPATH: src:tests:.
+    - name: Run UI Numerical & Agent Topology Integrity Check
+      run: python scripts/verify_ui_numbers.py
+      env:
+        PYTHONPATH: src:tests:.
+
   frontend:
     name: Frontend Build
     runs-on: ubuntu-latest

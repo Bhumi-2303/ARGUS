@@ -1,0 +1,1 @@
+"""ARGUS shift module."""

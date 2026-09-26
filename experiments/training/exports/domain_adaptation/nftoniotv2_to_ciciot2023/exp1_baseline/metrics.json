@@ -1,0 +1,24 @@
+{
+    "xgboost": {
+        "F1": 0.49374540103016923,
+        "Balanced_Accuracy": 0.5,
+        "Accuracy": 0.9752906976744186,
+        "MCC": 0.0,
+        "Kappa": 0.0,
+        "ROC_AUC": 0.5,
+        "PR_AUC": 0.9876453488372092,
+        "Training_Time_s": 1.242393970489502,
+        "Inference_Time_s": 1.2718441486358643
+    },
+    "lightgbm": {
+        "F1": 0.49374540103016923,
+        "Balanced_Accuracy": 0.5,
+        "Accuracy": 0.9752906976744186,
+        "MCC": 0.0,
+        "Kappa": 0.0,
+        "ROC_AUC": 0.5,
+        "PR_AUC": 0.9876453488372092,
+        "Training_Time_s": 2.399949073791504,
+        "Inference_Time_s": 2.53186297416687
+    }
+}

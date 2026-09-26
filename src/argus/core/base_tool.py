@@ -37,7 +37,6 @@ class BaseTool(ABC):
     async def shutdown(self) -> None:
         """Clean up tool resources."""
 
-    @abstractmethod
     def metadata(self) -> Dict[str, Any]:
         """Return the tool's metadata and capabilities schema."""
         return {

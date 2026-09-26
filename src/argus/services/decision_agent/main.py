@@ -211,15 +211,13 @@ def explain(payload: Union[List[Dict[str, Any]], Dict[str, Any]]):
                     prob = d_data["probability"]
                     shap_vals = d_data["shap_values"]
             except Exception as e:
-                print(f"[!] Detector API call warning: {e}")
-                pred = pred if pred is not None else 1
-                prob = prob if prob is not None else 0.569761
-                shap_vals = shap_vals if shap_vals is not None else {
-                    "pkt_mean_to_max": 0.297223,
-                    "tcp_flag_density": -1.637493,
-                    "log_pkt_mean": -0.828386,
-                    "log_pkt_max": 0.584339
-                }
+                print(f"[!] Detector API call error: {e}")
+                if pred is None or prob is None or shap_vals is None:
+                    raise HTTPException(
+                        status_code=422,
+                        detail="REQUIRES VERIFICATION: Prediction metrics missing and detector API unreachable."
+                    )
+
             det_ms = (time.perf_counter() - t0_det) * 1000.0
 
         t0_llm = time.perf_counter()

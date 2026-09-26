@@ -1,14 +1,20 @@
-.PHONY: reproduce backup-artifacts restore-artifacts
+.PHONY: setup api web test demo clean
 
-reproduce:
-	python scripts/fit_fusion.py
-	python scripts/final_eval.py
+setup:
+	pip install -e .[dev,test]
 
-backup-artifacts:
-	@echo "Creating artifacts backup at /tmp/argus_artifacts_backup.tar.gz..."
-	tar -czvf /tmp/argus_artifacts_backup.tar.gz artifacts/models artifacts/day1 artifacts/day4 2>/dev/null || tar -czvf /tmp/argus_artifacts_backup.tar.gz artifacts/models artifacts/day4
-	sha256sum /tmp/argus_artifacts_backup.tar.gz
+api:
+	uvicorn argus.api.main:app --host 0.0.0.0 --port 8000 --reload
 
-restore-artifacts:
-	@echo "Restoring artifacts from /tmp/argus_artifacts_backup.tar.gz..."
-	tar -xzvf /tmp/argus_artifacts_backup.tar.gz
+web:
+	cd web && npm run dev
+
+test:
+	pytest tests/
+
+demo:
+	python scripts/start_demo.py
+
+clean:
+	find . -type d -name "__pycache__" -exec rm -rf {} +
+	find . -type f -name "*.pyc" -delete

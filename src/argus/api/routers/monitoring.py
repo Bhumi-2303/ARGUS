@@ -43,16 +43,26 @@ async def get_drift_status(model_id: str) -> DriftReport:
     source_domain = model_info.get("source_domain", "UNKNOWN")
     target_domain = model_info.get("target_domain", "UNKNOWN")
     
-    # Simulate batch data
-    np.random.seed(42)
-    reference_features = np.random.randn(1000, 5)
-    
-    # Introduce slight drift
-    current_features = np.random.randn(200, 5) * 1.1 + 0.15 
-    
-    current_predictions = (np.random.rand(200) > 0.8).astype(int)
-    current_confidences = np.random.uniform(0.5, 1.0, size=200)
-    
+    # Read real sample feature distributions from data_manager
+    ref_path = "data/samples/ciciot.parquet"
+    tgt_path = f"data/samples/{target_domain}.parquet"
+    if not os.path.exists(ref_path) or not os.path.exists(tgt_path):
+        raise HTTPException(
+            status_code=404,
+            detail="REQUIRES VERIFICATION: Sample data for drift monitoring not found."
+        )
+
+    import pandas as pd
+    ref_df = pd.read_parquet(ref_path).head(1000)
+    tgt_df = pd.read_parquet(tgt_path).head(200)
+
+    features_cols = ["pkt_mean_to_max", "tcp_flag_density", "log_pkt_mean", "log_pkt_max"]
+    reference_features = ref_df[features_cols].values
+    current_features = tgt_df[features_cols].values
+
+    current_predictions = tgt_df["label"].values if "label" in tgt_df.columns else np.zeros(len(tgt_df))
+    current_confidences = np.full(len(tgt_df), 0.95)
+
     report = analyze_batch_drift(
         current_features=current_features,
         current_predictions=current_predictions,
@@ -62,5 +72,6 @@ async def get_drift_status(model_id: str) -> DriftReport:
         target_domain=target_domain,
         config=DriftConfig()
     )
+
     
     return report

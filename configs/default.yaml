@@ -1,0 +1,29 @@
+system:
+  name: "ARGUS"
+  version: "0.1.0"
+  environment: "development"
+  debug: true
+
+server:
+  host: "0.0.0.0"
+  port: 8000
+
+paths:
+  artifacts: "artifacts"
+  models: "artifacts/models"
+  transforms: "artifacts/transforms"
+  thresholds: "artifacts/thresholds"
+  results_verified: "results/verified"
+  results_diagnostic: "results/diagnostic"
+
+features:
+  harmonized_4_features:
+    - "pkt_mean_to_max"
+    - "tcp_flag_density"
+    - "log_pkt_mean"
+    - "log_pkt_max"
+
+thresholds:
+  clean_class_aware_coral: 0.99
+  dann: 0.60
+  d3_balanced: 0.50

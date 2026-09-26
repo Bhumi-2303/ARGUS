@@ -1,0 +1,2 @@
+Model,Accuracy,Precision,Recall,F1,Balanced_Accuracy,Kappa,MCC,ROC_AUC,PR_AUC,Specificity,Protocol_Status,Threshold,Threshold_Source,Test_Protocol
+Class-aware CORAL + XGBoost (Leaked),0.5506237303386867,0.7262466117317096,0.6113261175088625,0.6638495414839763,0.5006184705032931,0.0010942955577313,0.001131804960073,0.6360858189188427,0.8489185103705479,0.3899108234977237,Diagnostic class-aware CORAL,0.5,Diagnostic 0.50,Diagnostic evaluation on NF-ToN test
