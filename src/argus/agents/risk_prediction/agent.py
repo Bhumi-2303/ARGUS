@@ -139,6 +139,8 @@ class RiskPredictionAgent(BaseAgent):
         )
         
         result = RiskEvent(
+            implementation_status="not_implemented",
+
             source_event_id=input_data.threat_event.source_event_id,
             risk_score=risk_score.score,
             severity=risk_score.severity,

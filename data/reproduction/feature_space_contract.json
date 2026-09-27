@@ -1,0 +1,103 @@
+{
+  "version": "V2",
+  "features": [
+    {
+      "canonical_name": "duration",
+      "source_columns": {
+        "ciciot2023": "flow_duration",
+        "nf_ton_iot": "FLOW_DURATION_MILLISECONDS",
+        "bot_iot": "dur"
+      },
+      "semantic_definition": "Total time duration of the observed network flow or window in seconds.",
+      "unit": "seconds",
+      "derived": true,
+      "formula": "NF-ToN-IoT converted from ms to seconds: FLOW_DURATION_MILLISECONDS / 1000.0",
+      "leakage_status": "SAFE",
+      "included": true
+    },
+    {
+      "canonical_name": "total_pkts",
+      "source_columns": {
+        "ciciot2023": "Number",
+        "nf_ton_iot": "IN_PKTS, OUT_PKTS",
+        "bot_iot": "pkts"
+      },
+      "semantic_definition": "Total number of packets transferred in the flow.",
+      "unit": "count",
+      "derived": true,
+      "formula": "NF-ToN-IoT: IN_PKTS + OUT_PKTS",
+      "leakage_status": "SAFE",
+      "included": true
+    },
+    {
+      "canonical_name": "total_bytes",
+      "source_columns": {
+        "ciciot2023": "Tot sum",
+        "nf_ton_iot": "IN_BYTES, OUT_BYTES",
+        "bot_iot": "bytes"
+      },
+      "semantic_definition": "Total volume of bytes transferred in the flow.",
+      "unit": "bytes",
+      "derived": true,
+      "formula": "NF-ToN-IoT: IN_BYTES + OUT_BYTES",
+      "leakage_status": "SAFE",
+      "included": true
+    },
+    {
+      "canonical_name": "protocol",
+      "source_columns": {
+        "ciciot2023": "Protocol Type",
+        "nf_ton_iot": "PROTOCOL",
+        "bot_iot": "proto"
+      },
+      "semantic_definition": "L4/L3 Protocol used for the flow.",
+      "unit": "categorical",
+      "derived": true,
+      "formula": "Map specific numerical IDs or string names to standard string representation (e.g., TCP, UDP, ICMP, ARP).",
+      "leakage_status": "SAFE",
+      "included": true
+    },
+    {
+      "canonical_name": "bytes_per_packet",
+      "source_columns": {
+        "ciciot2023": "Derived",
+        "nf_ton_iot": "Derived",
+        "bot_iot": "Derived"
+      },
+      "semantic_definition": "Average size of a packet in the flow.",
+      "unit": "bytes/packet",
+      "derived": true,
+      "formula": "total_bytes / max(total_pkts, 1)",
+      "leakage_status": "SAFE",
+      "included": true
+    },
+    {
+      "canonical_name": "packet_rate",
+      "source_columns": {
+        "ciciot2023": "Derived",
+        "nf_ton_iot": "Derived",
+        "bot_iot": "Derived"
+      },
+      "semantic_definition": "Number of packets transmitted per second.",
+      "unit": "packets/second",
+      "derived": true,
+      "formula": "total_pkts / max(duration, 0.001)",
+      "leakage_status": "SAFE",
+      "included": true
+    },
+    {
+      "canonical_name": "byte_rate",
+      "source_columns": {
+        "ciciot2023": "Derived",
+        "nf_ton_iot": "Derived",
+        "bot_iot": "Derived"
+      },
+      "semantic_definition": "Number of bytes transmitted per second.",
+      "unit": "bytes/second",
+      "derived": true,
+      "formula": "total_bytes / max(duration, 0.001)",
+      "leakage_status": "SAFE",
+      "included": true
+    }
+  ]
+}

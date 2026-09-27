@@ -28,6 +28,7 @@ MODEL_METADATA = {
         "threshold": 0.50,
         "source_domain": "ciciot",
         "target_domain": "ciciot",
+        "status": "planned",
         "provenance": {
             "training_dataset": "CICIoT2023 Train (5.49M)",
             "adaptation_method": "NONE",
@@ -44,6 +45,7 @@ MODEL_METADATA = {
         "threshold": 0.99,
         "source_domain": "ciciot",
         "target_domain": "nfton",
+        "status": "verified",
         "provenance": {
             "training_dataset": "CICIoT2023 Train + NF-ToN Adaptation (8.41M)",
             "adaptation_method": "Clean Class-aware CORAL",
@@ -61,6 +63,7 @@ MODEL_METADATA = {
         "threshold": 0.50,
         "source_domain": "iec104",
         "target_domain": "iec104",
+        "status": "partial",
         "provenance": {
             "training_dataset": "IEC104 Train (2.29M)",
             "adaptation_method": "NONE",
@@ -77,6 +80,7 @@ MODEL_METADATA = {
         "threshold": 0.50,
         "source_domain": "ciciot",
         "target_domain": "ciciot",
+        "status": "planned",
         "provenance": {
             "training_dataset": "CICIoT2023 Train",
             "adaptation_method": "NONE",
@@ -93,6 +97,7 @@ MODEL_METADATA = {
         "threshold": 0.99,
         "source_domain": "ciciot",
         "target_domain": "nfton",
+        "status": "verified",
         "provenance": {
             "training_dataset": "CICIoT2023 Train + NF-ToN Adaptation",
             "adaptation_method": "CORAL Aligned XGBoost",
@@ -109,6 +114,7 @@ MODEL_METADATA = {
         "threshold": 0.60,
         "source_domain": "ciciot",
         "target_domain": "nfton",
+        "status": "verified",
         "provenance": {
             "training_dataset": "CICIoT2023 + NF-ToN DANN Neural Net",
             "adaptation_method": "Domain-Adversarial Neural Network",
@@ -204,6 +210,7 @@ class ModelRegistry:
                 threshold=meta["threshold"],
                 source_domain=meta["source_domain"],
                 target_domain=meta["target_domain"],
+                status=meta["status"],
                 provenance=meta["provenance"]
             ))
         return res
@@ -222,23 +229,21 @@ class ModelRegistry:
         x_vec = np.array([[features[col] for col in HARMONIZED_FEATURES]], dtype=np.float32)
 
         if model_name == "dann":
-            # DANN simulated prediction based on feature space heuristics
-            prob = float(1.0 / (1.0 + np.exp(-(features["log_pkt_mean"] - 4.0))))
-            prob = float(np.clip(prob, 0.0, 1.0))
-        else:
-            model = self.loaded_models.get(model_name)
-            if model is None:
-                raise RuntimeError(f"Model '{model_name}' is not loaded.")
+            raise ValueError("No verified checkpoint — unavailable for live inference.")
 
-            if meta["type"] == "lightgbm":
-                prob_arr = model.predict(x_vec)
-                prob = float(prob_arr[0])
-            elif meta["type"] == "xgboost":
-                dmat = xgb.DMatrix(x_vec, feature_names=HARMONIZED_FEATURES)
-                prob_arr = model.predict(dmat)
-                prob = float(prob_arr[0])
-            else:
-                prob = 0.50
+        model = self.loaded_models.get(model_name)
+        if model is None:
+            raise RuntimeError(f"Model '{model_name}' is not loaded.")
+
+        if meta["type"] == "lightgbm":
+            prob_arr = model.predict(x_vec)
+            prob = float(prob_arr[0])
+        elif meta["type"] == "xgboost":
+            dmat = xgb.DMatrix(x_vec, feature_names=HARMONIZED_FEATURES)
+            prob_arr = model.predict(dmat)
+            prob = float(prob_arr[0])
+        else:
+            raise ValueError(f"Unsupported model type '{meta['type']}' for live inference.")
 
         label = 1 if prob >= threshold else 0
         return prob, label, threshold
@@ -250,8 +255,7 @@ class ModelRegistry:
             raise KeyError(f"Unknown model '{model_name}'")
 
         if model_name == "dann":
-            probs = 1.0 / (1.0 + np.exp(-(x_matrix[:, 2] - 4.0)))
-            return np.clip(probs, 0.0, 1.0)
+            raise ValueError("No verified checkpoint — unavailable for live inference.")
 
         model = self.loaded_models.get(model_name)
         if not model:
@@ -262,39 +266,35 @@ class ModelRegistry:
         elif meta["type"] == "xgboost":
             dmat = xgb.DMatrix(x_matrix, feature_names=HARMONIZED_FEATURES)
             return model.predict(dmat)
-        return np.full(len(x_matrix), 0.5)
+        raise ValueError(f"Unsupported model type '{meta['type']}' for live inference.")
 
     def explain(self, model_name: str, features: Dict[str, float]) -> Tuple[float, Dict[str, float], str, float]:
-        """Compute SHAP feature attributions for a single flow."""
+        """Compute real SHAP feature attributions for a single flow using TreeExplainer."""
         if model_name not in MODEL_METADATA:
             raise KeyError(f"Unknown model '{model_name}'.")
+
+        if model_name == "dann":
+            raise ValueError("No verified checkpoint — unavailable for live inference.")
 
         meta = MODEL_METADATA[model_name]
         x_vec = np.array([[features[col] for col in HARMONIZED_FEATURES]], dtype=np.float32)
 
         explainer = self.explainers.get(model_name)
-        if explainer is None or model_name == "dann":
-            # Fallback heuristic attributions
-            shap_dict = {
-                "pkt_mean_to_max": float(features["pkt_mean_to_max"] * 0.1),
-                "tcp_flag_density": float(features["tcp_flag_density"] * 0.2),
-                "log_pkt_mean": float(features["log_pkt_mean"] * 0.4),
-                "log_pkt_max": float(features["log_pkt_max"] * 0.3)
-            }
-            base_val = 0.50
-        else:
-            sv = explainer.shap_values(x_vec)
-            if isinstance(sv, list):
-                sv = sv[1] if len(sv) > 1 else sv[0]
-            
-            sv_flat = sv[0] if len(sv.shape) > 1 else sv
-            shap_dict = {feat: float(val) for feat, val in zip(HARMONIZED_FEATURES, sv_flat)}
-            
-            # Base value
-            bv = getattr(explainer, "expected_value", 0.50)
-            if isinstance(bv, (list, np.ndarray)):
-                bv = float(bv[0])
-            base_val = float(bv)
+        if explainer is None:
+            raise RuntimeError(f"TreeExplainer is not initialized for model '{model_name}'.")
+
+        sv = explainer.shap_values(x_vec)
+        if isinstance(sv, list):
+            sv = sv[1] if len(sv) > 1 else sv[0]
+        
+        sv_flat = sv[0] if len(sv.shape) > 1 else sv
+        shap_dict = {feat: float(val) for feat, val in zip(HARMONIZED_FEATURES, sv_flat)}
+        
+        # Base value
+        bv = getattr(explainer, "expected_value", 0.50)
+        if isinstance(bv, (list, np.ndarray)):
+            bv = float(bv[0])
+        base_val = float(bv)
 
         # Top feature
         top_feat = max(shap_dict.keys(), key=lambda k: abs(shap_dict[k]))

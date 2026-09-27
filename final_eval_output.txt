@@ -1,0 +1,29 @@
+Computing reference stats from CICIoT Train...
+Loading NF-ToN Test...
+Loading CICIoT Test...
+Creating mixed stream...
+
+--- Evaluating NF-ToN Test (Target) ---
+Candidate A: MCC=0.018 [0.017, 0.019]
+Candidate B: MCC=0.391 [0.390, 0.391]
+Candidate C: MCC=0.391 [0.390, 0.391]
+Candidate D: MCC=0.391 [0.390, 0.392]
+Candidate E_always: MCC=0.000 [0.000, 0.000]
+Candidate E_random: MCC=-0.000 [-0.001, 0.000]
+
+--- Evaluating CICIoT Test (Source) ---
+Candidate A: MCC=0.697 [0.691, 0.697]
+Candidate B: MCC=-0.017 [-0.019, -0.016]
+Candidate C: MCC=0.697 [0.691, 0.697]
+Candidate D: MCC=0.071 [0.070, 0.071]
+Candidate E_always: MCC=0.000 [0.000, 0.000]
+Candidate E_random: MCC=-0.002 [-0.003, -0.001]
+
+--- Evaluating Mixed Stream ---
+Candidate A: MCC=0.104 [0.103, 0.105]
+Candidate B: MCC=0.262 [0.261, 0.263]
+Candidate C: MCC=0.479 [0.478, 0.479]
+Candidate D: MCC=0.269 [0.268, 0.270]
+Candidate E_always: MCC=0.000 [0.000, 0.000]
+Candidate E_random: MCC=0.001 [0.001, 0.002]
+Finished evaluating. Saved to artifacts/day4/results.json

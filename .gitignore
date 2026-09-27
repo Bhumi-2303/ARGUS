@@ -50,3 +50,48 @@ dist/
 .DS_Store
 ._*
 
+# Large dataset files
+data/cic_iot_2023/**
+data/nf_ton_iot/**
+data/ton_iot/**
+data/hai/**
+
+# Explicitly unignore metadata directories
+!data/cic_iot_2023/
+!data/cic_iot_2023/metadata/
+!data/cic_iot_2023/metadata/**
+
+!data/nf_ton_iot/
+!data/nf_ton_iot/metadata/
+!data/nf_ton_iot/metadata/**
+
+!data/ton_iot/
+!data/ton_iot/metadata/
+!data/ton_iot/metadata/**
+
+!data/hai/
+!data/hai/metadata/
+!data/hai/metadata/**
+
+# Explicitly unignore root research artifacts
+!data/FINAL_DATASET_MANIFEST.json
+!data/FINAL_DATASET_READINESS.md
+!data/DATASET_COMPLETION_REPORT.md
+!data/DATASET_MANIFEST.json
+!data/DATASET_ACQUISITION_REPORT.md
+!data/CROSS_DATASET_COMPATIBILITY.md
+data/**/metadata/downloads/
+data/raw/
+data/interim/
+data/processed/
+results/raw_predictions/
+
+# Logs and temp test results
+*.log
+test-results/
+*.tsbuildinfo
+scratch_argus_clone/
+scratch_pip_cache/
+
+
+

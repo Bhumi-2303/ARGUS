@@ -4,6 +4,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from './context/ThemeContext';
 import { AppShell } from './components/AppShell';
 import { PAGES } from './app/pages';
+import PrivacyPolicyPage from './features/legal/PrivacyPolicyPage';
+import TermsPage from './features/legal/TermsPage';
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,6 +35,8 @@ export default function App() {
                   />
                 );
               })}
+              <Route path="/privacy" element={<PrivacyPolicyPage />} />
+              <Route path="/terms" element={<TermsPage />} />
             </Routes>
           </AppShell>
         </BrowserRouter>

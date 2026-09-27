@@ -1,0 +1,2 @@
+# Clean Dataset Protocol
+Source datasets combined, internally deduplicated, and exact feature overlaps with the target BoT-IoT dataset explicitly removed via anti-join. 80/20 train/val deterministic split applied.

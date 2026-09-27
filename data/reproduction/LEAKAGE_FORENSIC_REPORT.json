@@ -1,0 +1,8 @@
+{
+  "CICIoT_Internal_Duplicates": 205809,
+  "NFToN_Internal_Duplicates": 1128901,
+  "BoTIoT_Internal_Duplicates": 999918,
+  "Overlap_CIC_vs_NFT": 4,
+  "Overlap_CIC_vs_BoT": 0,
+  "Overlap_NFT_vs_BoT": 3
+}

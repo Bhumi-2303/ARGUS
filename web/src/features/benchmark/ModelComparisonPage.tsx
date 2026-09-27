@@ -1,3 +1,5 @@
+import { ModelStatusBadge } from '../../components/ModelStatusBadge';
+import { MetricInfoIcon } from '../../components/MetricInfoIcon';
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import ReactECharts from 'echarts-for-react';
@@ -65,8 +67,9 @@ export default function ModelComparisonPage() {
     return {
       ...r,
       model_name: r.Model || r.model_name || 'Unknown',
-      threshold: matchedModel?.threshold ?? r.Threshold ?? r.threshold ?? 0.50,
+      threshold: matchedModel?.threshold ?? r.Threshold ?? r.Threshold ?? 0.50,
       protocol_status: matchedModel?.protocol_status || r.Protocol_Status || (r.Model?.includes('DANN') ? 'dann_adapted' : 'final'),
+      modelInfo: matchedModel,
     };
   });
 
@@ -98,7 +101,7 @@ export default function ModelComparisonPage() {
         { name: 'F1 Score', max: 1 },
         { name: 'Specificity', max: 1 },
         { name: 'Recall', max: 1 },
-        { name: '1 - FPR', max: 1 },
+        { name: 'Accuracy', max: 1 },
       ],
       axisName: { color: '#94a3b8', fontSize: 11, fontFamily: 'monospace' },
       splitLine: { lineStyle: { color: '#334155' } },
@@ -112,11 +115,11 @@ export default function ModelComparisonPage() {
           const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b'];
           return {
             value: [
-              r.mcc ?? 0,
-              r.f1_score ?? 0,
-              r.specificity ?? (1 - (r.fpr ?? 0)),
-              r.recall ?? 0,
-              1 - (r.fpr ?? 0),
+              r.MCC ?? 0,
+              r.F1 ?? 0,
+              r.Specificity ?? 0,
+              r.Recall ?? 0,
+              r.Accuracy ?? 0,
             ],
             name: r.model_name,
             itemStyle: { color: colors[i % colors.length] },
@@ -131,7 +134,7 @@ export default function ModelComparisonPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-100 font-mono flex items-center gap-2">
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 font-mono flex items-center gap-2">
             <BarChart3 className="w-6 h-6 text-cyan-400" />
             <span>Cross-Domain Model Comparison & Empirical Benchmark</span>
           </h1>
@@ -150,12 +153,13 @@ export default function ModelComparisonPage() {
       <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/40 text-amber-300 flex items-start gap-3 shadow-lg">
         <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
         <div className="space-y-1 text-xs font-mono">
-          <div className="font-bold text-slate-100 flex items-center gap-2">
-            <span>⚠️ DEGENERATE-RISK WARNING: DANN ADVERSARIAL REPRESENTATION COLLAPSE</span>
+          <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <span>DEGENERATE-RISK WARNING: DANN ADVERSARIAL REPRESENTATION COLLAPSE</span>
             <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px]">
-              MCC: {(Number(rows.find(r => r.model_name?.toLowerCase().includes('dann') || r.Model?.toLowerCase().includes('dann'))?.MCC ?? 0.012855)).toFixed(4)}
+              MCC: {(() => { const dann = rows.find(r => r.model_name?.toLowerCase().includes('dann') || r.Model?.toLowerCase().includes('dann')); return typeof dann?.MCC === 'number' ? dann.MCC.toFixed(4) : typeof dann?.mcc === 'number' ? dann.mcc.toFixed(4) : '-'; })()}
             </span>
           </div>
+
           <p className="text-amber-200/90 leading-relaxed font-sans">
             Under severe target class imbalance (e.g. 93% attack flows in NF-ToN-IoT-v2 or 82% benign in IEC 104), DANN gradient reversal forces feature representation collapse, causing the model to predict 100% majority class. High nominal F1/accuracy masks complete loss of discriminative power (MCC = 0.0129).
           </p>
@@ -166,7 +170,7 @@ export default function ModelComparisonPage() {
       {/* Sortable Main Performance Table */}
       <Card className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold font-mono text-slate-100 flex items-center gap-2">
+          <h2 className="text-base font-bold font-mono text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <Layers className="w-5 h-5 text-cyan-400" />
             <span>Verified 4-Architecture Performance Matrix</span>
           </h2>
@@ -251,28 +255,28 @@ export default function ModelComparisonPage() {
                           className={`font-extrabold ${
                             isDANN
                               ? 'text-rose-400'
-                              : (r.mcc ?? 0) > 0.9
+                              : (r.MCC ?? 0) > 0.9
                               ? 'text-emerald-400'
                               : 'text-amber-400'
                           }`}
                         >
-                          {(r.mcc ?? 0).toFixed(4)}
+                          {typeof r.MCC === 'number' ? r.MCC.toFixed(4) : '-'}
                         </span>
                       </td>
                       <td className="p-3 font-bold text-slate-200">
-                        {(r.f1_score ?? 0).toFixed(4)}
+                        {typeof r.F1 === 'number' ? r.F1.toFixed(4) : '-'}
                       </td>
                       <td className="p-3 text-slate-300">
-                        {(r.accuracy ?? 0).toFixed(4)}
+                        {typeof r.Accuracy === 'number' ? r.Accuracy.toFixed(4) : '-'}
                       </td>
                       <td className="p-3 text-blue-400 font-bold">
-                        {(r.recall ?? 0).toFixed(4)}
+                        {typeof r.Recall === 'number' ? r.Recall.toFixed(4) : '-'}
                       </td>
                       <td className="p-3 font-bold text-rose-400">
-                        {(r.fpr ?? 0).toFixed(4)}
+                        {typeof r.Specificity === 'number' ? (1 - r.Specificity).toFixed(4) : '-'}
                       </td>
                       <td className="p-3 font-mono text-cyan-300">
-                        \(\tau\) = {r.threshold?.toFixed(2)}
+                        \(\tau\) = {r.Threshold?.toFixed(2)}
                       </td>
                       <td className="p-3">
                         <ProvenanceBadge
@@ -293,7 +297,7 @@ export default function ModelComparisonPage() {
       {/* Radar Chart & Confusion Matrix Side-by-Side */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="space-y-3">
-          <h3 className="text-sm font-bold font-mono text-slate-100">
+          <h3 className="text-sm font-bold font-mono text-slate-900 dark:text-slate-100">
             Multi-Metric Radar Comparison Across Architectures
           </h3>
           <div className="h-72 w-full">
@@ -303,22 +307,22 @@ export default function ModelComparisonPage() {
 
         {/* Confusion Matrices Grid */}
         <Card className="space-y-3">
-          <h3 className="text-sm font-bold font-mono text-slate-100">
+          <h3 className="text-sm font-bold font-mono text-slate-900 dark:text-slate-100">
             Target Confusion Matrices per Architecture
           </h3>
 
           <div className="grid grid-cols-2 gap-3 pt-2">
             {sortedRows.map((r) => {
-              const tpPct = ((r.recall ?? 0.9) * 100).toFixed(0);
-              const fpPct = ((r.fpr ?? 0.05) * 100).toFixed(0);
-              const tnPct = (100 - Number(fpPct)).toFixed(0);
-              const fnPct = (100 - Number(tpPct)).toFixed(0);
+              const tpPct = typeof r.Recall === 'number' ? (r.Recall * 100).toFixed(0) : '-';
+              const fpPct = typeof r.Specificity === 'number' ? ((1 - r.Specificity) * 100).toFixed(0) : '-';
+              const tnPct = typeof r.Specificity === 'number' ? (r.Specificity * 100).toFixed(0) : '-';
+              const fnPct = typeof r.Recall === 'number' ? ((1 - r.Recall) * 100).toFixed(0) : '-';
 
               return (
                 <div key={r.model_name} className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2 font-mono text-xs">
                   <div className="flex justify-between items-center text-[11px] font-bold text-cyan-300 truncate">
                     <span className="truncate">{r.model_name}</span>
-                    <span className="text-[10px] text-slate-400">\(\tau\)={r.threshold?.toFixed(2)}</span>
+                    <span className="text-[10px] text-slate-400">\(\tau\)={r.Threshold?.toFixed(2)}</span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-1 text-[10px] text-center">
@@ -354,7 +358,7 @@ export default function ModelComparisonPage() {
         >
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-amber-400" />
-            <span>diagnostic (not a final result) — Unverified Exploratory Runs</span>
+            <span>diagnostic (not a final result) - Unverified Exploratory Runs</span>
           </div>
           {showDiagnostic ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
@@ -387,11 +391,11 @@ export default function ModelComparisonPage() {
                           {dRow.run_name || dRow.model_name || `Diagnostic_Run_${idx + 1}`}
                         </td>
                         <td className="p-2.5 font-bold text-amber-400">
-                          {(dRow.mcc ?? 0.812).toFixed(4)}
+                          {typeof dRow.MCC === 'number' ? dRow.MCC.toFixed(4) : '-'}
                         </td>
-                        <td className="p-2.5">{(dRow.f1_score ?? 0.895).toFixed(4)}</td>
+                        <td className="p-2.5">{typeof dRow.F1 === 'number' ? dRow.F1.toFixed(4) : '-'}</td>
                         <td className="p-2.5 text-rose-400 font-bold">
-                          {(dRow.fpr ?? 0.082).toFixed(4)}
+                          {typeof dRow.Specificity === 'number' ? (1 - dRow.Specificity).toFixed(4) : '-'}
                         </td>
                         <td className="p-2.5">
                           <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold">

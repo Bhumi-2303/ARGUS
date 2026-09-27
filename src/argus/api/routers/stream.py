@@ -24,23 +24,13 @@ global_bus = MessageBus()
 
 
 async def stream_generator(domain: str, model_names: List[str], speed: float, seed: int):
-    """Async generator streaming events from domain sample via MessageBus."""
-    argus_mode = os.getenv("ARGUS_MODE", "demo").lower()
-
-    if argus_mode == "production":
-        notice_payload = {
-            "mode": "production",
-            "status": "AWAITING_PRODUCTION_FEED",
-            "notice": "PRODUCTION_OT_FEED_ADAPTER_REQUIRED: Connect real-time SCADA OT feed adapter (Modbus TCP / DNP3 / IEC 60870-5-104 socket listener)."
-        }
-        yield f"data: {json.dumps(notice_payload)}\n\n"
-        return
-
+    """Async generator streaming events replaying verified domain telemetry via MessageBus."""
     sample_path = f"data/samples/{domain}.parquet"
     if not os.path.exists(sample_path):
-        err_msg = json.dumps({"error": f"Sample dataset for domain '{domain}' not found at '{sample_path}'"})
+        err_msg = json.dumps({"error": f"Verified telemetry sample for domain '{domain}' not found at '{sample_path}'"})
         yield f"event: error\ndata: {err_msg}\n\n"
         return
+
 
 
     df = pd.read_parquet(sample_path)

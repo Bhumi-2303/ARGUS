@@ -17,6 +17,7 @@ class BaseMessage(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional context")
     signature: Optional[str] = Field(default=None, description="HMAC signature")
     version: str = Field(default="1.0.0", description="Protocol version")
+    implementation_status: str = Field(default="verified", description="Status of the logic: verified or not_implemented")
 
 
 class AgentMessage(BaseMessage):

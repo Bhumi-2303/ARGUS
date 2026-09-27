@@ -11,17 +11,32 @@ from fastapi import FastAPI, Request, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import structlog
+import asyncio
+from argus.registry.registry import AgentRegistry
+from argus.bus.message_bus import MessageBus
+from argus.orchestrator.orchestrator import Orchestrator
+from argus.agents.data_intelligence.agent import DataIntelligenceAgent
+from argus.agents.threat_analysis.agent import ThreatAnalysisAgent
+from argus.agents.risk_prediction.agent import RiskPredictionAgent
+from argus.agents.knowledge_context.agent import KnowledgeContextAgent
+from argus.agents.decision_support.agent import DecisionSupportAgent
+from argus.schemas.agents import AgentRegistration
+from argus.core.enums import AgentStatus
 
 from argus.registry.model_registry import model_registry
 from argus.api.routers.stream import global_bus
-from argus.api.routers import health, domains, models, results, predict, stream, shift, explain, onboard, agents
+from argus.api.routers import health, domains, data, models, results, predict, stream, shift, explain, agents
 
 logger = structlog.get_logger("argus.api")
+
+agent_registry = AgentRegistry()
+agent_bus = MessageBus()
+agent_orchestrator = Orchestrator(registry=agent_registry, message_bus=agent_bus)
+
 
 # Configuration Management via Environment Variables
 ARGUS_HOST = os.getenv("ARGUS_HOST", "0.0.0.0")
 ARGUS_PORT = int(os.getenv("ARGUS_PORT", "8000"))
-ARGUS_MODE = os.getenv("ARGUS_MODE", "demo").lower()  # "demo" or "production"
 ALLOWED_ORIGINS_ENV = os.getenv(
     "ARGUS_ALLOWED_ORIGINS",
     "http://localhost,http://localhost:8000,http://localhost:3000,http://localhost:5173,http://127.0.0.1,http://127.0.0.1:8000,http://127.0.0.1:3000,http://127.0.0.1:5173"
@@ -37,7 +52,7 @@ def verify_required_artifacts():
     
     Refuses to start and raises RuntimeError if any file is missing.
     """
-    logger.info("startup_artifact_verification_initiated", mode=ARGUS_MODE)
+    logger.info("startup_artifact_verification_initiated")
     required_files = [
         "results/verified/five_model_complete_comparison.csv",
         "results/verified/dann_final_test_metrics.csv",
@@ -49,8 +64,7 @@ def verify_required_artifacts():
         "artifacts/models/xgb_source.json",
         "artifacts/models/xgb_adapted.json",
         "data/samples/ciciot.parquet",
-        "data/samples/nfton.parquet",
-        "data/samples/iec104.parquet"
+        "data/samples/nfton.parquet"
     ]
 
     missing = [f for f in required_files if not os.path.exists(f)]
@@ -64,22 +78,40 @@ def verify_required_artifacts():
     logger.info("startup_artifact_verification_passed", total_verified=len(required_files))
 
 
+
+
+
+async def start_agent_chain():
+    await agent_bus.start()
+    dia = DataIntelligenceAgent(agent_id="agent_dia", name="DIA", version="1.0", description="DIA", capabilities=["data_normalization"], permissions=[], tools=[])
+    taa = ThreatAnalysisAgent()
+    rpa = RiskPredictionAgent()
+    kca = KnowledgeContextAgent(agent_id="agent_kca", name="KCA", version="1.0", description="KCA", capabilities=["threat_enrichment"], permissions=[], tools=[])
+    dsa = DecisionSupportAgent(agent_id="agent_dsa", name="DSA", version="1.0", description="DSA", capabilities=["action_recommendation"], permissions=[], tools=[])
+    
+    agents = [dia, taa, rpa, kca, dsa]
+    for a in agents:
+        await a.initialize()
+        reg = AgentRegistration(agent_id=a.agent_id, name=a.name, version=a.version, description=a.description, capabilities=a.capabilities, permissions=a.permissions, tools=a.tools, status=AgentStatus.READY)
+        await agent_registry.register(reg)
+
+    await agent_orchestrator.start()
+    logger.info("async_agent_orchestrator_started")
+
+async def stop_agent_chain():
+    await agent_orchestrator.stop()
+    await agent_bus.stop()
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan managing model registry startup and message bus lifecycle."""
-    logger.info("api_startup_initiating", mode=ARGUS_MODE)
-
-    # 1. Startup Verification
     verify_required_artifacts()
-
-    # 2. Load model artifacts into memory (fails loudly if invalid)
+    
+    logger.info("startup_artifact_verification_passed")
     model_registry.load_all()
-
-    # 3. Start message bus for streaming pipeline
-    await global_bus.start()
-
-    logger.info("api_startup_complete", models_loaded=len(model_registry.loaded_models), mode=ARGUS_MODE)
+    
+    await start_agent_chain()
     yield
+    await stop_agent_chain()
     # Shutdown logic
     logger.info("api_shutdown_initiating")
     await global_bus.stop()
@@ -91,8 +123,8 @@ app = FastAPI(
     description="Autonomous Risk-aware Grid Understanding & Security Framework",
     version="1.0.0",
     lifespan=lifespan,
-    docs_url="/docs" if ARGUS_MODE == "demo" else None,
-    redoc_url="/redoc" if ARGUS_MODE == "demo" else None,
+    docs_url="/docs",
+    redoc_url="/redoc",
 )
 
 # Hardened CORS restricted strictly to configured origins
@@ -106,7 +138,7 @@ app.add_middleware(
 )
 
 
-# Request Payload Size Limit Middleware for /api/v1/predict and /api/v1/onboard
+# Request Payload Size Limit Middleware for /api/v1/predict
 @app.middleware("http")
 async def limit_request_payload_size(request: Request, call_next):
     if request.method in ["POST", "PUT", "PATCH"]:
@@ -130,8 +162,9 @@ app.include_router(predict.router, prefix="/api/v1")
 app.include_router(stream.router, prefix="/api/v1")
 app.include_router(shift.router, prefix="/api/v1")
 app.include_router(explain.router, prefix="/api/v1")
-app.include_router(onboard.router, prefix="/api/v1")
 app.include_router(agents.router, prefix="/api/v1/agents")
+app.include_router(data.router, prefix="/api/v1/data")
+
 
 # Mount Static Frontend SPA if built web/dist exists
 from fastapi.staticfiles import StaticFiles

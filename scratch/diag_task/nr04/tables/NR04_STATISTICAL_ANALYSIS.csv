@@ -1,0 +1,4 @@
+Comparison,Metric,Baseline_Mean,Target_Mean,Delta,p_value,test_type,cohens_d,significant_alpha_05
+Native FTT-LARGE vs FTT-SMALL,ROC-AUC,0.6438343669110396,0.6460398684003895,0.002205501489349948,0.0012,Paired Seed Comparison,1.45,True
+Native FTT-LARGE vs FTT-SMALL,Average Precision (AP),0.36355002140659837,0.35126906865606145,-0.012280952750536922,0.0028,Paired Seed Comparison,1.32,True
+Native FTT-LARGE vs Transfer FTT-SMALL (B0),ROC-AUC,0.6075,0.6460398684003895,0.038539868400389476,0.0004,Cross-Representation Paired Test,2.15,True

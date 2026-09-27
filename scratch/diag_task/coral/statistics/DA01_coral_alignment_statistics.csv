@@ -1,0 +1,2 @@
+metric,pre_alignment_distance,post_alignment_distance,absolute_reduction,percentage_reduction,source_samples,target_adaptation_samples,regularization,status
+Frobenius_Covariance_Distance,2.6008923881522246,0.00010621623919776625,2.6007861719130267,99.9959161617112,5491971,2286249,1e-06,VALIDATED_SUCCESSFUL_ALIGNMENT

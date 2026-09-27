@@ -1,0 +1,68 @@
+{
+  "audit_metadata": {
+    "total_datasets_present": 4,
+    "total_storage_mb": 572,
+    "experiments_blocked": ["Multimodal fusion", "Domain generalization (large scale)"],
+    "next_research_step": "Begin coding the data loaders and agent testbed utilizing acquired samples"
+  },
+  "datasets": [
+    {
+      "name": "CICIoT2023",
+      "completeness": "SAMPLE / HEAD CHUNK",
+      "files_present": [
+        "data/cic_iot_2023/processed/part-00000-363d1ba3-8ab5-4f96-bc25-4d5862db7cb9-c000.csv"
+      ],
+      "size_bytes": 70337132,
+      "rows_verified": 238687,
+      "modality": "Network Flow",
+      "labels": ["label"],
+      "timestamps": false,
+      "train_test": false,
+      "scientific_usefulness": "BASELINE ONLY"
+    },
+    {
+      "name": "NF-ToN-IoT",
+      "completeness": "COMPLETE",
+      "files_present": [
+        "data/nf_ton_iot/processed/NF-ToN-IoT.parquet"
+      ],
+      "size_bytes": 9491578,
+      "rows_verified": 1157994,
+      "modality": "Network Flow",
+      "labels": ["Label", "Attack"],
+      "timestamps": false,
+      "train_test": false,
+      "scientific_usefulness": "PRIMARY EXPERIMENT DATA"
+    },
+    {
+      "name": "TON_IoT",
+      "completeness": "PARTIAL",
+      "files_present": [
+        "data/ton_iot/network_timestamped/Network_dataset_1.csv",
+        "data/ton_iot/processed/Processed_IoT_dataset/IoT_*.csv",
+        "data/ton_iot/train_test/Train_Test_*.csv"
+      ],
+      "size_bytes": 383778816,
+      "rows_verified": "unknown (multi-file)",
+      "modality": "Network + IoT Telemetry",
+      "labels": ["label", "type"],
+      "timestamps": true,
+      "train_test": true,
+      "scientific_usefulness": "IoT TELEMETRY EXPERIMENTS"
+    },
+    {
+      "name": "HAI",
+      "completeness": "PARTIAL",
+      "files_present": [
+        "data/hai/processed/train1.csv"
+      ],
+      "size_bytes": 53190281,
+      "rows_verified": 93601,
+      "modality": "OT/ICS Industrial Control",
+      "labels": ["Attack"],
+      "timestamps": true,
+      "train_test": false,
+      "scientific_usefulness": "INDUSTRIAL VALIDATION"
+    }
+  ]
+}

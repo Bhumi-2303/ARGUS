@@ -1,0 +1,47 @@
+{
+  "experiment_id": "DA-02",
+  "experiment_name": "DANN Domain Adaptation Controlled Pilot Test",
+  "timestamp_initialized": "2026-08-24T00:46:54.497588",
+  "hardware_platform": "Apple Silicon M4 (16 GB Unified Memory)",
+  "device": "mps",
+  "random_seed": 42,
+  "pilot_lambda_values": [
+    0.0,
+    0.1,
+    0.25,
+    0.5,
+    1.0
+  ],
+  "batch_size": 128,
+  "model_architecture": {
+    "name": "DANNNetwork",
+    "input_dimension": 4,
+    "hidden_dimension": 64,
+    "latent_dimension": 32,
+    "dropout": 0.1,
+    "parameter_count": 3682
+  },
+  "datasets": {
+    "source_domain": "D1 (CICIoT2023, N=5,491,971)",
+    "target_adaptation": "D3 (IEC 60870-5-104 Unlabeled, N=2,286,249)",
+    "target_calibration": "D3 (IEC 60870-5-104 Labeled Calib, N=571,563)",
+    "target_frozen_test": "D3 (IEC 60870-5-104 Frozen Test, N=714,453)"
+  },
+  "leakage_safeguards": {
+    "frozen_test_isolated": true,
+    "target_labels_in_adaptation": false,
+    "model_selection_partition": "D3 Target Calibration Split Only"
+  },
+  "status": "EXPERIMENT_DA02_COMPLETE",
+  "selected_best_lambda": 0.5,
+  "test_results": {
+    "roc_auc": 0.5961144560544644,
+    "average_precision": 0.2679144658017937,
+    "calibrated_f1": 0.38281608584453186,
+    "calibrated_threshold": 0.99,
+    "calibrated_fpr": 0.8773973542451945,
+    "calibrated_mcc": 0.10340606701923039,
+    "attack_recall_at_1pct_fpr": 0.022702776791332573
+  },
+  "timestamp_completed": "2026-08-24T00:54:52.052767"
+}

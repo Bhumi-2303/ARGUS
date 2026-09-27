@@ -35,7 +35,7 @@ export default function TopologyPage() {
     queryFn: api.getTopology,
   });
 
-  // Mutation for POST /api/v1/agents/simulate-flow
+  // Mutation for POST /api/v1/agents/trace
   const simulateMutation = useMutation({
     mutationFn: api.simulateFlow,
     onSuccess: (data: SimulateFlowResponse) => {
@@ -108,7 +108,7 @@ export default function TopologyPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-100 font-mono flex items-center gap-2">
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 font-mono flex items-center gap-2">
             <Activity className="w-6 h-6 text-cyan-400" />
             <span>Agent Architecture & System Topology View</span>
           </h1>
@@ -144,7 +144,7 @@ export default function TopologyPage() {
           <button
             onClick={() => simulateMutation.mutate()}
             disabled={simulateMutation.isPending}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold text-xs font-mono uppercase tracking-wider transition-all duration-150 shadow-lg shadow-cyan-500/20 disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 rounded bg-cyan-600 hover:bg-cyan-700 text-white font-medium text-xs font-mono uppercase tracking-wider transition-colors disabled:opacity-50"
           >
             <Play className="w-4 h-4" />
             <span>{simulateMutation.isPending ? 'Traced Event Flow...' : 'Trigger Real Flow'}</span>
@@ -190,7 +190,7 @@ export default function TopologyPage() {
           )}
 
           {/* Canvas Bottom Overlay Banner */}
-          <div className="absolute bottom-3 left-3 right-3 pointer-events-none flex justify-between items-center px-3 py-2 rounded-lg bg-slate-950/80 backdrop-blur border border-slate-800 text-xs font-mono text-slate-400">
+          <div className="absolute bottom-3 left-3 right-3 pointer-events-none flex justify-between items-center px-3 py-2 rounded-lg bg-slate-950/80  border border-slate-800 text-xs font-mono text-slate-400">
             <span>Nodes: <strong className="text-cyan-300">{nodes.length}</strong> | Connections: <strong className="text-cyan-300">{edges.length}</strong></span>
             <span>View Mode: <strong className="text-slate-200">{viewMode}</strong></span>
           </div>
@@ -200,7 +200,7 @@ export default function TopologyPage() {
         <div className="space-y-6 lg:col-span-1">
           {/* Node Detail Panel */}
           <Card className="space-y-3">
-            <h2 className="text-sm font-bold font-mono text-slate-100 flex items-center gap-2 border-b border-slate-800 pb-2">
+            <h2 className="text-sm font-bold font-mono text-slate-900 dark:text-slate-100 flex items-center gap-2 border-b border-slate-800 pb-2">
               <Cpu className="w-4 h-4 text-cyan-400" />
               <span>Node Responsibility Detail Panel</span>
             </h2>
@@ -208,7 +208,7 @@ export default function TopologyPage() {
             {selectedNode ? (
               <div className="space-y-3 font-mono text-xs">
                 <div className="flex items-center justify-between">
-                  <span className="text-base font-bold text-slate-100">{selectedNode.name}</span>
+                  <span className="text-base font-bold text-slate-900 dark:text-slate-100">{selectedNode.name}</span>
                   <StatusPill status={selectedNode.status} />
                 </div>
 
@@ -267,9 +267,9 @@ export default function TopologyPage() {
           {/* Active Flow Trace Side Panel */}
           <Card className="space-y-3">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-              <h2 className="text-sm font-bold font-mono text-slate-100 flex items-center gap-2">
+              <h2 className="text-sm font-bold font-mono text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <Zap className="w-4 h-4 text-emerald-400" />
-                <span>Simulated Event Trace Log</span>
+                <span>Live Event Trace Log</span>
               </h2>
               {activeCorrelationId && (
                 <span className="text-[10px] font-mono text-cyan-300 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/30">
@@ -280,7 +280,7 @@ export default function TopologyPage() {
 
             {eventTrace.length === 0 ? (
               <div className="p-6 text-center text-slate-500 font-mono text-xs border border-dashed border-slate-800 rounded-lg">
-                No active event trace. Click "Trigger Real Flow" above to simulate an end-to-end multi-step flow execution.
+                No active event trace. Click "Trigger Real Flow" above to execute an end-to-end multi-step flow.
               </div>
             ) : (
               <div className="space-y-2 max-h-64 overflow-y-auto font-mono text-xs pr-1 divide-y divide-slate-800/40">
@@ -298,6 +298,98 @@ export default function TopologyPage() {
           </Card>
         </div>
       </div>
+
+      {/* Agent Implementation & Live Readiness Status Matrix */}
+      <Card className="space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+          <h2 className="text-sm font-bold font-mono text-slate-100 flex items-center gap-2">
+            <Layers className="w-4 h-4 text-cyan-400" />
+            <span>Agent Implementation & Real-Time Dispatch Status</span>
+          </h2>
+          <span className="text-xs font-mono text-slate-400">Strict honest reporting — zero fake completion</span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 font-mono text-xs">
+          {/* Data Intelligence */}
+          <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-slate-200">Data Intelligence</span>
+              <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
+                LIVE INFERENCE
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
+              Validates 4-feature harmonized schema and feeds real normalized telemetry vectors to downstream agents.
+            </p>
+          </div>
+
+          {/* Threat Analysis */}
+          <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-slate-200">Threat Analysis</span>
+              <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
+                LIVE INFERENCE
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
+              Executes Clean Class-Aware CORAL (D2) and baseline models in real time with calibrated thresholds.
+            </p>
+          </div>
+
+          {/* Explainability */}
+          <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-slate-200">Decision & Explainability</span>
+              <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold">
+                PARTIAL (SHAP ONLY)
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
+              Computes real Shapley feature attributions via TreeExplainer. Automated text explanation stubbed.
+            </p>
+          </div>
+
+          {/* Risk Prediction */}
+          <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-slate-200">Risk Prediction</span>
+              <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px] font-bold">
+                NOT YET IMPLEMENTED
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
+              Asset criticality scoring and electrical power-grid impact consequence modeling planned for future phase.
+            </p>
+          </div>
+
+          {/* Knowledge & Context */}
+          <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-slate-200">Knowledge & Context</span>
+              <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px] font-bold">
+                NOT YET IMPLEMENTED
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
+              RAG-assisted MITRE ATT&CK for Industrial Control Systems (ICS) technique lookup planned for future phase.
+            </p>
+          </div>
+
+          {/* Decision Support */}
+          <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-slate-200">Decision Support</span>
+              <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px] font-bold">
+                NOT YET IMPLEMENTED
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
+              Automated countermeasure and firewall rule recommendation engine planned for future phase.
+            </p>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }
+

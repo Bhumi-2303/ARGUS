@@ -1,0 +1,19 @@
+{
+  "iot_min": "2019-03-31 12:36:52",
+  "iot_max": "2019-04-29 23:59:58",
+  "net_min": "2019-04-02 09:45:58",
+  "net_max": "2019-04-02 12:57:32",
+  "net_stats": {
+    "file": "data/ton_iot/network_timestamped/Network_dataset_1.csv",
+    "rows": 7240,
+    "columns": 47,
+    "missing_values": 34,
+    "duplicates": 0,
+    "label_distribution": {
+      "0.0": 7239
+    },
+    "type_distribution": {
+      "normal": 7239
+    }
+  }
+}

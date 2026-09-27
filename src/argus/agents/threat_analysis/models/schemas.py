@@ -61,3 +61,4 @@ class ThreatAnalysisResult(BaseModel):
     gemini_analysis: Optional[str] = None
     recommended_actions: List[str] = Field(default_factory=list)
     model_version: str
+    protocol_status: str

@@ -1,0 +1,18 @@
+feature,source,description,representation,training_available,test_available,leakage_risk,status
+flow_duration,CICFlowMeter,Total duration of bidirectional flow in microseconds,"R0, R1, R2, R3, R4",True,True,None,APPROVED
+tot_fwd_pkts / tot_bwd_pkts,CICFlowMeter,Total forward and backward packet counts,"R0, R1, R2, R3, R4",True,True,None,APPROVED
+flow_byts_s,CICFlowMeter,Flow byte throughput per second,"R0, R1, R2, R3, R4",True,True,None,APPROVED
+fwd_pkt_len_mean / std / max / min,CICFlowMeter,Moments of forward packet lengths,"R1, R2, R3, R4",True,True,None,APPROVED
+bwd_pkt_len_mean / std / max / min,CICFlowMeter,Moments of backward packet lengths,"R1, R2, R3, R4",True,True,None,APPROVED
+flow_iat_mean / std / max / min,CICFlowMeter,Flow inter-arrival time moments,"R1, R2, R3, R4",True,True,None,APPROVED
+"tcp_flags (SYN, ACK, PSH, RST, URG, FIN)",CICFlowMeter,TCP control flag counts,"R1, R2, R3, R4",True,True,None,APPROVED
+init_win_bytes (fwd / bwd),CICFlowMeter,Initial TCP window sizes,"R1, R2, R3, R4",True,True,None,APPROVED
+i_msg_ratio,IEC104 Parser,Ratio of Information (I-format) ASDUs to total IEC 104 frames,"R2, R4",True,True,None (Dimensionless),APPROVED
+s_msg_ratio,IEC104 Parser,Ratio of Supervisory (S-format) ACKs to total IEC 104 frames,"R2, R4",True,True,None (Dimensionless),APPROVED
+u_msg_ratio,IEC104 Parser,Ratio of Unnumbered (U-format) Control frames to total frames,"R2, R4",True,True,None (Dimensionless),APPROVED
+"cot_indicators (cot=1..13, 20)",IEC104 Parser,One-hot indicators for Cause of Transmission in ASDU header,"R2, R4",True,True,None,APPROVED
+asdu_type_id_categories,IEC104 Parser,Categorical counts for Process/System/Parameter/File ASDU types,"R2, R4",True,True,None,APPROVED
+apdu_len_moments,IEC104 Parser,Statistical moments of APDU payload lengths,"R2, R4",True,True,None,APPROVED
+causal_rolling_packet_rate,Temporal Aggregator,Rolling mean packet rate in causal 10-flow window,"R3, R4",True,True,None (Causal),APPROVED
+causal_rolling_byte_rate,Temporal Aggregator,Rolling mean byte rate in causal 10-flow window,"R3, R4",True,True,None (Causal),APPROVED
+burstiness_index,Temporal Aggregator,Ratio of instantaneous flow packet rate to causal rolling mean,"R3, R4",True,True,None (Causal),APPROVED

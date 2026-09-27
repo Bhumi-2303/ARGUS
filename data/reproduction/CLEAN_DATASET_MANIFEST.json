@@ -1,0 +1,20 @@
+{
+  "protocol": "Strict Zero-Shot Leakage-Controlled Protocol",
+  "domains": {
+    "source": [
+      "CICIoT2023",
+      "NF-ToN-IoT"
+    ],
+    "target": [
+      "BoT-IoT"
+    ]
+  },
+  "canonical_features": [
+    "total_pkts",
+    "total_bytes",
+    "protocol"
+  ],
+  "final_train_size": 49571,
+  "final_val_size": 12393,
+  "final_test_size": 82
+}

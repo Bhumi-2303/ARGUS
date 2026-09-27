@@ -103,7 +103,7 @@ export default function DomainShiftPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-100 font-mono flex items-center gap-2">
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 font-mono flex items-center gap-2">
             <GitBranch className="w-6 h-6 text-amber-400" />
             <span>Statistical Domain Shift & Covariance Drift Analytics</span>
           </h1>
@@ -155,7 +155,7 @@ export default function DomainShiftPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold font-mono text-slate-100 flex items-center gap-2">
+            <h3 className="text-sm font-bold font-mono text-slate-900 dark:text-slate-100 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-amber-400" />
               <span>Statistical Drift Summary</span>
             </h3>
@@ -193,7 +193,7 @@ export default function DomainShiftPage() {
         {/* Domain Classifier Result */}
         <Card className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold font-mono text-slate-100 flex items-center gap-2">
+            <h3 className="text-sm font-bold font-mono text-slate-900 dark:text-slate-100 flex items-center gap-2">
               <Cpu className="w-4 h-4 text-cyan-400" />
               <span>Domain Classifier Result (Discriminability)</span>
             </h3>
@@ -221,7 +221,7 @@ export default function DomainShiftPage() {
 
       {/* Chart 1: Per-Feature KS & PSI Statistics */}
       <Card className="space-y-3">
-        <h3 className="text-sm font-bold font-mono text-slate-100">
+        <h3 className="text-sm font-bold font-mono text-slate-900 dark:text-slate-100">
           Per-Feature Kolmogorov-Smirnov (KS) & PSI Drift Comparison
         </h3>
         <div className="h-64 w-full">
@@ -231,7 +231,7 @@ export default function DomainShiftPage() {
 
       {/* Feature Shift Metrics Table */}
       <Card className="space-y-3">
-        <h3 className="text-sm font-bold font-mono text-slate-100">
+        <h3 className="text-sm font-bold font-mono text-slate-900 dark:text-slate-100">
           Detailed Feature Distribution Drift Metrics
         </h3>
 
@@ -251,9 +251,9 @@ export default function DomainShiftPage() {
               {shiftData?.feature_shifts.map((feat) => (
                 <tr key={feat.feature} className="hover:bg-slate-900/50">
                   <td className="p-3 font-bold text-cyan-300">{feat.feature}</td>
-                  <td className="p-3">{feat.ks_statistic.toFixed(4)}</td>
+                  <td className="p-3">{typeof feat.ks_statistic === 'number' ? feat.ks_statistic.toFixed(4) : '-'}</td>
                   <td className="p-3 text-slate-400">{feat.ks_pvalue.toExponential(2)}</td>
-                  <td className="p-3">{feat.psi_statistic.toFixed(4)}</td>
+                  <td className="p-3">{typeof feat.psi_statistic === 'number' ? feat.psi_statistic.toFixed(4) : '-'}</td>
                   <td className="p-3">
                     {feat.shift_detected ? (
                       <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold text-[10px]">
@@ -278,7 +278,7 @@ export default function DomainShiftPage() {
       {/* Class-Conditional View (Benign vs Attack Shift) */}
       <Card className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold font-mono text-slate-100 flex items-center gap-2">
+          <h3 className="text-sm font-bold font-mono text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <Layers className="w-4 h-4 text-emerald-400" />
             <span>Class-Conditional Shift View (Benign vs. Attack Feature Drift)</span>
           </h3>

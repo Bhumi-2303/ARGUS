@@ -43,7 +43,7 @@ class FlowEventItem(BaseModel):
     summary: str
     payload: Dict[str, Any]
 
-class SimulateFlowResponse(BaseModel):
+class TraceExecutionResponse(BaseModel):
     correlation_id: str
     flow_status: str
     total_events: int
@@ -189,12 +189,36 @@ async def get_agent_topology():
     return TopologyResponse(nodes=TOPOLOGY_NODES, edges=TOPOLOGY_EDGES)
 
 
-@router.post("/simulate-flow", response_model=SimulateFlowResponse, tags=["agents"])
-async def simulate_agent_flow():
+from argus.schemas.api import PredictRequest
+@router.post("/trace", response_model=TraceExecutionResponse, tags=["agents"])
+async def trace_agent_execution(request: PredictRequest):
     """Trigger a end-to-end multi-step flow execution trace across the agent graph."""
     corr_id = f"flow-{uuid.uuid4().hex[:8]}"
     now_iso = datetime.now(timezone.utc).isoformat()
-
+    
+    # 1. Run REAL Data Intelligence Agent
+    from argus.agents.data_intelligence.agent import DataIntelligenceAgent
+    dia = DataIntelligenceAgent()
+    await dia.initialize()
+    
+    # 2. Run REAL Threat Analysis Agent
+    from argus.agents.threat_analysis.agent import ThreatAnalysisAgent
+    taa = ThreatAnalysisAgent()
+    await taa.initialize()
+    
+    # Create fake payload that resembles real CICIoT data
+    features = request.features.model_dump()
+    
+    # Execute DIA
+    # It just acts as pass-through for now but it's the real class
+    
+    # Execute TAA
+    threat_res = await taa.reason({"event_id": corr_id, "source": "dia", "features": features, "timestamp": now_iso})
+    # threat_res has 'confidence', 'threat_level', 'evidence'
+    
+    prob = threat_res["confidence"]
+    model_ver = threat_res["model_version"]
+    
     events_sequence = [
         FlowEventItem(
             event_id=str(uuid.uuid4())[:8],
@@ -203,8 +227,8 @@ async def simulate_agent_flow():
             target_node="message_bus",
             event_type="flow_ingested",
             timestamp=now_iso,
-            summary="Ingested 1,000 SCADA flow packets",
-            payload={"domain": "nfton", "protocol": "NetFlow_v2", "flow_count": 1000}
+            summary="Ingested SCADA flow packet",
+            payload={"domain": "nfton", "protocol": "NetFlow_v2"}
         ),
         FlowEventItem(
             event_id=str(uuid.uuid4())[:8],
@@ -214,7 +238,7 @@ async def simulate_agent_flow():
             event_type="task_routed",
             timestamp=now_iso,
             summary="Dispatched flow evaluation task",
-            payload={"task_id": "task-eval-01", "priority": "high"}
+            payload={"task_id": f"task-{uuid.uuid4().hex[:8]}", "priority": "high"}
         ),
         FlowEventItem(
             event_id=str(uuid.uuid4())[:8],
@@ -223,8 +247,8 @@ async def simulate_agent_flow():
             target_node="data_intelligence",
             event_type="task_routed",
             timestamp=now_iso,
-            summary="Extracted 4 harmonized flow feature vectors",
-            payload={"features": ["pkt_mean_to_max", "tcp_flag_density", "log_pkt_mean", "log_pkt_max"]}
+            summary="Extracted harmonized flow feature vectors",
+            payload={"features": list(features.keys())}
         ),
         FlowEventItem(
             event_id=str(uuid.uuid4())[:8],
@@ -233,8 +257,8 @@ async def simulate_agent_flow():
             target_node="threat_analysis",
             event_type="task_routed",
             timestamp=now_iso,
-            summary="Evaluated D1->D2 CORAL model (Probability: 0.9412)",
-            payload={"model": "model_d2_coral", "attack_prob": 0.9412, "prediction": 1}
+            summary=f"Evaluated {model_ver} model (Probability: {prob:.4f})",
+            payload={"model": model_ver, "attack_prob": round(prob, 4), "prediction": 1 if prob > 0.5 else 0}
         ),
         FlowEventItem(
             event_id=str(uuid.uuid4())[:8],
@@ -243,50 +267,38 @@ async def simulate_agent_flow():
             target_node="risk_agent",
             event_type="task_routed",
             timestamp=now_iso,
-            summary="Calculated grid operational risk score (0.875)",
-            payload={"risk_score": 0.875, "risk_tier": "HIGH"}
+            summary="Risk Prediction Agent (Stub) marked not_implemented",
+            payload={"status": "not_implemented"}
         ),
         FlowEventItem(
             event_id=str(uuid.uuid4())[:8],
             correlation_id=corr_id,
             source_node="risk_agent",
             target_node="knowledge_agent",
-            event_type="bus_message",
+            event_type="task_routed",
             timestamp=now_iso,
-            summary="Queried MITRE ATT&CK ICS Technique T0855 context",
-            payload={"technique_id": "T0855", "technique_name": "Unauthorized Command Message"}
+            summary="Knowledge Context Agent (Stub) marked not_implemented",
+            payload={"status": "not_implemented"}
         ),
         FlowEventItem(
             event_id=str(uuid.uuid4())[:8],
             correlation_id=corr_id,
-            source_node="orchestrator",
-            target_node="policy_engine",
-            event_type="bus_message",
-            timestamp=now_iso,
-            summary="Verified deterministic policy approval rules",
-            payload={"policy_id": "POL-GRID-09", "rule_passed": True}
-        ),
-        FlowEventItem(
-            event_id=str(uuid.uuid4())[:8],
-            correlation_id=corr_id,
-            source_node="policy_engine",
+            source_node="knowledge_agent",
             target_node="decision_agent",
             event_type="task_routed",
             timestamp=now_iso,
-            summary="Issued automated subgrid isolation recommendation",
-            payload={"action": "isolate_subgrid", "approval_required": True}
+            summary="Decision Support Agent (Stub) marked not_implemented",
+            payload={"status": "not_implemented"}
         )
     ]
 
-    # Broadcast events sequentially to active WebSocket clients
-    asyncio.create_task(broadcast_flow_sequence(events_sequence))
-
-    return SimulateFlowResponse(
+    return TraceExecutionResponse(
         correlation_id=corr_id,
         flow_status="completed",
         total_events=len(events_sequence),
         events=events_sequence
     )
+
 
 
 async def broadcast_flow_sequence(events: List[FlowEventItem]):

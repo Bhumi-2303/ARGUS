@@ -17,6 +17,7 @@ export interface DomainInfo {
   sample_size?: number;
   attack_ratio?: number;
   features: string[];
+  status: string;
 }
 
 
@@ -31,7 +32,9 @@ export interface ModelProvenance {
   features: string[];
   training_date?: string;
   threshold_selection?: string;
+  seed?: number;
 }
+
 
 export interface ModelInfo {
   model_id: string;
@@ -40,6 +43,7 @@ export interface ModelInfo {
   threshold: number;
   source_domain: string;
   target_domain: string;
+  status: string;
   provenance: ModelProvenance;
 }
 
@@ -107,7 +111,7 @@ export interface ExplainResponse {
   base_value: number;
   shap_values: Record<string, number>;
   top_feature: string;
-  top_impact: number;
+  top_feature_impact: number;
 }
 
 export interface OnboardRequest {
@@ -174,6 +178,36 @@ export interface SimulateFlowResponse {
   events: FlowEventItem[];
 }
 
+export interface TestCaseItem {
+  id: string;
+  name: string;
+  domain: string;
+  domain_name: string;
+  ground_truth_label: number;
+  ground_truth_class: string;
+  features: {
+    pkt_mean_to_max: number;
+    tcp_flag_density: number;
+    log_pkt_mean: number;
+    log_pkt_max: number;
+  };
+  provenance: string;
+}
+
+export interface SampleItem {
+  id: string;
+  description: string;
+  domain: string;
+  ground_truth_label: number;
+  ground_truth_class: string;
+  features: {
+    pkt_mean_to_max: number;
+    tcp_flag_density: number;
+    log_pkt_mean: number;
+    log_pkt_max: number;
+  };
+}
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 async function fetchJson<T>(path: string, options?: RequestInit): Promise<T> {
@@ -226,18 +260,17 @@ export const api = {
       body: JSON.stringify(data),
     }),
 
-  // Demo Onboarding Wizard
-  onboard: (data: OnboardRequest) =>
-    fetchJson<OnboardResponse>('/api/v1/onboard', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
+  // Verified Test Cases
+  getTestCases: () => fetchJson<TestCaseItem[]>('/api/v1/data/test-cases'),
+
+  // Verified Dataset Samples
+  getSamples: () => fetchJson<SampleItem[]>('/api/v1/data/samples'),
 
   // Agent Topology
   getTopology: () => fetchJson<TopologyResponse>('/api/v1/agents/topology'),
 
-  // Simulate Agent Flow
-  simulateFlow: () => fetchJson<SimulateFlowResponse>('/api/v1/agents/simulate-flow', { method: 'POST' }),
+  // Agent Flow Trace
+  simulateFlow: () => fetchJson<SimulateFlowResponse>('/api/v1/agents/trace', { method: 'POST' }),
 
   // Agent WebSocket Stream Helper
   getAgentStreamWsUrl: () => {
@@ -251,5 +284,6 @@ export const api = {
   getStreamUrl: (domain = 'nfton', models = 'model_d2_coral,xgb_source', speed = 10, seed = 42) =>
     `${API_BASE_URL}/api/v1/stream?domain=${domain}&models=${encodeURIComponent(models)}&speed=${speed}&seed=${seed}`,
 };
+
 
 

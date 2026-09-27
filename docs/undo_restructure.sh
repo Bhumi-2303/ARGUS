@@ -1,0 +1,13 @@
+#!/bin/bash
+mv 'data/raw/cic_iot_2023' 'data/cic_iot_2023'
+mv 'data/raw/nf_ton_iot' 'data/nf_ton_iot'
+mv 'data/raw/ton_iot' 'data/ton_iot'
+mv 'data/raw/hai' 'data/hai'
+mv 'data/raw/bot_iot' 'data/bot_iot'
+mv 'reports/legacy/DAY_1_REPORT.md' 'DAY_1_REPORT.md'
+mv 'reports/legacy/DAY_3_REPORT.md' 'DAY_3_REPORT.md'
+mv 'reports/legacy/DAY_5_REPORT.md' 'DAY_5_REPORT.md'
+mv 'reports/legacy/FUSION_PLAN.md' 'FUSION_PLAN.md'
+mv 'reports/legacy/SECURITY_HARDENING_REPORT.md' 'SECURITY_HARDENING_REPORT.md'
+mv 'reports/legacy/IDENTITY_RBAC_OIDC_READINESS_REPORT.md' 'IDENTITY_RBAC_OIDC_READINESS_REPORT.md'
+mv 'reports/legacy/OIDC_JWKS_FRONTEND_SECURITY_REPORT.md' 'OIDC_JWKS_FRONTEND_SECURITY_REPORT.md'

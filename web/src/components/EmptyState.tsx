@@ -27,7 +27,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         className
       )}
     >
-      <div className="p-3 rounded-full bg-slate-800/80 text-cyan-400 mb-3 border border-slate-700/60">
+      <div className="p-3 rounded-md bg-slate-800/80 text-cyan-400 mb-3 border border-slate-700/60">
         {icon || <Database className="w-6 h-6" />}
       </div>
       <h4 className="text-sm font-semibold text-slate-200">{title}</h4>

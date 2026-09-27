@@ -1,0 +1,13 @@
+{
+  "ciciot_raw": 238687,
+  "ciciot_dedup": 114677,
+  "nfton_raw": 1157994,
+  "nfton_dedup": 362682,
+  "bot_raw": 1000000,
+  "bot_dedup": 114460,
+  "source_combined_dedup": 477359,
+  "target_leakage_removed": 0,
+  "source_clean": 477359,
+  "bot_benign": 36,
+  "bot_attack": 114424
+}

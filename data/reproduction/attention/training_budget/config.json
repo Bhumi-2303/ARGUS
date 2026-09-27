@@ -1,0 +1,21 @@
+{
+  "feature_space_identifier": "V2",
+  "batch_size": 4096,
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46
+  ],
+  "budgets": [
+    3,
+    10,
+    20,
+    50
+  ],
+  "optimizer": "Adam(lr=0.001)",
+  "target_label_isolation": "Strict. BoT-IoT labels fully excluded from training, threshold, and architecture selection. Threshold derived only from Source Val F1.",
+  "preprocessing": "StandardScaler(numeric) + OneHotEncoder(protocol) fitted strictly on Source Train.",
+  "threshold_methodology": "Maximum F1 score on Source Validation set via grid search (0.1-0.9)."
+}

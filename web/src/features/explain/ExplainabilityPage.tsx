@@ -17,11 +17,28 @@ import { Skeleton } from '../../components/Skeleton';
 
 export default function ExplainabilityPage() {
   const [selectedModel, setSelectedModel] = useState<string>('model_d2_coral');
-  const [features, setFeatures] = useState({
-    pkt_mean_to_max: 0.35,
-    tcp_flag_density: 0.72,
-    log_pkt_mean: 4.85,
-    log_pkt_max: 6.12,
+  const [features, setFeatures] = useState<any>(null);
+
+  // Fetch real samples for explanation input
+  const { data: samples } = useQuery({
+    queryKey: ['samples_explain'],
+    queryFn: async () => {
+      const data = await api.getSamples();
+      if (data && data.length > 0 && !features) {
+        const stored = localStorage.getItem('argus_active_sample');
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored);
+                if (parsed && parsed.features) {
+                    setFeatures(parsed.features);
+                    return data;
+                }
+            } catch (e) {}
+        }
+        setFeatures(data[0].features);
+      }
+      return data;
+    }
   });
 
   // Query SHAP vs Target Gain comparison table from API
@@ -37,18 +54,19 @@ export default function ExplainabilityPage() {
   });
 
   const handleExplain = () => {
+    if (!features) return;
     explainMutation.mutate({
       model_name: selectedModel,
       features,
     });
   };
 
-  // Initial load auto-trigger
+  // Initial load auto-trigger (only when features are available)
   React.useEffect(() => {
-    if (!explainMutation.data && !explainMutation.isPending) {
+    if (features && !explainMutation.data && !explainMutation.isPending) {
       explainMutation.mutate({ model_name: selectedModel, features });
     }
-  }, [selectedModel]);
+  }, [selectedModel, features]);
 
   // SHAP response data
   const explainResult: ExplainResponse | null = explainMutation.data || null;
@@ -92,7 +110,7 @@ export default function ExplainabilityPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-100 font-mono flex items-center gap-2">
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 font-mono flex items-center gap-2">
             <Search className="w-6 h-6 text-cyan-400" />
             <span>SHAP Explainability & Feature Ranking Analysis</span>
           </h1>
@@ -110,7 +128,7 @@ export default function ExplainabilityPage() {
       {/* Interactive Flow Picker & Feature Sliders */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="space-y-4 lg:col-span-1">
-          <h2 className="text-sm font-bold font-mono text-slate-100 flex items-center gap-2 border-b border-slate-800 pb-2">
+          <h2 className="text-sm font-bold font-mono text-slate-900 dark:text-slate-100 flex items-center gap-2 border-b border-slate-800 pb-2">
             <Sliders className="w-4 h-4 text-cyan-400" />
             <span>Flow Feature Vector Input</span>
           </h2>
@@ -132,11 +150,11 @@ export default function ExplainabilityPage() {
               </select>
             </div>
 
-            {Object.entries(features).map(([key, val]) => (
+            {features ? Object.entries(features).map(([key, val]) => (
               <div key={key} className="space-y-1">
                 <div className="flex justify-between text-slate-300">
                   <label htmlFor={`feature-slider-${key}`}>{key}:</label>
-                  <span className="text-cyan-400 font-bold">{val}</span>
+                  <span className="text-cyan-400 font-bold">{val as number}</span>
                 </div>
                 <input
                   id={`feature-slider-${key}`}
@@ -144,19 +162,23 @@ export default function ExplainabilityPage() {
                   min="0"
                   max="10"
                   step="0.05"
-                  value={val}
+                  value={val as number}
                   onChange={(e) =>
                     setFeatures({ ...features, [key]: Number(e.target.value) })
                   }
                   className="w-full accent-cyan-400"
                 />
               </div>
-            ))}
+            )) : (
+              <p className="text-slate-500 text-xs py-4">
+                No sample selected. Navigate to Input &amp; Prediction to select a sample first, or wait for samples to load.
+              </p>
+            )}
 
             <button
               onClick={handleExplain}
               disabled={explainMutation.isPending}
-              className="w-full mt-2 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs font-mono uppercase tracking-wider transition-all duration-150 shadow-lg shadow-cyan-500/20 focus:ring-2 focus:ring-cyan-400 focus:outline-none disabled:opacity-50"
+              className="w-full mt-2 py-2.5 rounded-md bg-cyan-600 hover:bg-cyan-700 text-white font-medium text-xs font-mono uppercase tracking-wider transition-colors focus:ring-2 focus:ring-cyan-400 focus:outline-none disabled:opacity-50"
             >
               {explainMutation.isPending ? 'Computing SHAP...' : 'Calculate SHAP Attribution'}
             </button>
@@ -166,7 +188,7 @@ export default function ExplainabilityPage() {
         {/* SHAP Output Breakdown */}
         <Card className="space-y-4 lg:col-span-2">
           <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-            <h2 className="text-sm font-bold font-mono text-slate-100 flex items-center gap-2">
+            <h2 className="text-sm font-bold font-mono text-slate-900 dark:text-slate-100 flex items-center gap-2">
               <Zap className="w-4 h-4 text-emerald-400" />
               <span>SHAP Feature Attribution Breakdown ({selectedModel})</span>
             </h2>
@@ -189,7 +211,7 @@ export default function ExplainabilityPage() {
                 <div>
                   <span className="text-slate-400 block text-[10px]">Top Contributing Feature</span>
                   <span className="text-emerald-400 font-extrabold flex items-center gap-1">
-                    {explainResult.top_feature} ({explainResult.top_impact >= 0 ? '+' : ''}{explainResult.top_impact.toFixed(4)})
+                    {explainResult.top_feature} ({explainResult.top_feature_impact >= 0 ? '+' : ''}{explainResult.top_feature_impact.toFixed(4)})
                   </span>
                 </div>
               </div>
@@ -208,7 +230,7 @@ export default function ExplainabilityPage() {
       {/* Feature Ranking Disconnect Comparison Table */}
       <Card className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold font-mono text-slate-100 flex items-center gap-2">
+          <h3 className="text-sm font-bold font-mono text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-cyan-400" />
             <span>Source-Only Gain vs. After-CORAL Target Impact Disconnect</span>
           </h3>
@@ -230,26 +252,21 @@ export default function ExplainabilityPage() {
               <thead className="bg-slate-950 border-b border-slate-800 text-[11px] text-slate-400 uppercase">
                 <tr>
                   <th className="p-3">Harmonized Feature</th>
-                  <th className="p-3">Source LightGBM Gain</th>
-                  <th className="p-3">Source Gain Rank</th>
-                  <th className="p-3">After-CORAL Target SHAP Impact</th>
-                  <th className="p-3">Target Impact Rank</th>
-                  <th className="p-3">Rank Shift</th>
-                  <th className="p-3">Provenance</th>
+                  <th className="p-3">Source Model SHAP Importance (%)</th>
+                  <th className="p-3">Target SCADA Impact Status</th>
+                  <th className="p-3">Data Provenance</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/80">
                 {(shapVsGainData?.data || []).map((row, idx) => (
-
                   <tr key={idx} className="hover:bg-slate-900/50">
-                    <td className="p-3 font-bold text-cyan-300">{row.feature}</td>
-                    <td className="p-3">{row.source_gain?.toLocaleString() || '14,250'}</td>
-                    <td className="p-3 font-bold text-slate-400">#{row.source_rank || idx + 1}</td>
+                    <td className="p-3 font-bold text-cyan-300">{row.Feature || row.feature}</td>
                     <td className="p-3 font-bold text-emerald-400">
-                      {typeof row.target_shap === 'number' ? row.target_shap.toFixed(4) : row.target_shap}
+                      {row.Source_SHAP_Importance_Pct != null ? `${row.Source_SHAP_Importance_Pct}%` : '-'}
                     </td>
-                    <td className="p-3 font-bold text-emerald-300">#{row.target_rank || idx + 1}</td>
-                    <td className="p-3 font-bold text-cyan-400">{row.shift || '0'}</td>
+                    <td className="p-3 text-slate-200">
+                      {row.Target_SCADA_Dominance || '-'}
+                    </td>
                     <td className="p-3">
                       <ProvenanceBadge
                         sourceFile="results/verified/SHAP_vs_Target_Gain.csv"
@@ -261,6 +278,7 @@ export default function ExplainabilityPage() {
                 ))}
               </tbody>
             </table>
+
           </div>
         )}
       </Card>

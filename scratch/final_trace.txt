@@ -1,0 +1,20 @@
+{"task_id": "dcf51bf1-e15b-4bc1-9a1a-9324c888cbba", "event": "task_scheduled", "timestamp": "2026-09-26T17:15:08.110212Z"}
+{"task_type": "preprocess", "agent_id": "agent_dia", "event": "task_routed", "timestamp": "2026-09-26T17:15:08.110382Z"}
+{"task_id": "dcf51bf1-e15b-4bc1-9a1a-9324c888cbba", "agent_id": "agent_dia", "event": "task_routed", "timestamp": "2026-09-26T17:15:08.110430Z"}
+{"task_id": "28f25653-c860-4f01-88ff-8ced51412164", "event": "task_scheduled_after_dependencies", "timestamp": "2026-09-26T17:15:09.111412Z"}
+{"task_id": "dcf51bf1-e15b-4bc1-9a1a-9324c888cbba", "status": "completed", "event": "task_completed", "timestamp": "2026-09-26T17:15:09.111575Z"}
+{"task_type": "analyze", "agent_id": "agent_threat_analysis", "event": "task_routed", "timestamp": "2026-09-26T17:15:09.111732Z"}
+{"task_id": "28f25653-c860-4f01-88ff-8ced51412164", "agent_id": "agent_threat_analysis", "event": "task_routed", "timestamp": "2026-09-26T17:15:09.111891Z"}
+{"task_id": "fa1e9e8e-63aa-4de0-8d84-8ee1544bfdef", "event": "task_scheduled_after_dependencies", "timestamp": "2026-09-26T17:15:10.113258Z"}
+{"task_id": "ee84b49a-1c80-4446-bcb6-6d1ff78345b2", "event": "task_scheduled_after_dependencies", "timestamp": "2026-09-26T17:15:10.113415Z"}
+{"task_id": "28f25653-c860-4f01-88ff-8ced51412164", "status": "completed", "event": "task_completed", "timestamp": "2026-09-26T17:15:10.113473Z"}
+{"task_type": "predict", "agent_id": "agent_risk_prediction", "event": "task_routed", "timestamp": "2026-09-26T17:15:10.113598Z"}
+{"task_id": "fa1e9e8e-63aa-4de0-8d84-8ee1544bfdef", "agent_id": "agent_risk_prediction", "event": "task_routed", "timestamp": "2026-09-26T17:15:10.113737Z"}
+{"task_id": "fa1e9e8e-63aa-4de0-8d84-8ee1544bfdef", "status": "completed", "event": "task_completed", "timestamp": "2026-09-26T17:15:11.115326Z"}
+{"task_id": "fd9a3cee-7485-4cfa-8831-85df30499568", "event": "task_scheduled_after_dependencies", "timestamp": "2026-09-26T17:15:11.115547Z"}
+{"task_id": "ee84b49a-1c80-4446-bcb6-6d1ff78345b2", "status": "completed", "event": "task_completed", "timestamp": "2026-09-26T17:15:11.115624Z"}
+{"task_type": "knowledge", "agent_id": "agent_kca", "event": "task_routed", "timestamp": "2026-09-26T17:15:11.115771Z"}
+{"task_id": "ee84b49a-1c80-4446-bcb6-6d1ff78345b2", "agent_id": "agent_kca", "event": "task_routed", "timestamp": "2026-09-26T17:15:11.115933Z"}
+{"task_id": "fd9a3cee-7485-4cfa-8831-85df30499568", "status": "completed", "event": "task_completed", "timestamp": "2026-09-26T17:15:12.117174Z"}
+{"task_type": "decision", "agent_id": "agent_dsa", "event": "task_routed", "timestamp": "2026-09-26T17:15:12.117272Z"}
+{"task_id": "fd9a3cee-7485-4cfa-8831-85df30499568", "agent_id": "agent_dsa", "event": "task_routed", "timestamp": "2026-09-26T17:15:12.118233Z"}

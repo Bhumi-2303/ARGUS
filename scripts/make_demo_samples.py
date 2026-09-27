@@ -10,9 +10,8 @@ from sklearn.model_selection import train_test_split
 HARMONIZED_FEATURES = ["pkt_mean_to_max", "tcp_flag_density", "log_pkt_mean", "log_pkt_max"]
 
 DATA_SOURCES = {
-    "ciciot": "ARGUS_Cross_Domain_Results/argus_coral_data/ciciot_test_features.csv",
-    "nfton": "ARGUS_Cross_Domain_Results/argus_coral_data/nfton_test_features.csv",
-    "iec104": "ARGUS_Cross_Domain_Results/argus_coral_data/iec104_test_features.csv"
+    "ciciot": "data/raw/legacy_package/argus_coral_data/ciciot_test_features.csv",
+    "nfton": "data/raw/legacy_package/argus_coral_data/nfton_test_features.csv",
 }
 
 def make_demo_samples(sample_size: int = 30000, seed: int = 42, output_dir: str = "data/samples"):
@@ -44,7 +43,8 @@ def make_demo_samples(sample_size: int = 30000, seed: int = 42, output_dir: str 
                 stratify=df_clean["label"]
             )
         else:
-            sample_df = df_clean
+            # Shuffle while preserving class ratio if we are keeping all rows
+            sample_df = df_clean.sample(frac=1.0, random_state=seed).reset_index(drop=True)
             
         out_path = os.path.join(output_dir, f"{domain}.parquet")
         sample_df.to_parquet(out_path, index=False)

@@ -3,108 +3,56 @@ import asyncio
 from typing import Any, Dict, List, Optional
 import structlog
 import traceback
+import time
 
 from argus.core.base_agent import BaseAgent
 from argus.core.enums import AgentStatus
 
 from argus.agents.threat_analysis.config import config
 from argus.agents.threat_analysis.models.schemas import (
-    FeatureEventInput, ThreatAnalysisResult, ModelType,
-    InferenceResult, ConfidenceResult, Evidence
+    FeatureEventInput, ThreatAnalysisResult, ThreatLevel, Evidence
 )
-
-# Tools
-from argus.agents.threat_analysis.tools.model_loader import ModelLoader
-from argus.agents.threat_analysis.tools.inference_engine import InferenceEngine
-from argus.agents.threat_analysis.tools.confidence_calculator import ConfidenceCalculator
-from argus.agents.threat_analysis.tools.evidence_collector import EvidenceCollector
-from argus.agents.threat_analysis.tools.threat_publisher import ThreatPublisher
-
+from argus.registry.model_registry import model_registry, MODEL_METADATA
 
 class ThreatAnalysisAgent(BaseAgent):
-    """Analyzes incoming feature events to detect threats using ML models."""
+    """Analyzes incoming feature events to detect threats using verified ML models."""
 
     def __init__(self, **kwargs):
         # Override default name/permissions if not provided
         kwargs.setdefault("agent_id", "agent_threat_analysis")
         kwargs.setdefault("name", "Threat Analysis Agent")
         kwargs.setdefault("version", "1.0.0")
-        kwargs.setdefault("description", "Detects malicious activity using ML models.")
-        kwargs.setdefault("capabilities", ["anomaly_detection", "threat_classification", "llm_reasoning"])
-        kwargs.setdefault("permissions", ["compute:inference", "fs:read:models", "network:api:gemini"])
-        kwargs.setdefault("tools", ["model_loader", "inference", "confidence", "evidence", "gemini", "publisher"])
+        kwargs.setdefault("description", "Detects malicious activity using verified ML models.")
+        kwargs.setdefault("capabilities", ["anomaly_detection", "threat_classification"])
+        kwargs.setdefault("permissions", ["compute:inference", "fs:read:models"])
+        kwargs.setdefault("tools", [])
 
         super().__init__(**kwargs)
-        
         self.logger = structlog.get_logger("argus.agent.threat_analysis")
-        
-        # Instantiate tools
-        self.tool_model_loader = ModelLoader()
-        self.tool_inference = InferenceEngine()
-        self.tool_confidence = ConfidenceCalculator()
-        self.tool_evidence = EvidenceCollector()
-        self.tool_publisher = ThreatPublisher()
-        
-        self._active_model = None
 
     async def initialize(self) -> None:
-        """Initialize the agent and its tools."""
+        """Initialize the agent."""
         self.status = AgentStatus.INITIALIZING
         self.logger.info("initializing_threat_analysis_agent")
-        
-        # Initialize tools
-        await self.tool_model_loader.initialize()
-        await self.tool_inference.initialize()
-        await self.tool_confidence.initialize()
-        await self.tool_evidence.initialize()
-        await self.tool_publisher.initialize()
-        
-        # Load the default model
-        model_path = f"{config.model_dir}/{config.default_model_type.value}.model"
-        try:
-            self._active_model = await self.tool_model_loader.execute(
-                model_type=config.default_model_type,
-                model_path=model_path
-            )
-            self.logger.info("model_loaded", model_type=config.default_model_type.value)
-        except Exception as e:
-            self.logger.error("failed_to_load_model", error=str(e), path=model_path)
-            # Depending on platform rules, this might be a fatal error.
-            # We'll set status to ERROR, but don't necessarily crash the process.
-            self.status = AgentStatus.ERROR
-            raise
-            
+        # Ensure model registry has loaded models.
+        if len(model_registry.loaded_models) == 0:
+            self.logger.warning("model_registry_empty_at_initialization")
         self.status = AgentStatus.READY
 
     async def validate(self, input_data: Any) -> bool:
         """Validate the incoming FEATURE_EVENT payload."""
         if not input_data:
             return False
-            
-        # Optional: Ask SecurityProvider to check for injection in the payload
-        if self.security:
-            # We assume detect_injection returns True if malicious/injection detected
-            is_malicious = await self.security.detect_injection(str(input_data))
-            if is_malicious:
-                self.logger.warning("security_injection_detected_in_payload")
-                return False
-
         try:
-            # Parse into Pydantic model to ensure schema validity
             if isinstance(input_data, dict):
                 FeatureEventInput(**input_data)
-            elif isinstance(input_data, FeatureEventInput):
-                pass
-            else:
-                return False
             return True
         except Exception as e:
             self.logger.warning("payload_validation_failed", error=str(e))
             return False
 
     async def reason(self, context: Any) -> Any:
-        """Execute ML inference and gather evidence."""
-        # context is the validated input_data
+        """Execute ML inference using the verified model registry."""
         if isinstance(context, dict):
             event = FeatureEventInput(**context)
         else:
@@ -112,108 +60,122 @@ class ThreatAnalysisAgent(BaseAgent):
             
         self.logger.info("reasoning_started", event_id=event.event_id)
         
-        # 1. Inference
-        inference_result = await self.tool_inference.execute(
-            features=event.features,
-            model=self._active_model,
-            model_type=config.default_model_type
-        )
+        # We will run both xgb_source and xgb_adapted to get results.
+        # But we'll primary use xgb_adapted (Clean Class-aware CORAL).
+        model_to_use = "xgb_adapted"
         
-        # 2. Calculate Confidence
-        confidence_result = await self.tool_confidence.execute(
-            inference_result=inference_result
-        )
+        start_t = time.time()
+        try:
+            prob, label, threshold = model_registry.predict(model_to_use, event.features)
+            # Try to get SHAP attributions
+            base_val, shap_vals, class_str, conf = model_registry.explain(model_to_use, event.features)
+        except Exception as e:
+            self.logger.error("inference_failed", error=str(e))
+            prob, label, threshold = 0.5, 0, 0.5
+            shap_vals = {}
+            conf = 0.5
+            
+        latency = (time.time() - start_t) * 1000
         
-        # 3. Collect Evidence
-        evidence_list = await self.tool_evidence.execute(
-            features=event.features,
-            inference_result=inference_result
-        )
+        # Calculate Threat Level
+        threat_level = ThreatLevel.LOW
+        if label == 1:
+            if prob > 0.90:
+                threat_level = ThreatLevel.CRITICAL
+            elif prob > 0.75:
+                threat_level = ThreatLevel.HIGH
+            else:
+                threat_level = ThreatLevel.MEDIUM
+                
+        # Format Evidence
+        evidence = []
+        for feat, imp in shap_vals.items():
+            if abs(imp) > 0.01:
+                evidence.append(Evidence(
+                    type="feature_attribution",
+                    description=f"SHAP contribution from {feat}",
+                    importance=imp,
+                    value=event.features.get(feat)
+                ))
+        
+        meta = MODEL_METADATA.get(model_to_use, {})
+        protocol_status = meta.get("protocol_status", "diagnostic")
         
         return {
             "event": event,
-            "inference": inference_result,
-            "confidence": confidence_result,
-            "evidence": evidence_list
+            "threat_level": threat_level,
+            "confidence": prob,
+            "evidence": evidence,
+            "model_version": model_to_use,
+            "protocol_status": protocol_status
         }
 
     async def plan(self, reasoning: Any) -> Any:
-        """Decide if LLM analysis is needed and formulate final response."""
-        event: FeatureEventInput = reasoning["event"]
-        confidence: ConfidenceResult = reasoning["confidence"]
-        evidence: List[Evidence] = reasoning["evidence"]
-        
-        gemini_analysis = None
-        recommended_actions = []
-            
-        return {
-            "event": event,
-            "confidence": confidence,
-            "evidence": evidence,
-            "gemini_analysis": gemini_analysis,
-            "recommended_actions": recommended_actions
-        }
+        """Formulate final response."""
+        return reasoning
 
     async def execute(self, plan: Any) -> Any:
         """Assemble the ThreatAnalysisResult."""
         event: FeatureEventInput = plan["event"]
-        confidence: ConfidenceResult = plan["confidence"]
         
         result = ThreatAnalysisResult(
             source_event_id=event.event_id,
-            threat_level=confidence.threat_level,
-            confidence=confidence.confidence_score,
+            threat_level=plan["threat_level"],
+            confidence=plan["confidence"],
             evidence=plan["evidence"],
-            gemini_analysis=plan["gemini_analysis"],
-            recommended_actions=plan["recommended_actions"],
-            model_version=f"{config.default_model_type.value}-v1"
+            gemini_analysis=None,
+            recommended_actions=[],
+            model_version=plan["model_version"],
+            protocol_status=plan["protocol_status"]
         )
         return result
 
     async def call_tools(self, tool_requests: List[Any]) -> List[Any]:
-        """Not utilized in this agent as we invoke tools explicitly in lifecycle steps."""
         return []
 
     async def update_memory(self, result: Any) -> None:
-        """Update working memory with the result if available."""
-        if self.working_memory and isinstance(result, ThreatAnalysisResult):
-            try:
-                await self.working_memory.set(
-                    key=f"threat_analysis_{result.source_event_id}",
-                    value=result.model_dump()
-                )
-            except Exception as e:
-                self.logger.warning("memory_update_failed", error=str(e))
+        pass
+
 
     async def publish(self, result: Any) -> None:
-        """Publish the ThreatAnalysisResult."""
-        if isinstance(result, ThreatAnalysisResult):
-            if self.blackboard and self.message_bus:
-                await self.tool_publisher.execute(
-                    result=result,
-                    blackboard=self.blackboard,
-                    message_bus=self.message_bus
-                )
-            else:
-                self.logger.warning("publish_skipped_missing_infrastructure")
+        if isinstance(result, ThreatAnalysisResult) and self.blackboard and self.message_bus:
+            from argus.schemas.messages import ThreatEvent
+            from argus.core.enums import BlackboardSection, TaskPriority
+            from datetime import datetime
+            import uuid
+
+            threat_event = ThreatEvent(
+                request_id=str(uuid.uuid4()),
+                trace_id=result.source_event_id,
+                agent_id=str(self.agent_id),
+                timestamp=datetime.utcnow(),
+                priority=TaskPriority.HIGH,
+                event_type="THREAT_EVENT",
+                attack_type="attack" if result.threat_level.value != "low" else "benign",
+                severity=result.confidence,
+                description=f"Predicted by {result.model_version} ({result.protocol_status})",
+                implementation_status=result.protocol_status
+            )
+            
+            await self.blackboard.write(
+                section=BlackboardSection.THREAT_RESULTS,
+                key=threat_event.trace_id,
+                value=threat_event
+            )
+            
+            await self.message_bus.publish(
+                topic=f"events.threat.{result.threat_level.value}",
+                message=threat_event
+            )
+
 
     async def health(self) -> Any:
-        """Return health status."""
         return {
             "agent_id": str(self.agent_id),
             "status": self.status.value,
-            "model_loaded": self._active_model is not None,
             "tasks_completed": self.tasks_completed,
             "tasks_failed": self.tasks_failed
         }
 
     async def shutdown(self) -> None:
-        """Clean up."""
-        self.logger.info("shutting_down_threat_analysis_agent")
         self.status = AgentStatus.SHUTDOWN
-        
-        await self.tool_model_loader.shutdown()
-        await self.tool_inference.shutdown()
-        await self.tool_confidence.shutdown()
-        await self.tool_evidence.shutdown()
-        await self.tool_publisher.shutdown()

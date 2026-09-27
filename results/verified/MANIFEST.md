@@ -28,6 +28,7 @@ This directory contains the consolidated, authoritative, and bit-for-bit verifie
 
 | Metric | Raw Prediction Value (`dann_final_test_predictions.csv`) | Narrative Summary Draft (`ARGUS_RESULTS_README.txt`) | Authoritative Source & Resolution Rationale |
 | :--- | :--- | :--- | :--- |
+| **Source-only XGBoost Metrics** | **Manually appended** | **Missing row from 5-Model Comparison** | **`five_model_complete_comparison.csv` (2026-09-27)** — Discovered that the CSV was missing the Source-only XGBoost baseline entirely due to manual assembly of the CSV file. Restored metrics using `FINAL_D1_D2_AUDIT.md` as provenance (MCC = -0.031074). |
 | **DANN ROC-AUC** | **`0.33209554`** | `0.522573` | **`dann_final_test_predictions.csv` (Raw per-sample probabilities)** — Recomputed ROC-AUC across $N=2,627,177$ samples yields $0.33209554$ exactly. Narrative summary draft in `ARGUS_RESULTS_README.txt` was an unverified early draft. |
 | **DANN Specificity** | **`0.00064560`** ($0.06456\%$) | `0.010842` ($1.084\%$) | **`dann_final_test_predictions.csv` (Raw predictions confusion matrix)** — $TN=465$, $FP=719,792$. Specificity is near-zero ($0.00064560 < 0.05$), confirming complete representation collapse. |
 | **DANN MCC** | **`0.01285487`** | `0.088505` | **`dann_final_test_predictions.csv` (Raw predictions)** — Recomputed MCC equals $0.01285487$, confirming loss of discriminative power. |

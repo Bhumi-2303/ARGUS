@@ -33,9 +33,9 @@ export const MetricTile: React.FC<MetricTileProps> = ({
     <Card variant={variant} className={clsx('relative overflow-hidden', className)}>
       <div className="flex items-start justify-between">
         <div className="space-y-1">
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{title}</p>
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">{title}</p>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono tracking-tight text-slate-100">{value}</span>
+            <span className="text-2xl font-bold font-mono tracking-tight text-slate-900 dark:text-slate-100">{value}</span>
             {change !== undefined && (
               <span
                 className={clsx(
@@ -44,7 +44,7 @@ export const MetricTile: React.FC<MetricTileProps> = ({
                     ? 'text-emerald-400 bg-emerald-500/10'
                     : change < 0
                     ? 'text-rose-400 bg-rose-500/10'
-                    : 'text-slate-400 bg-slate-800'
+                    : 'text-slate-500 dark:text-slate-400 bg-slate-200 dark:bg-slate-800'
                 )}
               >
                 {change > 0 ? (
@@ -58,13 +58,13 @@ export const MetricTile: React.FC<MetricTileProps> = ({
               </span>
             )}
           </div>
-          {subtitle && <p className="text-xs text-slate-400">{subtitle}</p>}
+          {subtitle && <p className="text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>}
         </div>
-        {icon && <div className="p-2.5 rounded-lg bg-slate-800/80 text-cyan-400 border border-slate-700/50">{icon}</div>}
+        {icon && <div className="p-2.5 rounded-lg bg-slate-100 dark:bg-slate-200 dark:bg-slate-800/80 text-cyan-600 dark:text-cyan-400 border border-slate-200 dark:border-slate-700/50">{icon}</div>}
       </div>
 
       {sourceFile && (
-        <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+        <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between">
           <ProvenanceBadge sourceFile={sourceFile} protocolStatus={protocolStatus} compact />
           {changeLabel && <span className="text-[11px] text-slate-500">{changeLabel}</span>}
         </div>

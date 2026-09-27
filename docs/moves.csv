@@ -1,0 +1,13 @@
+old_path,new_path,type,size
+data/cic_iot_2023,data/raw/cic_iot_2023,dir,9370689482
+data/nf_ton_iot,data/raw/nf_ton_iot,dir,9491944
+data/ton_iot,data/raw/ton_iot,dir,382947912
+data/hai,data/raw/hai,dir,958851998
+data/bot_iot,data/raw/bot_iot,dir,2252991129
+DAY_1_REPORT.md,reports/legacy/DAY_1_REPORT.md,file,1391
+DAY_3_REPORT.md,reports/legacy/DAY_3_REPORT.md,file,2345
+DAY_5_REPORT.md,reports/legacy/DAY_5_REPORT.md,file,2918
+FUSION_PLAN.md,reports/legacy/FUSION_PLAN.md,file,1273
+SECURITY_HARDENING_REPORT.md,reports/legacy/SECURITY_HARDENING_REPORT.md,file,6331
+IDENTITY_RBAC_OIDC_READINESS_REPORT.md,reports/legacy/IDENTITY_RBAC_OIDC_READINESS_REPORT.md,file,5958
+OIDC_JWKS_FRONTEND_SECURITY_REPORT.md,reports/legacy/OIDC_JWKS_FRONTEND_SECURITY_REPORT.md,file,6200

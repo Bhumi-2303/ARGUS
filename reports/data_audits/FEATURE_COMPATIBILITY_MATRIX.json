@@ -1,0 +1,14 @@
+{
+  "core_shared_network": [
+    {"concept": "duration", "CICIoT2023": "flow_duration", "NF-ToN-IoT": "FLOW_DURATION_MILLISECONDS", "BoT-IoT": "dur", "TON_IoT": "duration"},
+    {"concept": "src_pkts", "CICIoT2023": "Tot Fwd Pkts", "NF-ToN-IoT": "IN_PKTS", "BoT-IoT": "spkts", "TON_IoT": "src_pkts"},
+    {"concept": "dst_pkts", "CICIoT2023": "Tot Bwd Pkts", "NF-ToN-IoT": "OUT_PKTS", "BoT-IoT": "dpkts", "TON_IoT": "dst_pkts"},
+    {"concept": "src_bytes", "CICIoT2023": "TotLen Fwd Pkts", "NF-ToN-IoT": "IN_BYTES", "BoT-IoT": "sbytes", "TON_IoT": "src_bytes"},
+    {"concept": "dst_bytes", "CICIoT2023": "TotLen Bwd Pkts", "NF-ToN-IoT": "OUT_BYTES", "BoT-IoT": "dbytes", "TON_IoT": "dst_bytes"},
+    {"concept": "protocol", "CICIoT2023": "ProtocolType", "NF-ToN-IoT": "PROTOCOL", "BoT-IoT": "proto", "TON_IoT": "proto"}
+  ],
+  "incompatible_domains": {
+    "TON_IoT_Network": "Primarily L7 categorical Zeek logs, minimal NetFlow overlap.",
+    "HAI_21_03": "100% industrial telemetry. Zero network features."
+  }
+}

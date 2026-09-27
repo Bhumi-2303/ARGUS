@@ -1,0 +1,75 @@
+import csv
+
+data = [
+    # CICIoT2023
+    ["CICIoT2023", "duration", "absent", "only IAT available"],
+    ["CICIoT2023", "src_pkts", "absent", "-"],
+    ["CICIoT2023", "dst_pkts", "absent", "-"],
+    ["CICIoT2023", "src_bytes", "absent", "-"],
+    ["CICIoT2023", "dst_bytes", "absent", "-"],
+    ["CICIoT2023", "total_pkts", "present", "Number"],
+    ["CICIoT2023", "total_bytes", "present", "Tot size"],
+    ["CICIoT2023", "protocol", "present", "Protocol Type"],
+    ["CICIoT2023", "tcp_flags", "derivable", "via specific flag columns"],
+    ["CICIoT2023", "max_pkt_len", "present", "Max"],
+    ["CICIoT2023", "pkt_mean_to_max", "derivable", "AVG/Max"],
+    ["CICIoT2023", "tcp_flag_density", "derivable", "flag cols"],
+    ["CICIoT2023", "log_pkt_mean", "derivable", "AVG"],
+    ["CICIoT2023", "log_pkt_max", "derivable", "Max"],
+    
+    # NF-ToN-IoT
+    ["NF-ToN-IoT", "duration", "present", "FLOW_DURATION_MILLISECONDS"],
+    ["NF-ToN-IoT", "src_pkts", "present", "IN_PKTS"],
+    ["NF-ToN-IoT", "dst_pkts", "present", "OUT_PKTS"],
+    ["NF-ToN-IoT", "src_bytes", "present", "IN_BYTES"],
+    ["NF-ToN-IoT", "dst_bytes", "present", "OUT_BYTES"],
+    ["NF-ToN-IoT", "total_pkts", "derivable", "IN_PKTS+OUT_PKTS"],
+    ["NF-ToN-IoT", "total_bytes", "derivable", "IN_BYTES+OUT_BYTES"],
+    ["NF-ToN-IoT", "protocol", "present", "PROTOCOL"],
+    ["NF-ToN-IoT", "tcp_flags", "present", "TCP_FLAGS"],
+    ["NF-ToN-IoT", "max_pkt_len", "absent", "-"],
+    ["NF-ToN-IoT", "pkt_mean_to_max", "absent", "-"],
+    ["NF-ToN-IoT", "tcp_flag_density", "derivable", "TCP_FLAGS/pkts"],
+    ["NF-ToN-IoT", "log_pkt_mean", "derivable", "-"],
+    ["NF-ToN-IoT", "log_pkt_max", "absent", "-"],
+
+    # TON_IoT
+    ["TON_IoT", "duration", "present", "duration"],
+    ["TON_IoT", "src_pkts", "present", "src_pkts"],
+    ["TON_IoT", "dst_pkts", "present", "dst_pkts"],
+    ["TON_IoT", "src_bytes", "present", "src_bytes"],
+    ["TON_IoT", "dst_bytes", "present", "dst_bytes"],
+    ["TON_IoT", "total_pkts", "derivable", "src_pkts+dst_pkts"],
+    ["TON_IoT", "total_bytes", "derivable", "src_bytes+dst_bytes"],
+    ["TON_IoT", "protocol", "present", "proto"],
+    ["TON_IoT", "tcp_flags", "absent", "-"],
+    ["TON_IoT", "max_pkt_len", "absent", "-"],
+    ["TON_IoT", "pkt_mean_to_max", "absent", "-"],
+    ["TON_IoT", "tcp_flag_density", "absent", "-"],
+    ["TON_IoT", "log_pkt_mean", "derivable", "-"],
+    ["TON_IoT", "log_pkt_max", "absent", "-"],
+
+    # BoT-IoT
+    ["BoT-IoT", "duration", "present", "dur"],
+    ["BoT-IoT", "src_pkts", "present", "spkts"],
+    ["BoT-IoT", "dst_pkts", "present", "dpkts"],
+    ["BoT-IoT", "src_bytes", "present", "sbytes"],
+    ["BoT-IoT", "dst_bytes", "present", "dbytes"],
+    ["BoT-IoT", "total_pkts", "derivable", "pkts"],
+    ["BoT-IoT", "total_bytes", "derivable", "bytes"],
+    ["BoT-IoT", "protocol", "present", "proto"],
+    ["BoT-IoT", "tcp_flags", "present", "flgs"],
+    ["BoT-IoT", "max_pkt_len", "present", "max"],
+    ["BoT-IoT", "pkt_mean_to_max", "derivable", "mean/max"],
+    ["BoT-IoT", "tcp_flag_density", "derivable", "flgs/pkts"],
+    ["BoT-IoT", "log_pkt_mean", "derivable", "mean"],
+    ["BoT-IoT", "log_pkt_max", "derivable", "max"],
+]
+
+with open('reports/feasibility_matrix.csv', 'w', newline='') as csvfile:
+    writer = csv.writer(csvfile)
+    writer.writerow(["Dataset", "Canonical Feature", "Status", "Source Column or Formula"])
+    writer.writerows(data)
+
+with open('reports/feasibility_matrix.csv', 'r') as csvfile:
+    print(csvfile.read())

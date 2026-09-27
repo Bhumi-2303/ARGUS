@@ -1,0 +1,121 @@
+[
+    {
+        "dataset": "NF-ToN-IoT",
+        "rows": 1157994,
+        "features": 12,
+        "timestamp_column": null,
+        "label_column": "Label",
+        "time_range": {
+            "start": null,
+            "end": null
+        },
+        "size_bytes": 9491578,
+        "sha256": "6b98ba3619fa66f8eb3ea91d67a00af0405e73dea93f37b4e84b706c46c59e55",
+        "source": "Kaggle (dhoogla/nftoniot)",
+        "source_type": "mirror",
+        "version": "1.0",
+        "original_files": [
+            "NF-ToN-IoT.parquet"
+        ],
+        "local_files": [
+            "data/nf_ton_iot/processed/NF-ToN-IoT.parquet"
+        ],
+        "provenance_status": "VERIFIED MIRROR",
+        "validation_status": "VERIFIED",
+        "completeness_status": "VERIFIED COMPLETE",
+        "known_limitations": "None",
+        "source_url": "https://www.kaggle.com/datasets/dhoogla/nftoniot",
+        "attack_category_column": "label"
+    },
+    {
+        "dataset": "CICIoT2023",
+        "version": "2023",
+        "source": "Kaggle (madhavmalhotra/unb-cic-iot-dataset)",
+        "source_type": "mirror",
+        "original_files": [
+            "part-00000-363d1ba3-8ab5-4f96-bc25-4d5862db7cb9-c000.csv"
+        ],
+        "local_files": [
+            "data/cic_iot_2023/processed/part-00000-363d1ba3-8ab5-4f96-bc25-4d5862db7cb9-c000.csv"
+        ],
+        "size_bytes": 70337132,
+        "sha256": {
+            "part-00000-363d1ba3-8ab5-4f96-bc25-4d5862db7cb9-c000.csv": "d5b8e9e76d60fb053ef98eeb1dfdf13e101caef8abf1b36f353105ca3779b05d"
+        },
+        "rows": 238687,
+        "features": 47,
+        "timestamp_column": null,
+        "label_column": "label",
+        "time_range": {
+            "start": null,
+            "end": null
+        },
+        "provenance_status": "VERIFIED MIRROR",
+        "validation_status": "VERIFIED",
+        "completeness_status": "PARTIAL (1/169 splits)",
+        "known_limitations": "Kaggle mirror hangs; bulk download of 3GB halted. Only first split available.",
+        "source_url": "https://www.kaggle.com/datasets/madhavmalhotra/unb-cic-iot-dataset",
+        "attack_category_column": "label"
+    },
+    {
+        "dataset": "HAI",
+        "version": "22.04",
+        "source": "Kaggle (icsdataset/hai-security-dataset)",
+        "source_type": "mirror",
+        "original_files": [
+            "train1.csv"
+        ],
+        "local_files": [
+            "data/hai/processed/train1.csv"
+        ],
+        "size_bytes": 53190281,
+        "sha256": {
+            "train1.csv": "63383690ffc5344ba68a019c7000854a4d341a22d743ac035f5207072a197b33"
+        },
+        "rows": 93601,
+        "features": 88,
+        "timestamp_column": "timestamp",
+        "label_column": "Attack",
+        "time_range": {
+            "start": "2021-07-11 10:00:00",
+            "end": "2021-07-12 12:00:00"
+        },
+        "provenance_status": "VERIFIED MIRROR",
+        "validation_status": "VERIFIED",
+        "completeness_status": "PARTIAL (train1.csv only)",
+        "known_limitations": "Kaggle mirror hangs; Git LFS excessively slow. Only train1.csv acquired.",
+        "source_url": "https://www.kaggle.com/datasets/icsdataset/hai-security-dataset",
+        "attack_category_column": "Attack"
+    },
+    {
+        "dataset": "TON_IoT_Network",
+        "version": "2019",
+        "source": "Kaggle (mohammedaddoun/ton-iot)",
+        "source_type": "mirror",
+        "source_url": "https://www.kaggle.com/datasets/mohammedaddoun/ton-iot",
+        "original_files": [
+            "Network_dataset_1.csv"
+        ],
+        "local_files": [
+            "data/ton_iot/network_timestamped/Network_dataset_1.csv"
+        ],
+        "file_count": 1,
+        "size_bytes": 1048576,
+        "rows": 7240,
+        "features": 47,
+        "timestamp_column": "ts",
+        "label_column": "label",
+        "attack_category_column": "type",
+        "time_range": {
+            "start": "2019-04-02 09:45:58",
+            "end": "2019-04-02 12:57:32"
+        },
+        "sha256": {
+            "Network_dataset_1.csv": "c6797a448061f33c8b68381317ebbbca1b530d4bf3ff5f14ff1df88de06f6902"
+        },
+        "provenance_status": "VERIFIED MIRROR",
+        "completeness_status": "PARTIAL",
+        "validation_status": "VERIFIED",
+        "known_limitations": "Kaggle mirror hangs immediately after 1MB chunk. Bulk 3.2GB download failed. SecurityEvents_GroundTruth remains unavailable from all public mirrors."
+    }
+]
