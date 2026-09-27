@@ -1,0 +1,18 @@
+{
+  "model": "DANNNetwork",
+  "lambda": 0.1,
+  "seed": 42,
+  "parameters": {
+    "total_parameters": 3682,
+    "feature_encoder_parameters": 2592,
+    "attack_classifier_parameters": 545,
+    "domain_classifier_parameters": 545
+  },
+  "batch_size": 128,
+  "epochs_trained": 10,
+  "best_epoch": 10,
+  "best_val_roc_auc": 0.5450767354673439,
+  "best_val_loss": 15.0094515507279,
+  "total_runtime_seconds": 94.91843581199646,
+  "scaler_fitted_on": "D1 Source Subset"
+}

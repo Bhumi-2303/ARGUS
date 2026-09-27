@@ -1,0 +1,7 @@
+{
+    "training_time_seconds": 596.2088897228241,
+    "best_iteration": 299,
+    "experiment_mode": "development",
+    "n_estimators": 300,
+    "early_stopping_rounds": 30
+}

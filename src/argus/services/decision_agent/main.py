@@ -141,13 +141,13 @@ def generate_llm_explanation(
 
     # Rank features by SHAP magnitude
     sorted_features = sorted(shap_values.items(), key=lambda x: abs(x[1]), reverse=True)
-    f1_name, f1_val = sorted_features[0] if len(sorted_features) > 0 else ("tcp_flag_density", 0.0)
-    f2_name, f2_val = sorted_features[1] if len(sorted_features) > 1 else ("pkt_mean_to_max", 0.0)
+    f1_name, f1_val = sorted_features[0] if len(sorted_features) > 0 else ("Unknown", 0.0)
+    f2_name, f2_val = sorted_features[1] if len(sorted_features) > 1 else ("Unknown", 0.0)
 
     f1_desc = f"positive contribution from {f1_name} ({f1_val:+.4f})" if f1_val > 0 else f"negative contribution from {f1_name} ({f1_val:+.4f})"
     f2_desc = f"positive contribution from {f2_name} ({f2_val:+.4f})" if f2_val > 0 else f"negative contribution from {f2_name} ({f2_val:+.4f})"
 
-    sentence1 = f"The detector flagged an attack with a probability of {probability:.4f} and a risk score of {risk_score if risk_score is not None else 74.19:.2f} ({risk_tier if risk_tier else 'High'}).{uncertainty_sentence}"
+    sentence1 = f"The detector flagged an attack with a probability of {probability:.4f} and a risk score of {f'{risk_score:.2f}' if risk_score is not None else 'Unknown'} ({risk_tier if risk_tier else 'High'}).{uncertainty_sentence}"
     sentence2 = f"This decision is primarily driven by {f1_desc}, followed by {f2_desc}."
     
     sentence3 = ""

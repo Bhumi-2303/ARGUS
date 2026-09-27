@@ -1,0 +1,355 @@
+=== STEP 1: Live Repo Scripts ===
+--- File: experiments/ablations/phase4_execute.py ---
+Git Date: 2026-09-19 12:54:56 +0530
+XGBoost imports/instantiations:
+None
+sklearn imports/instantiations:
+30:from sklearn.metrics import (
+36:from sklearn.preprocessing import StandardScaler
+torch/nn.Module imports/instantiations:
+38:import torch
+39:import torch.nn as nn
+243:class GradReverse(torch.autograd.Function):
+252:class DANNModel(nn.Module):
+272:    with torch.no_grad():
+274:            X_batch = torch.tensor(scaler.transform(X[i:i+batch_size]), dtype=torch.float32).to(device)
+276:            prob = torch.sigmoid(logits).cpu().numpy().ravel()
+421:    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+441:        model_dann.load_state_dict(torch.load(P3_RESULTS / f"checkpoints/{ckpt_file}", map_location=device))
+--- File: experiments/ablations/phase4_execute_fast.py ---
+Git Date: 2026-09-19 12:54:56 +0530
+XGBoost imports/instantiations:
+None
+sklearn imports/instantiations:
+30:from sklearn.metrics import (
+36:from sklearn.preprocessing import StandardScaler
+torch/nn.Module imports/instantiations:
+38:import torch
+39:import torch.nn as nn
+243:class GradReverse(torch.autograd.Function):
+252:class DANNModel(nn.Module):
+272:    with torch.no_grad():
+274:            X_batch = torch.tensor(scaler.transform(X[i:i+batch_size]), dtype=torch.float32).to(device)
+276:            prob = torch.sigmoid(logits).cpu().numpy().ravel()
+421:    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+--- File: experiments/analysis/feature_resolution_study.py ---
+Git Date: 2026-09-19 12:54:56 +0530
+XGBoost imports/instantiations:
+None
+sklearn imports/instantiations:
+33:from sklearn.preprocessing import StandardScaler
+34:from sklearn.metrics import (
+torch/nn.Module imports/instantiations:
+None
+--- File: experiments/domain_adaptation/coral/stage_a_env_check.py ---
+Git Date: 2026-09-19 12:54:56 +0530
+XGBoost imports/instantiations:
+None
+sklearn imports/instantiations:
+None
+torch/nn.Module imports/instantiations:
+14:import torch
+42:        f"**PyTorch Device**: {'mps' if torch.backends.mps.is_available() else 'cpu'}",
+43:        f"**PyTorch Version**: {torch.__version__}",
+--- File: experiments/domain_adaptation/coral/stage_b_c_coral.py ---
+Git Date: 2026-09-19 12:54:56 +0530
+XGBoost imports/instantiations:
+None
+sklearn imports/instantiations:
+None
+torch/nn.Module imports/instantiations:
+None
+--- File: experiments/domain_adaptation/coral/stage_d_e_train_evaluate.py ---
+Git Date: 2026-09-19 12:54:56 +0530
+XGBoost imports/instantiations:
+None
+sklearn imports/instantiations:
+21:from sklearn.model_selection import train_test_split
+22:from sklearn.preprocessing import StandardScaler
+23:from sklearn.metrics import (
+torch/nn.Module imports/instantiations:
+18:import torch
+19:import torch.nn as nn
+20:from torch.utils.data import DataLoader, TensorDataset
+46:DEVICE = "mps" if torch.backends.mps.is_available() else "cpu"
+143:    torch.manual_seed(seed)
+145:    if torch.backends.mps.is_available():
+146:        torch.mps.empty_cache()
+171:    tr_ds = TensorDataset(torch.tensor(X_tr_scaled, dtype=torch.float32), torch.tensor(y_tr_sub, dtype=torch.float32))
+172:    val_ds = TensorDataset(torch.tensor(X_val_scaled, dtype=torch.float32), torch.tensor(y_val_sub, dtype=torch.float32))
+187:    optimizer = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
+224:        with torch.no_grad():
+231:                probs = torch.sigmoid(logits).cpu().numpy()
+254:            torch.save(model.state_dict(), best_ckpt_path)
+266:    model.load_state_dict(torch.load(best_ckpt_path, map_location=DEVICE))
+272:    val_full_ds = TensorDataset(torch.tensor(X_val_full_scaled, dtype=torch.float32))
+276:    with torch.no_grad():
+280:            probs = torch.sigmoid(logits).cpu().numpy()
+302:    te_ds = TensorDataset(torch.tensor(X_te_scaled, dtype=torch.float32))
+306:    with torch.no_grad():
+310:            probs = torch.sigmoid(logits).cpu().numpy()
+--- File: experiments/domain_adaptation/coral/stage_f_generate_all_artifacts.py ---
+Git Date: 2026-09-19 12:54:56 +0530
+XGBoost imports/instantiations:
+None
+sklearn imports/instantiations:
+19:from sklearn.metrics import (
+torch/nn.Module imports/instantiations:
+None
+--- File: experiments/domain_adaptation/dann/stage1_audit_and_sanity.py ---
+Git Date: 2026-09-19 12:54:56 +0530
+XGBoost imports/instantiations:
+None
+sklearn imports/instantiations:
+None
+torch/nn.Module imports/instantiations:
+16:import torch
+17:import torch.nn as nn
+90:    x = torch.randn(16, 4, requires_grad=True)
+91:    y_att = torch.randint(0, 2, (16,)).float()
+92:    y_dom = torch.randint(0, 2, (16,)).float()
+106:    enc_has_grad = any(p.grad is not None and torch.norm(p.grad) > 0 for p in model.feature_encoder.parameters())
+107:    att_has_grad = any(p.grad is not None and torch.norm(p.grad) > 0 for p in model.attack_classifier.parameters())
+108:    dom_has_grad = any(p.grad is not None and torch.norm(p.grad) > 0 for p in model.domain_classifier.parameters())
+114:    x_test = torch.tensor([[1.0, 2.0]], requires_grad=True)
+119:    assert torch.allclose(x_test.grad, torch.tensor([[-2.0, -2.0]])), f"GRL sign flip failed: {x_test.grad}"
+128:        "device": "mps" if torch.backends.mps.is_available() else "cpu",
+--- File: experiments/domain_adaptation/dann/stage2_pilot_lambda_sweep.py ---
+Git Date: 2026-09-19 12:54:56 +0530
+XGBoost imports/instantiations:
+None
+sklearn imports/instantiations:
+21:from sklearn.model_selection import train_test_split
+22:from sklearn.preprocessing import StandardScaler
+23:from sklearn.metrics import (
+torch/nn.Module imports/instantiations:
+18:import torch
+19:import torch.nn as nn
+20:from torch.utils.data import DataLoader, TensorDataset
+47:DEVICE = "mps" if torch.backends.mps.is_available() else "cpu"
+62:    torch.manual_seed(seed)
+64:    if torch.backends.mps.is_available():
+65:        torch.mps.empty_cache()
+90:    s_dataset = TensorDataset(torch.tensor(X_s_scaled), torch.tensor(y_s_sub, dtype=torch.float32))
+91:    t_dataset = TensorDataset(torch.tensor(X_t_scaled))
+92:    val_dataset = TensorDataset(torch.tensor(X_val_scaled), torch.tensor(y_val, dtype=torch.float32))
+102:    optimizer = torch.optim.Adam(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
+149:            b_dom_s = torch.zeros(len(bx_s), device=DEVICE)
+150:            b_dom_t = torch.ones(len(bx_t), device=DEVICE)
+172:            pred_class_s = (torch.sigmoid(out_class_s) >= 0.5).float()
+175:            pred_dom_s = (torch.sigmoid(out_dom_s) >= 0.5).float()
+176:            pred_dom_t = (torch.sigmoid(out_dom_t) >= 0.5).float()
+194:        with torch.no_grad():
+201:                probs = torch.sigmoid(logits_v).cpu().numpy()
+253:            torch.save(model.state_dict(), best_ckpt_path)
+261:    torch.save(model.state_dict(), final_ckpt_path)
+--- File: experiments/domain_adaptation/dann/stage3_final_evaluation_and_artifacts.py ---
+Git Date: 2026-09-19 12:54:56 +0530
+XGBoost imports/instantiations:
+None
+sklearn imports/instantiations:
+21:from sklearn.preprocessing import StandardScaler
+22:from sklearn.metrics import (
+torch/nn.Module imports/instantiations:
+20:import torch
+45:DEVICE = "mps" if torch.backends.mps.is_available() else "cpu"
+131:    model.load_state_dict(torch.load(ckpt_path, map_location="cpu"))
+138:    torch.save(model.state_dict(), final_seed_dir / "best_model.pt")
+143:    with torch.no_grad():
+145:            bx = torch.tensor(X_val_scaled[i:i+4096], device=DEVICE)
+147:            probs = torch.sigmoid(logits).cpu().numpy().ravel()
+169:    with torch.no_grad():
+171:            bx = torch.tensor(X_test_scaled[i:i+4096], device=DEVICE)
+173:            probs = torch.sigmoid(logits).cpu().numpy().ravel()
+703:- Conservative mini-batching ($B=128$), memory clearing (`torch.mps.empty_cache()`, `gc.collect()`).
+--- File: training/scripts/phase3_execute_all.py ---
+Git Date: 2026-09-19 12:54:56 +0530
+XGBoost imports/instantiations:
+51:import xgboost as xgb
+sklearn imports/instantiations:
+43:from sklearn.metrics import (
+49:from sklearn.preprocessing import StandardScaler
+torch/nn.Module imports/instantiations:
+52:import torch
+53:import torch.nn as nn
+54:import torch.optim as optim
+55:from torch.utils.data import DataLoader, TensorDataset
+62:torch.manual_seed(RANDOM_SEED)
+255:class GradReverse(torch.autograd.Function):
+265:class DANNModel(nn.Module):
+296:def predict_dann(model: nn.Module, scaler: StandardScaler, X: np.ndarray, device: torch.device, batch_size: int = 100000) -> np.ndarray:
+299:    with torch.no_grad():
+301:            X_batch = torch.tensor(scaler.transform(X[i:i+batch_size]), dtype=torch.float32).to(device)
+303:            prob = torch.sigmoid(logits).cpu().numpy().ravel()
+773:            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+780:            s_tensor_x = torch.from_numpy(X_s_scaled.astype(np.float32))
+781:            s_tensor_y = torch.from_numpy(y_d1_tr_sub.astype(np.float32)).unsqueeze(1)
+782:            t_tensor_x = torch.from_numpy(X_t_scaled.astype(np.float32))
+794:                perm_s = torch.randperm(n_samples_s)
+795:                perm_t = torch.randperm(n_samples_t)
+803:                    batch_idx_t = torch.randint(0, n_samples_t, (len(batch_idx_s),))
+809:                    domain_label_s = torch.zeros(len(src_x), 1).to(device)
+810:                    domain_label_t = torch.ones(len(tgt_x), 1).to(device)
+828:                torch.save(model_dann_d1.state_dict(), RESULTS_DIR / f"checkpoints/dann_d1_d3_epoch_{epoch+1:02d}.pt")
+831:            torch.save(model_dann_d1.state_dict(), RESULTS_DIR / "checkpoints/dann_d1_d3_checkpoint.pt")
+905:            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+911:            s_tensor_x = torch.from_numpy(X_s_scaled.astype(np.float32))
+912:            s_tensor_y = torch.from_numpy(y_d2_tr_sub.astype(np.float32)).unsqueeze(1)
+913:            t_tensor_x = torch.from_numpy(X_t_scaled.astype(np.float32))
+925:                perm_s = torch.randperm(n_samples_s)
+926:                perm_t = torch.randperm(n_samples_t)
+934:                    batch_idx_t = torch.randint(0, n_samples_t, (len(batch_idx_s),))
+940:                    domain_label_s = torch.zeros(len(src_x), 1).to(device)
+941:                    domain_label_t = torch.ones(len(tgt_x), 1).to(device)
+959:                torch.save(model_dann_d2.state_dict(), RESULTS_DIR / f"checkpoints/dann_d2_d3_epoch_{epoch+1:02d}.pt")
+962:            torch.save(model_dann_d2.state_dict(), RESULTS_DIR / "checkpoints/dann_d2_d3_checkpoint.pt")
+--- File: training/scripts/phase3_execute_all_fast.py ---
+Git Date: 2026-09-19 12:54:56 +0530
+XGBoost imports/instantiations:
+51:import xgboost as xgb
+sklearn imports/instantiations:
+43:from sklearn.metrics import (
+49:from sklearn.preprocessing import StandardScaler
+torch/nn.Module imports/instantiations:
+52:import torch
+53:import torch.nn as nn
+54:import torch.optim as optim
+55:from torch.utils.data import DataLoader, TensorDataset
+62:torch.manual_seed(RANDOM_SEED)
+255:class GradReverse(torch.autograd.Function):
+265:class DANNModel(nn.Module):
+296:def predict_dann(model: nn.Module, scaler: StandardScaler, X: np.ndarray, device: torch.device, batch_size: int = 100000) -> np.ndarray:
+299:    with torch.no_grad():
+301:            X_batch = torch.tensor(scaler.transform(X[i:i+batch_size]), dtype=torch.float32).to(device)
+303:            prob = torch.sigmoid(logits).cpu().numpy().ravel()
+774:            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+781:            s_tensor_x = torch.from_numpy(X_s_scaled.astype(np.float32))
+782:            s_tensor_y = torch.from_numpy(y_d1_tr_sub.astype(np.float32)).unsqueeze(1)
+783:            t_tensor_x = torch.from_numpy(X_t_scaled.astype(np.float32))
+795:                perm_s = torch.randperm(n_samples_s)
+796:                perm_t = torch.randperm(n_samples_t)
+804:                    batch_idx_t = torch.randint(0, n_samples_t, (len(batch_idx_s),))
+810:                    domain_label_s = torch.zeros(len(src_x), 1).to(device)
+811:                    domain_label_t = torch.ones(len(tgt_x), 1).to(device)
+829:                torch.save(model_dann_d1.state_dict(), RESULTS_DIR / f"checkpoints/dann_d1_d3_epoch_{epoch+1:02d}.pt")
+832:            torch.save(model_dann_d1.state_dict(), RESULTS_DIR / "checkpoints/dann_d1_d3_checkpoint.pt")
+906:            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+912:            s_tensor_x = torch.from_numpy(X_s_scaled.astype(np.float32))
+913:            s_tensor_y = torch.from_numpy(y_d2_tr_sub.astype(np.float32)).unsqueeze(1)
+914:            t_tensor_x = torch.from_numpy(X_t_scaled.astype(np.float32))
+926:                perm_s = torch.randperm(n_samples_s)
+927:                perm_t = torch.randperm(n_samples_t)
+935:                    batch_idx_t = torch.randint(0, n_samples_t, (len(batch_idx_s),))
+941:                    domain_label_s = torch.zeros(len(src_x), 1).to(device)
+942:                    domain_label_t = torch.ones(len(tgt_x), 1).to(device)
+960:                torch.save(model_dann_d2.state_dict(), RESULTS_DIR / f"checkpoints/dann_d2_d3_epoch_{epoch+1:02d}.pt")
+963:            torch.save(model_dann_d2.state_dict(), RESULTS_DIR / "checkpoints/dann_d2_d3_checkpoint.pt")
+--- File: scripts/fit_fusion.py ---
+Git Date: 2026-09-22 21:49:08 +0530
+XGBoost imports/instantiations:
+5:import xgboost as xgb
+19:    clf = xgb.XGBClassifier(n_estimators=100, learning_rate=0.1, random_state=42, eval_metric="logloss")
+sklearn imports/instantiations:
+6:from sklearn.metrics import matthews_corrcoef
+35:from sklearn.model_selection import train_test_split
+torch/nn.Module imports/instantiations:
+None
+--- File: scripts/final_eval.py ---
+Git Date: 2026-09-22 20:38:54 +0530
+XGBoost imports/instantiations:
+5:import xgboost as xgb
+19:    m_src = xgb.XGBClassifier()
+21:    m_adapt = xgb.XGBClassifier()
+sklearn imports/instantiations:
+6:from sklearn.metrics import (
+torch/nn.Module imports/instantiations:
+None
+--- File: ./compute_shap.py ---
+Git Date: 2026-09-19 12:54:56 +0530
+XGBoost imports/instantiations:
+2:import xgboost as xgb
+16:clf_before = xgb.XGBClassifier(n_estimators=100, learning_rate=0.1, random_state=42)
+27:clf_after = xgb.XGBClassifier(n_estimators=100, learning_rate=0.1, random_state=42)
+sklearn imports/instantiations:
+None
+torch/nn.Module imports/instantiations:
+None
+--- File: ./generate_d1_d2_baselines.py ---
+Git Date: 2026-09-19 12:54:56 +0530
+XGBoost imports/instantiations:
+3:import xgboost as xgb
+25:clf_d1 = xgb.XGBClassifier(n_estimators=100, learning_rate=0.1, random_state=42)
+34:clf_d2 = xgb.XGBClassifier(n_estimators=100, learning_rate=0.1, random_state=42)
+47:clf_coral = xgb.XGBClassifier(n_estimators=100, learning_rate=0.1, random_state=42)
+55:clf_clean_ca = xgb.XGBClassifier(n_estimators=100, learning_rate=0.1, random_state=42)
+63:clf_ca = xgb.XGBClassifier(n_estimators=100, learning_rate=0.1, random_state=42)
+sklearn imports/instantiations:
+5:from sklearn.metrics import roc_auc_score
+torch/nn.Module imports/instantiations:
+None
+--- File: ./get_cm.py ---
+Git Date: 2026-09-23 22:59:48 +0530
+XGBoost imports/instantiations:
+3:import xgboost as xgb
+11:model_source = xgb.XGBClassifier()
+sklearn imports/instantiations:
+4:from sklearn.metrics import confusion_matrix, matthews_corrcoef
+torch/nn.Module imports/instantiations:
+None
+--- File: ./temp_feature_analysis.py ---
+Git Date: 2026-09-19 12:54:56 +0530
+XGBoost imports/instantiations:
+None
+sklearn imports/instantiations:
+None
+torch/nn.Module imports/instantiations:
+None
+
+=== STEP 2: Other Deliverables ===
+Grep XGB in NR04 & REP01:
+No XGB in these ZIPs
+Grep CSV filenames in NR04 & REP01:
+No matching CSV filenames in these ZIPs
+
+=== STEP 3: Mtimes ===
+2026-08-13 04:04:02.000000000 data/raw/legacy_package/argus_coral_data/ciciot_train_features.csv
+2026-08-13 04:04:10.000000000 data/raw/legacy_package/argus_coral_data/ciciot_test_features.csv
+2026-08-13 04:04:46.000000000 data/raw/legacy_package/argus_coral_data/nfton_train_features.csv
+2026-08-13 04:04:54.000000000 data/raw/legacy_package/argus_coral_data/nfton_test_features.csv
+2026-08-13 04:05:36.000000000 data/raw/legacy_package/argus_coral_data/ciciot_train_coral_aligned.csv
+2026-08-13 04:06:36.000000000 data/raw/legacy_package/argus_coral_data/results/coral_xgboost_classification_report.csv
+2026-08-13 04:06:36.000000000 data/raw/legacy_package/argus_coral_data/results/coral_xgboost_confusion_matrix.csv
+2026-08-13 04:06:36.000000000 data/raw/legacy_package/argus_coral_data/results/coral_xgboost_metrics.csv
+2026-08-13 04:08:06.000000000 data/raw/legacy_package/argus_coral_data/ciciot_train_class_aware_coral.csv
+2026-08-13 04:09:00.000000000 data/raw/legacy_package/argus_coral_data/class_aware_results/class_aware_coral_xgboost_confusion_matrix.csv
+2026-08-13 04:09:00.000000000 data/raw/legacy_package/argus_coral_data/class_aware_results/class_aware_coral_xgboost_metrics.csv
+2026-08-13 04:09:02.000000000 data/raw/legacy_package/argus_coral_data/class_aware_results/class_aware_coral_xgboost_classification_report.csv
+2026-08-13 04:11:48.000000000 data/raw/legacy_package/argus_coral_data/ciciot_train_clean_class_aware_coral.csv
+2026-08-13 04:14:44.000000000 data/raw/legacy_package/argus_coral_data/final_clean_classaware_results/final_classification_report.csv
+2026-08-13 04:14:44.000000000 data/raw/legacy_package/argus_coral_data/final_clean_classaware_results/final_confusion_matrix.csv
+2026-08-13 04:14:44.000000000 data/raw/legacy_package/argus_coral_data/final_clean_classaware_results/final_metrics.csv
+2026-08-13 04:14:44.000000000 data/raw/legacy_package/argus_coral_data/final_clean_classaware_results/threshold_metadata.csv
+2026-08-13 04:14:44.000000000 data/raw/legacy_package/argus_coral_data/final_model_comparison/best_model_by_metric.csv
+2026-08-13 04:14:44.000000000 data/raw/legacy_package/argus_coral_data/final_model_comparison/four_model_comparison.csv
+2026-08-13 04:14:44.000000000 data/raw/legacy_package/argus_coral_data/final_model_comparison/model_ranking.csv
+2026-08-13 04:14:44.000000000 data/raw/legacy_package/argus_coral_data/final_model_comparison/source_vs_clean_classaware_improvement.csv
+2026-08-13 04:15:20.000000000 data/raw/legacy_package/argus_coral_data/nfton_train_adaptation.csv
+2026-08-13 04:15:26.000000000 data/raw/legacy_package/argus_coral_data/nfton_train_calibration.csv
+2026-08-13 04:19:56.000000000 data/raw/legacy_package/argus_coral_data/dann_results/dann_training_history.csv
+2026-08-13 04:20:44.000000000 data/raw/legacy_package/argus_coral_data/dann_results/dann_calibration_metadata.csv
+2026-08-13 04:20:44.000000000 data/raw/legacy_package/argus_coral_data/dann_results/dann_calibration_threshold_sweep.csv
+2026-08-13 04:20:46.000000000 data/raw/legacy_package/argus_coral_data/dann_results/dann_calibration_predictions.csv
+2026-08-13 04:21:02.000000000 data/raw/legacy_package/argus_coral_data/dann_results/dann_final_test_classification_report.csv
+2026-08-13 04:21:02.000000000 data/raw/legacy_package/argus_coral_data/dann_results/dann_final_test_confusion_matrix.csv
+2026-08-13 04:21:02.000000000 data/raw/legacy_package/argus_coral_data/dann_results/dann_final_test_metrics.csv
+2026-08-13 04:21:04.000000000 data/raw/legacy_package/argus_coral_data/dann_results/dann_final_test_predictions.csv
+2026-08-13 04:21:04.000000000 data/raw/legacy_package/argus_coral_data/dann_results/dann_final_threshold_metadata.csv
+2026-08-13 04:21:04.000000000 data/raw/legacy_package/argus_coral_data/final_five_model_comparison/best_model_by_metric.csv
+2026-08-13 04:21:04.000000000 data/raw/legacy_package/argus_coral_data/final_five_model_comparison/FINAL_best_model_by_metric.csv
+2026-08-13 04:21:04.000000000 data/raw/legacy_package/argus_coral_data/final_five_model_comparison/FINAL_five_model_comparison.csv
+2026-08-13 04:21:04.000000000 data/raw/legacy_package/argus_coral_data/final_five_model_comparison/FINAL_five_model_ranking.csv
+2026-08-13 04:21:04.000000000 data/raw/legacy_package/argus_coral_data/final_five_model_comparison/FINAL_source_vs_clean_classaware.csv
+2026-08-13 04:21:04.000000000 data/raw/legacy_package/argus_coral_data/final_five_model_comparison/five_model_complete_comparison.csv
+2026-08-13 04:21:04.000000000 data/raw/legacy_package/argus_coral_data/final_five_model_comparison/five_model_paper_table.csv
+2026-08-13 04:21:04.000000000 data/raw/legacy_package/argus_coral_data/final_five_model_comparison/five_model_protocol_summary.csv
+2026-08-13 04:21:04.000000000 data/raw/legacy_package/argus_coral_data/final_five_model_comparison/five_model_ranking.csv

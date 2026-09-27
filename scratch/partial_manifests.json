@@ -1,0 +1,26 @@
+[
+  {
+    "dataset": "NF-ToN-IoT",
+    "rows": 1157994,
+    "features": 12,
+    "timestamp_column": null,
+    "label_column": "Label",
+    "time_range": {
+      "start": null,
+      "end": null
+    },
+    "size_bytes": 9491578,
+    "sha256": "6b98ba3619fa66f8eb3ea91d67a00af0405e73dea93f37b4e84b706c46c59e55",
+    "source": "Kaggle (dhoogla/nftoniot)",
+    "source_type": "mirror",
+    "version": "1.0",
+    "original_files": [
+      "NF-ToN-IoT.parquet"
+    ],
+    "local_files": [
+      "data/nf_ton_iot/processed/NF-ToN-IoT.parquet"
+    ],
+    "provenance_status": "VERIFIED MIRROR",
+    "validation_status": "VERIFIED"
+  }
+]

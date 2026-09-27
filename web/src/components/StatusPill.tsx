@@ -53,7 +53,7 @@ export const StatusPill: React.FC<StatusPillProps> = ({
   return (
     <span
       className={clsx(
-        'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-xs font-mono font-medium',
+        'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-sm border text-xs font-mono font-medium',
         st.bg,
         st.text,
         st.border,

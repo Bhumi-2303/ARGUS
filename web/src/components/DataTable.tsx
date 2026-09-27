@@ -82,7 +82,7 @@ export function DataTable<T extends Record<string, any>>({
               setCurrentPage(1);
             }}
             placeholder={searchPlaceholder}
-            className="w-full pl-9 pr-4 py-1.5 text-xs bg-slate-900 border border-slate-700/80 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+            className="w-full pl-9 pr-4 py-1.5 text-xs bg-slate-900 border border-slate-700/80 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
           />
         </div>
       )}
@@ -126,7 +126,7 @@ export function DataTable<T extends Record<string, any>>({
                 <tr key={idx} className="hover:bg-slate-800/40 transition-colors">
                   {columns.map((col) => (
                     <td key={col.key} className="px-4 py-2.5 whitespace-nowrap">
-                      {col.render ? col.render(row) : String(row[col.key] ?? '—')}
+                      {col.render ? col.render(row) : String(row[col.key] ?? 'N/A')}
                     </td>
                   ))}
                 </tr>

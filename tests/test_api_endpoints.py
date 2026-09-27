@@ -83,16 +83,28 @@ def test_explain_endpoint():
     assert "top_feature" in data
 
 
-def test_onboard_endpoint():
-    payload = {
-        "target_domain": "nfton",
-        "adaptation_window_size": 1000,
-        "calibration_window_size": 500,
-        "test_window_size": 500
-    }
-    response = client.post("/api/v1/onboard", json=payload)
+def test_test_cases_endpoint():
+    response = client.get("/api/v1/data/test-cases")
     assert response.status_code == 200
     data = response.json()
-    assert data["demo_scale"] is True
-    assert "metrics" in data
-    assert "f1_score" in data["metrics"]
+    assert len(data) == 4
+    case_ids = [c["id"] for c in data]
+    assert "ciciot-benign" in case_ids
+    assert "ciciot-attack" in case_ids
+    assert "nfton-benign" in case_ids
+    assert "nfton-attack" in case_ids
+    for c in data:
+        assert "features" in c
+        assert "ground_truth_label" in c
+        assert c["ground_truth_label"] in (0, 1)
+
+
+def test_samples_endpoint():
+    response = client.get("/api/v1/data/samples")
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) >= 2
+    for s in data:
+        assert "features" in s
+        assert "ground_truth_label" in s
+

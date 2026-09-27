@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 """Main orchestrator implementation."""
 import asyncio
 import uuid
@@ -115,7 +116,8 @@ class Orchestrator:
                             agent_id="orchestrator",
                             priority=task_def.priority,
                             task_type=task_def.task_type,
-                            payload=task_def.payload
+                            payload=task_def.payload,
+                            timestamp=datetime.now(timezone.utc),
                         )
                         await self.bus.publish(f"agent.{agent_id}.tasks", request)
                         logger.info("task_routed", task_id=task_id, agent_id=agent_id)

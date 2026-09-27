@@ -1,0 +1,19 @@
+{
+  "current_stage": "STAGE_DA02_PILOT_COMPLETE",
+  "current_experiment": "DA02-PILOT DANN Lambda Sweep (Seed 42)",
+  "current_seed": 42,
+  "current_lambda": null,
+  "completed_lambdas": [
+    0.0,
+    0.1,
+    0.25,
+    0.5,
+    1.0
+  ],
+  "best_lambda": 0.5,
+  "checkpoint_path": "experiment_execution/neural_robustness/domain_adaptation/DA02_DANN/checkpoints/DA02_DANN_seed42_lambda_0.50/best_model.pt",
+  "last_successful_artifact": "experiment_execution/neural_robustness/domain_adaptation/DA02_DANN/reports/DA02_FINAL_REPORT.md",
+  "status": "EXPERIMENT_DA02_FINISHED_AWAITING_EXPANSION_APPROVAL",
+  "error": null,
+  "timestamp": "2026-08-24T00:54:52.056749"
+}

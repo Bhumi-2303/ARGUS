@@ -76,6 +76,7 @@ class KnowledgeContextAgent(BaseAgent):
         self.logger.debug("executing_plan")
         threat_data = plan["threat_data"]
         event = await self.pipeline.process_threat(threat_data)
+        event.implementation_status = "not_implemented"
         return event
 
     async def call_tools(self, tool_requests: List[Any]) -> List[Any]:

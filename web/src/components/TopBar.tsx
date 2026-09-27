@@ -10,6 +10,8 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { useQuery } from '@tanstack/react-query';
+import { api, DomainInfo } from '../api/client';
 
 export interface TopBarProps {
   sidebarCollapsed: boolean;
@@ -18,11 +20,7 @@ export interface TopBarProps {
   apiConnected?: boolean;
 }
 
-export const DOMAINS = [
-  { id: 'ciciot', name: 'Domain 1: CICIoT2023', subtitle: 'Source IoT Telemetry (5.49M)' },
-  { id: 'nfton', name: 'Domain 2: NF-ToN-IoT-v2', subtitle: 'Target IoT Telemetry (8.41M)' },
-  { id: 'iec104', name: 'Domain 3: IEC-104 SCADA', subtitle: 'Industrial Grid Protocol (2.29M)' },
-];
+
 
 export const TopBar: React.FC<TopBarProps> = ({
   sidebarCollapsed,
@@ -33,7 +31,13 @@ export const TopBar: React.FC<TopBarProps> = ({
   const { theme, toggleTheme } = useTheme();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  const activeDomain = DOMAINS.find((d) => d.id === selectedDomain) || DOMAINS[0];
+  const { data: domainsData } = useQuery({
+    queryKey: ['domains'],
+    queryFn: api.getDomains,
+  });
+  const domains = domainsData?.domains || [];
+  const activeDomain = domains.find((d) => d.domain_id === selectedDomain) || domains[0] || { name: 'Loading...' };
+
 
   return (
     <header
@@ -61,22 +65,27 @@ export const TopBar: React.FC<TopBarProps> = ({
             <div className="px-3 py-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-wider font-mono">
               Active Telemetry Domain
             </div>
-            {DOMAINS.map((domain) => (
+            {domains.map((domain) => (
               <button
-                key={domain.id}
+                key={domain.domain_id}
                 onClick={() => {
-                  onSelectDomain(domain.id);
-                  setDropdownOpen(false);
+                  if (domain.status === 'verified') {
+                    onSelectDomain(domain.domain_id);
+                    setDropdownOpen(false);
+                  }
                 }}
+                disabled={domain.status !== 'verified'}
+                title={domain.status === 'planned' ? 'Not yet backed by a verified result' : domain.status === 'partial' ? 'Partially verified - see Protocol & Limits' : ''}
                 className={clsx(
                   'w-full text-left px-3 py-2 rounded-lg text-xs font-mono transition-colors flex flex-col',
-                  domain.id === selectedDomain
+                  domain.domain_id === selectedDomain
                     ? 'bg-cyan-500/10 text-cyan-300 font-semibold border border-cyan-500/30'
+                    : domain.status !== 'verified' 
+                    ? 'text-slate-500 opacity-50 cursor-not-allowed'
                     : 'text-slate-300 hover:bg-slate-800'
                 )}
               >
-                <span>{domain.name}</span>
-                <span className="text-[10px] text-slate-500 font-normal">{domain.subtitle}</span>
+                <span>{domain.name} {domain.status !== 'verified' && `(${domain.status})`}</span>
               </button>
             ))}
           </div>
@@ -86,7 +95,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       {/* Right side: Badges & Actions */}
       <div className="flex items-center gap-4">
         {/* Research Prototype Badge */}
-        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-mono font-medium">
+        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded bg-blue-500/10 border border-blue-500/30 text-blue-700 dark:text-blue-300 text-xs font-mono font-medium">
           <Beaker className="w-3.5 h-3.5 text-purple-400" />
           <span>RESEARCH PROTOTYPE</span>
         </div>
@@ -100,7 +109,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         {/* Theme Toggle Button */}
         <button
           onClick={toggleTheme}
-          className="p-2 rounded-lg bg-slate-800/80 border border-slate-700/80 text-slate-300 hover:text-slate-100 hover:bg-slate-800 transition-colors"
+          className="p-2 rounded-lg bg-slate-800/80 border border-slate-700/80 text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-800 transition-colors"
           title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
         >
           {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-cyan-400" />}

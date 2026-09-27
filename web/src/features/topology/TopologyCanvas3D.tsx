@@ -204,7 +204,7 @@ export function TopologyCanvas3D({
 
   return (
     <Canvas
-      camera={{ position: [0, 8, 18], fov: 50 }}
+      camera={{ position: [0, 16, 26], fov: 55 }}
       style={{ background: 'transparent' }}
       onPointerDown={() => onSelectNode(null as any)}
     >

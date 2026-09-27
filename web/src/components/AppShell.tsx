@@ -1,8 +1,11 @@
 import React, { useState, Suspense } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../api/client';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { ErrorBoundary } from './ErrorBoundary';
 import { Skeleton } from './Skeleton';
+import { Footer } from './Footer';
 import { clsx } from 'clsx';
 
 export interface AppShellProps {
@@ -13,8 +16,16 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [selectedDomain, setSelectedDomain] = useState('ciciot');
 
+  const { data: healthData, isError: isHealthError } = useQuery({
+    queryKey: ['health'],
+    queryFn: api.getHealth,
+    refetchInterval: 5000,
+    retry: false
+  });
+  const apiConnected = healthData?.status === 'healthy' && !isHealthError;
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col antialiased">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col antialiased">
       {/* Sidebar */}
       <Sidebar
         collapsed={sidebarCollapsed}
@@ -26,7 +37,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         sidebarCollapsed={sidebarCollapsed}
         selectedDomain={selectedDomain}
         onSelectDomain={setSelectedDomain}
-        apiConnected={true}
+        apiConnected={apiConnected}
       />
 
       {/* Main Content Area */}
@@ -50,6 +61,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             </Suspense>
           </ErrorBoundary>
         </div>
+        <Footer />
       </main>
     </div>
   );

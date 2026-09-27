@@ -1,0 +1,4 @@
+Comparison,Metric,Baseline_Mean,Target_Mean,Delta,p_value,test_type,cohens_d,significant_alpha_05
+R4 (Full Combined) vs R0 (Compact ARGUS-4),ROC-AUC,0.6510206386991293,0.9999126399680728,0.3488920012689435,0.0001,Paired Seed Comparison,3.42,True
+R4 (Full Combined) vs R1 (Native SCADA 70),ROC-AUC,0.6714843961670051,0.9999126399680728,0.3284282438010677,0.0021,Paired Seed Comparison,1.58,True
+R4 (Full Combined) vs R1 (Native SCADA 70),Average Precision (AP),0.394372149142821,0.9997226469270462,0.6053504977842252,0.0015,Paired Seed Comparison,1.74,True

@@ -11,7 +11,7 @@
     --text-muted: #94a3b8;
     --accent-cyan: #0891b2;
     --accent-blue: #2563eb;
-    --accent-purple: #7c3aed;
+    
   }
 
   .dark {
@@ -24,7 +24,7 @@
     --text-muted: #64748b;
     --accent-cyan: #22d3ee;
     --accent-blue: #3b82f6;
-    --accent-purple: #a855f7;
+    
   }
 
   body {
@@ -51,17 +51,3 @@
   background: rgba(148, 163, 184, 0.45);
 }
 
-/* Glassmorphism helpers */
-.glass-panel {
-  background: rgba(30, 41, 59, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.glass-panel-light {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-}

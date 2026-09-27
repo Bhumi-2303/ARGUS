@@ -23,12 +23,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
       {/* Brand Header */}
       <div className="h-16 px-4 flex items-center justify-between border-b border-slate-800/80">
         <div className="flex items-center gap-3 overflow-hidden">
-          <div className="p-2 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-600 text-white shadow-lg shadow-cyan-500/20 shrink-0">
+          <div className="p-2 rounded bg-blue-600 text-white shrink-0">
             <Shield className="w-5 h-5" />
           </div>
           {!collapsed && (
             <div>
-              <h1 className="text-base font-extrabold tracking-tight text-slate-100 flex items-center gap-1.5 font-mono">
+              <h1 className="text-base font-extrabold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-1.5 font-mono">
                 ARGUS
                 <span className="text-[10px] font-normal px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
                   v1.0
@@ -43,7 +43,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
 
         <button
           onClick={onToggle}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors"
+          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-800 transition-colors"
           title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
         >
           {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}

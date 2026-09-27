@@ -24,6 +24,7 @@ class DomainInfo(BaseModel):
     sample_size: int = Field(..., description="Number of sample rows in sample parquet")
     attack_ratio: float = Field(..., description="Attack sample proportion (0.0 - 1.0)")
     features: List[str] = Field(..., description="List of harmonized feature names")
+    status: str = Field(default="verified", description="verified, partial, or planned")
     description: str = Field(..., description="Domain protocol and network description")
 
 
@@ -37,6 +38,7 @@ class ModelInfo(BaseModel):
     protocol_status: str = Field(..., description="Protocol classification: native, coral_aligned, dann_adapted, or diagnostic_only")
     threshold: float = Field(..., description="Decision threshold for binary classification")
     source_domain: str
+    status: str = Field(default="verified", description="verified, partial, or planned")
     target_domain: str
     provenance: Dict[str, Any] = Field(..., description="Artifact provenance metadata")
 
@@ -134,3 +136,15 @@ class OnboardResponse(BaseModel):
     selected_threshold: float
     metrics: Dict[str, float] = Field(..., description="Evaluated test metrics: accuracy, f1, mcc, fpr, fnr")
     evaluated_test_size: int
+
+
+class TestCaseItem(BaseModel):
+    id: str
+    name: str
+    domain: str
+    domain_name: str
+    ground_truth_label: int
+    ground_truth_class: str
+    features: Dict[str, float]
+    provenance: str
+

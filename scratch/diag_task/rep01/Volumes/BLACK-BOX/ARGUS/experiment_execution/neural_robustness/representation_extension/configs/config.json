@@ -1,0 +1,20 @@
+{
+  "experiment_id": "REP-01",
+  "description": "Representation Extension & Protocol/Temporal Information Benchmark",
+  "best_representation": "R4_FullCombined",
+  "feature_count": 75,
+  "device": "mps",
+  "seeds": [
+    42,
+    123,
+    456,
+    789,
+    1011
+  ],
+  "metrics_mean": {
+    "roc_auc": 0.9999126399680728,
+    "average_precision": 0.9997226469270462,
+    "f1": 0.9967148835384719,
+    "mcc": 0.9957713530700886
+  }
+}

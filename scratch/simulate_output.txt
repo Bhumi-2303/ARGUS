@@ -1,0 +1,66 @@
+{"event": "message_bus_started", "timestamp": "2026-09-26T17:13:39.937119Z"}
+{"agent_id": "agent_dia", "agent_name": "DIA", "event": "initializing_data_intelligence_agent", "timestamp": "2026-09-26T17:13:39.937436Z"}
+{"tool_name": "data_loader", "event": "initializing_data_loader", "timestamp": "2026-09-26T17:13:39.937540Z"}
+{"tool_name": "schema_validator", "event": "initializing_schema_validator", "timestamp": "2026-09-26T17:13:39.937564Z"}
+{"agent_id": "agent_dia", "name": "DIA", "event": "agent_registered", "timestamp": "2026-09-26T17:13:39.937628Z"}
+{"event": "initializing_threat_analysis_agent", "timestamp": "2026-09-26T17:13:39.937658Z"}
+{"event": "model_registry_empty_at_initialization", "timestamp": "2026-09-26T17:13:39.937680Z"}
+{"agent_id": "agent_threat_analysis", "name": "Threat Analysis Agent", "event": "agent_registered", "timestamp": "2026-09-26T17:13:39.937713Z"}
+{"event": "initializing_risk_prediction_agent", "timestamp": "2026-09-26T17:13:39.937731Z"}
+{"event": "critical_asset_analyzer_initialized", "timestamp": "2026-09-26T17:13:39.937749Z"}
+{"event": "impact_estimator_initialized", "timestamp": "2026-09-26T17:13:39.937766Z"}
+{"event": "trend_analyzer_initialized", "timestamp": "2026-09-26T17:13:39.937784Z"}
+{"event": "risk_scorer_initialized", "timestamp": "2026-09-26T17:13:39.937800Z"}
+{"event": "confidence_calculator_initialized", "timestamp": "2026-09-26T17:13:39.937818Z"}
+{"event": "risk_publisher_initialized", "timestamp": "2026-09-26T17:13:39.937834Z"}
+{"agent_id": "agent_risk_prediction", "name": "Risk Prediction Agent", "event": "agent_registered", "timestamp": "2026-09-26T17:13:39.937862Z"}
+{"agent_id": "agent_kca", "agent_name": "KCA", "event": "initializing_knowledge_context_agent", "timestamp": "2026-09-26T17:13:39.937881Z"}
+{"tool_name": "mitre_attack", "record_count": 10, "event": "mitre_attack_db_loaded", "timestamp": "2026-09-26T17:13:39.938128Z"}
+{"tool_name": "mitre_attack_ics", "record_count": 6, "event": "mitre_ics_db_loaded", "timestamp": "2026-09-26T17:13:39.938214Z"}
+{"tool_name": "cve_lookup", "record_count": 8, "event": "cve_db_loaded", "timestamp": "2026-09-26T17:13:39.938297Z"}
+{"tool_name": "cisa_advisories", "record_count": 5, "event": "cisa_db_loaded", "timestamp": "2026-09-26T17:13:39.938380Z"}
+{"tool_name": "playbook_lookup", "record_count": 6, "event": "playbook_db_loaded", "timestamp": "2026-09-26T17:13:39.938492Z"}
+{"tool_name": "vector_search", "event": "vector_search_placeholder_initialized", "timestamp": "2026-09-26T17:13:39.938512Z"}
+{"agent_id": "agent_kca", "name": "KCA", "event": "agent_registered", "timestamp": "2026-09-26T17:13:39.938554Z"}
+{"event": "initializing_decision_support_agent", "timestamp": "2026-09-26T17:13:39.938579Z"}
+{"event": "playbook_selector_initialized", "timestamp": "2026-09-26T17:13:39.938598Z"}
+{"event": "recommendation_engine_initialized", "timestamp": "2026-09-26T17:13:39.938617Z"}
+{"event": "action_prioritizer_initialized", "timestamp": "2026-09-26T17:13:39.938635Z"}
+{"event": "impact_estimator_initialized", "timestamp": "2026-09-26T17:13:39.938649Z"}
+{"event": "approval_generator_initialized", "timestamp": "2026-09-26T17:13:39.938663Z"}
+{"event": "decision_publisher_initialized", "timestamp": "2026-09-26T17:13:39.938680Z"}
+{"agent_id": "agent_dsa", "name": "DSA", "event": "agent_registered", "timestamp": "2026-09-26T17:13:39.938709Z"}
+{"topic": "task_results", "event": "handler_subscribed", "timestamp": "2026-09-26T17:13:39.938736Z"}
+{"topic": "task_progress", "event": "handler_subscribed", "timestamp": "2026-09-26T17:13:39.938757Z"}
+{"event": "orchestrator_started", "timestamp": "2026-09-26T17:13:39.938792Z"}
+
+--- STARTING TRACE 98439ff2-e0a7-439e-8833-2e54fc4cae7b ---
+{"task_id": "20fdd6c2-11e0-429b-b709-697ea38c0ec2", "event": "task_scheduled", "timestamp": "2026-09-26T17:13:39.938877Z"}
+{"task_id": "3556fbeb-927a-4cf9-a024-49fd0b741bbd", "event": "task_pending_dependencies", "timestamp": "2026-09-26T17:13:39.938947Z"}
+{"task_id": "78506316-b113-4988-bfb7-f10bed78d85c", "event": "task_pending_dependencies", "timestamp": "2026-09-26T17:13:39.938998Z"}
+{"task_id": "a2dba313-9155-4efc-9776-90acee778e6f", "event": "task_pending_dependencies", "timestamp": "2026-09-26T17:13:39.939040Z"}
+{"task_id": "6ad917c0-7ad4-4aba-9944-435315731ec8", "event": "task_pending_dependencies", "timestamp": "2026-09-26T17:13:39.939089Z"}
+{"task_type": "preprocess", "agent_id": "agent_dia", "event": "task_routed", "timestamp": "2026-09-26T17:13:39.939166Z"}
+{"error": "1 validation error for TaskRequest\ntimestamp\n  Field required [type=missing, input_value={'request_id': '20fdd6c2-...39e-8833-2e54fc4cae7b'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing", "event": "orchestrator_loop_error", "timestamp": "2026-09-26T17:13:39.939252Z"}
+Traceback (most recent call last):
+  File "/home/bhumi/GitHub/ARGUS/scratch/simulate_chain.py", line 95, in <module>
+    asyncio.run(main())
+    ~~~~~~~~~~~^^^^^^^^
+  File "/usr/lib/python3.14/asyncio/runners.py", line 205, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/usr/lib/python3.14/asyncio/runners.py", line 128, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/usr/lib/python3.14/asyncio/base_events.py", line 720, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/home/bhumi/GitHub/ARGUS/scratch/simulate_chain.py", line 78, in main
+    await orch._handle_task_result(TaskCompletion(task_id=t1_id, status=TaskStatus.COMPLETED, result={}, error=None))
+                                   ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/bhumi/.local/lib/python3.14/site-packages/pydantic/main.py", line 263, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+pydantic_core._pydantic_core.ValidationError: 1 validation error for TaskCompletion
+duration
+  Field required [type=missing, input_value={'task_id': '20fdd6c2-11e...ult': {}, 'error': None}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.13/v/missing

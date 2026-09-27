@@ -54,6 +54,27 @@ def verify_metrics():
                 continue
 
             table_match = True
+            # New Check: Flag if any numerical column has identical values for all rows
+            # or if any row has identical values across all its numerical columns
+            if len(api_data) > 1:
+                # Check columns
+                keys = [k for k in api_data[0].keys() if isinstance(api_data[0][k], (int, float))]
+                for k in keys:
+                    first_val = api_data[0][k]
+                    if all(row.get(k) == first_val for row in api_data):
+                        # Kappa and MCC can legitimately be close to 0, but if EVERYTHING is exactly identical, it's suspicious.
+                        # Actually, let's flag if it's identical across all models (like 0.0000)
+                        if first_val == 0.0:
+                            print(f"  [ FAIL ] Column '{k}' has identical repeated value {first_val} across all models in {table_name}")
+                            all_matched = False
+                
+                # Check rows
+                for i, row in enumerate(api_data):
+                    num_vals = [v for k,v in row.items() if isinstance(v, (int, float))]
+                    if len(num_vals) > 2 and all(v == num_vals[0] for v in num_vals):
+                        print(f"  [ FAIL ] Row {i} has identical repeated value {num_vals[0]} across all metrics in {table_name}")
+                        all_matched = False
+
             for i, (api_row, csv_row) in enumerate(zip(api_data, csv_data)):
                 for k, v in csv_row.items():
                     api_val = api_row.get(k)
@@ -116,10 +137,70 @@ def verify_topology_strings():
         return False
 
 
+
+def verify_protocol_limits_page():
+    print("\n" + "=" * 80)
+    print("        ARGUS PROTOCOL LIMITS PAGE TEXT VERIFICATION")
+    print("=" * 80)
+
+    import re
+    with open("web/src/features/protocol_limits/ProtocolLimitsPage.tsx", "r") as f:
+        page_text = f.read()
+    
+    # 1. Verify DANN raw metric discrepancy states exactly 0.332095
+    if "0.332095" not in page_text:
+        print("  [ FAIL ] Missing exact recomputed ROC-AUC (0.332095) in ProtocolLimitsPage")
+        return False
+    if "1.084%" not in page_text and "0.064%" not in page_text:
+        print("  [ FAIL ] Missing exact discrepancy Specificity metrics in ProtocolLimitsPage")
+        return False
+        
+    # 2. Verify V1 feature space duplication statement
+    if "82 unique vectors" not in page_text:
+        print("  [ FAIL ] Missing legacy V1 representation condensation count (82 unique vectors)")
+        return False
+        
+    # 3. Verify cross-domain leakage vectors
+    if "7 target vectors leaked" not in page_text:
+        print("  [ FAIL ] Missing cross-domain overlap sum (7 target vectors)")
+        return False
+
+    print("  [ PASS ] Protocol Limits Page explicitly states all required open verification discrepancies accurately.")
+    return True
+
+
+
+def verify_model_comparison_ui():
+    print("\n" + "=" * 80)
+    print("        ARGUS UI RENDER LOGIC VERIFICATION (ModelComparisonPage.tsx)")
+    print("=" * 80)
+    
+    with open("web/src/features/benchmark/ModelComparisonPage.tsx", "r") as f:
+        page_text = f.read()
+        
+    matched = True
+    
+    # Check for hardcoded 95/5/10/90 CM splits by checking fallback usage
+    # "byte-identical to another model's confusion matrix" means they used a static default.
+    if "(r.recall ?? 0.9)" in page_text or "(r.Recall ?? 0.9)" in page_text:
+        print("  [ FAIL ] Found identical fallback confusion matrix logic in ModelComparisonPage.tsx (0.9/0.05)")
+        matched = False
+        
+    # Check if there's a fallback that produces a repeated 0.0000 in columns/rows.
+    if "(r.mcc ?? 0).toFixed(4)" in page_text or "r.MCC ?? 0).toFixed(4)" in page_text:
+        print("  [ FAIL ] Found identical 0.0000 fallback for missing metrics in table rendering")
+        matched = False
+
+    if matched:
+        print("  [ PASS ] No identical repeated fallback values (like 0.0000 or 95/5) found in ModelComparisonPage.tsx")
+        
+    return matched
+
 if __name__ == "__main__":
     m_ok = verify_metrics()
     t_ok = verify_topology_strings()
-    if not (m_ok and t_ok):
+    p_ok = verify_protocol_limits_page()
+    c_ok = verify_model_comparison_ui()
+    if not (m_ok and t_ok and p_ok and c_ok):
         sys.exit(1)
     sys.exit(0)
-

@@ -50,7 +50,6 @@ dist/
 .DS_Store
 ._*
 
-<<<<<<< HEAD
 # Large dataset files
 data/cic_iot_2023/**
 data/nf_ton_iot/**
@@ -86,5 +85,13 @@ data/raw/
 data/interim/
 data/processed/
 results/raw_predictions/
-=======
->>>>>>> origin/main
+
+# Logs and temp test results
+*.log
+test-results/
+*.tsbuildinfo
+scratch_argus_clone/
+scratch_pip_cache/
+
+
+
