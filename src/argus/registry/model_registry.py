@@ -111,15 +111,16 @@ MODEL_METADATA = {
         "artifact_path": "results/verified/dann_final_test_metrics.csv",
         "type": "dann_simulated",
         "protocol_status": "dann_adapted",
-        "threshold": 0.60,
+        "threshold": None,
         "source_domain": "ciciot",
         "target_domain": "nfton",
-        "status": "verified",
+        "status": "unavailable",
         "provenance": {
             "training_dataset": "CICIoT2023 + NF-ToN DANN Neural Net",
             "adaptation_method": "Domain-Adversarial Neural Network",
             "features": HARMONIZED_FEATURES,
             "training_date": "2026-08-22",
+            "note": "No verified checkpoint — unavailable for live inference",
         }
     }
 }
@@ -177,7 +178,8 @@ class ModelRegistry:
                         logger.warning("shap_explainer_init_failed", model_name=model_name, error=str(ex))
                         
                 elif model_type == "dann_simulated":
-                    self.loaded_models[model_name] = "DANN_METRICS_BACKED"
+                    # DANN has no verified weights artifact for live inference
+                    pass
                     
                 logger.info("model_loaded_successfully", model_name=model_name, path=full_path)
             except Exception as e:
@@ -197,7 +199,10 @@ class ModelRegistry:
         """Return readiness status for loaded models."""
         if not self.is_loaded:
             self.load_all()
-        return {name: (name in self.loaded_models) for name in MODEL_METADATA.keys()}
+        return {
+            name: (name in self.loaded_models and MODEL_METADATA[name].get("status") != "unavailable")
+            for name in MODEL_METADATA.keys()
+        }
 
     def get_model_info_list(self) -> List[ModelInfo]:
         """Get structured list of ModelInfo for GET /api/v1/models."""
@@ -223,13 +228,15 @@ class ModelRegistry:
             raise KeyError(f"Unknown model name '{model_name}'. Available: {list(MODEL_METADATA.keys())}")
 
         meta = MODEL_METADATA[model_name]
+        if model_name == "dann" or meta.get("status") == "unavailable":
+            raise NotImplementedError("Model 'dann' is unavailable for live inference: no verified checkpoint found.")
+
         threshold = meta["threshold"]
+        if threshold is None:
+            raise NotImplementedError(f"Model '{model_name}' has no calibrated threshold.")
         
         # Prepare input array
         x_vec = np.array([[features[col] for col in HARMONIZED_FEATURES]], dtype=np.float32)
-
-        if model_name == "dann":
-            raise ValueError("No verified checkpoint — unavailable for live inference.")
 
         model = self.loaded_models.get(model_name)
         if model is None:

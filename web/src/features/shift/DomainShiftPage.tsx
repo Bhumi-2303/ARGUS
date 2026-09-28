@@ -15,6 +15,21 @@ import { ProvenanceBadge } from '../../components/ProvenanceBadge';
 import { Card } from '../../components/Card';
 import { Skeleton } from '../../components/Skeleton';
 
+const PAPER_FULL_POPULATION_KS: Record<string, Record<string, { ks: number; pvalue: string; provenance: string }>> = {
+  nfton: {
+    pkt_mean_to_max: { ks: 0.4063, pvalue: '< 1e-10', provenance: 'nfton_test_features.csv (N=2.62M)' },
+    tcp_flag_density: { ks: 0.4720, pvalue: '< 1e-10', provenance: 'nfton_test_features.csv (N=2.62M)' },
+    log_pkt_mean: { ks: 0.3717, pvalue: '< 1e-10', provenance: 'nfton_test_features.csv (N=2.62M)' },
+    log_pkt_max: { ks: 0.3735, pvalue: '< 1e-10', provenance: 'nfton_test_features.csv (N=2.62M)' },
+  },
+  iec104: {
+    pkt_mean_to_max: { ks: 0.1475, pvalue: '< 1e-4', provenance: 'domain_shift_statistics.csv (N=3.57M)' },
+    tcp_flag_density: { ks: 0.3490, pvalue: '< 1e-4', provenance: 'domain_shift_statistics.csv (N=3.57M)' },
+    log_pkt_mean: { ks: 0.8341, pvalue: '< 1e-4', provenance: 'domain_shift_statistics.csv (N=3.57M)' },
+    log_pkt_max: { ks: 0.8340, pvalue: '< 1e-4', provenance: 'domain_shift_statistics.csv (N=3.57M)' },
+  },
+};
+
 export default function DomainShiftPage() {
   const [selectedDomain, setSelectedDomain] = useState<string>('nfton');
   const [windowSize, setWindowSize] = useState<number>(1000);
@@ -48,10 +63,16 @@ export default function DomainShiftPage() {
     },
     series: [
       {
-        name: 'KS Statistic',
+        name: 'Window KS Statistic (.head)',
         type: 'bar',
         data: ksStats,
         itemStyle: { color: '#f59e0b', borderRadius: [4, 4, 0, 0] },
+      },
+      {
+        name: 'Full-Test Split KS',
+        type: 'bar',
+        data: ksFeatures.map((f) => PAPER_FULL_POPULATION_KS[selectedDomain]?.[f]?.ks ?? 0),
+        itemStyle: { color: '#10b981', borderRadius: [4, 4, 0, 0] },
       },
       {
         name: 'PSI Statistic',
@@ -118,36 +139,47 @@ export default function DomainShiftPage() {
         />
       </div>
 
-      {/* Domain Controls */}
-      <Card className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-4">
-          <label htmlFor="shift-domain" className="text-xs font-semibold text-slate-300 font-mono">
-            Target Domain:
-          </label>
-          <select
-            id="shift-domain"
-            value={selectedDomain}
-            onChange={(e) => setSelectedDomain(e.target.value)}
-            className="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs font-mono text-cyan-300 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
-          >
-            <option value="nfton">NF-ToN-IoT-v2 (Smart Home / Industrial IoT)</option>
-            <option value="iec104">IEC 60870-5-104 (SCADA Substation Power Grid)</option>
-          </select>
+      {/* Domain Controls & Window Description */}
+      <Card className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-4">
+            <label htmlFor="shift-domain" className="text-xs font-semibold text-slate-300 font-mono">
+              Target Domain:
+            </label>
+            <select
+              id="shift-domain"
+              value={selectedDomain}
+              onChange={(e) => setSelectedDomain(e.target.value)}
+              className="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs font-mono text-cyan-300 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+            >
+              <option value="nfton">NF-ToN-IoT-v2 (Smart Home / Industrial IoT)</option>
+              <option value="iec104">IEC 60870-5-104 (SCADA Substation Power Grid)</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-3 text-xs font-mono text-slate-400">
+            <Sliders className="w-4 h-4 text-cyan-400" />
+            <label htmlFor="window-slider">Window Size ({windowSize} flows):</label>
+            <input
+              id="window-slider"
+              type="range"
+              min="200"
+              max="3000"
+              step="100"
+              value={windowSize}
+              onChange={(e) => setWindowSize(Number(e.target.value))}
+              className="w-32 accent-cyan-400"
+            />
+          </div>
         </div>
 
-        <div className="flex items-center gap-3 text-xs font-mono text-slate-400">
-          <Sliders className="w-4 h-4 text-cyan-400" />
-          <label htmlFor="window-slider">Window Size ({windowSize} flows):</label>
-          <input
-            id="window-slider"
-            type="range"
-            min="200"
-            max="3000"
-            step="100"
-            value={windowSize}
-            onChange={(e) => setWindowSize(Number(e.target.value))}
-            className="w-32 accent-cyan-400"
-          />
+        <div className="p-2.5 rounded bg-slate-950/70 border border-slate-800/80 text-[11px] font-mono text-slate-400 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <span>
+            <strong className="text-cyan-400">Window Sampling Method:</strong> First N rows (<code>.head(window_size)</code>) sequentially loaded from sample parquet telemetry (<code>data/samples/{selectedDomain}.parquet</code>).
+          </span>
+          <span className="text-emerald-400 font-semibold shrink-0">
+            Paper Full-Population KS displayed alongside
+          </span>
         </div>
       </Card>
 
@@ -231,45 +263,57 @@ export default function DomainShiftPage() {
 
       {/* Feature Shift Metrics Table */}
       <Card className="space-y-3">
-        <h3 className="text-sm font-bold font-mono text-slate-900 dark:text-slate-100">
-          Detailed Feature Distribution Drift Metrics
-        </h3>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <h3 className="text-sm font-bold font-mono text-slate-900 dark:text-slate-100">
+            Detailed Feature Distribution Drift Metrics
+          </h3>
+          <span className="text-[11px] font-mono text-slate-400">
+            Live Window: First {windowSize} flows (<code>.head({windowSize})</code>) vs. Full-Test Split KS
+          </span>
+        </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left font-mono text-xs text-slate-300">
             <thead className="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase text-[11px]">
               <tr>
                 <th className="p-3">Feature Name</th>
-                <th className="p-3">KS Statistic</th>
-                <th className="p-3">KS P-Value</th>
-                <th className="p-3">PSI Drift Metric</th>
+                <th className="p-3">Window KS (.head)</th>
+                <th className="p-3">Full-Test Split KS</th>
+                <th className="p-3">Window KS P-Value</th>
+                <th className="p-3">Window PSI</th>
                 <th className="p-3">Drift Status</th>
                 <th className="p-3">Data Provenance</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/80">
-              {shiftData?.feature_shifts.map((feat) => (
-                <tr key={feat.feature} className="hover:bg-slate-900/50">
-                  <td className="p-3 font-bold text-cyan-300">{feat.feature}</td>
-                  <td className="p-3">{typeof feat.ks_statistic === 'number' ? feat.ks_statistic.toFixed(4) : '-'}</td>
-                  <td className="p-3 text-slate-400">{feat.ks_pvalue.toExponential(2)}</td>
-                  <td className="p-3">{typeof feat.psi_statistic === 'number' ? feat.psi_statistic.toFixed(4) : '-'}</td>
-                  <td className="p-3">
-                    {feat.shift_detected ? (
-                      <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold text-[10px]">
-                        SHIFTED
-                      </span>
-                    ) : (
-                      <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-[10px]">
-                        STABLE
-                      </span>
-                    )}
-                  </td>
-                  <td className="p-3">
-                    <ProvenanceBadge sourceFile="data/samples/nfton.parquet" protocolStatus="final" compact />
-                  </td>
-                </tr>
-              ))}
+              {shiftData?.feature_shifts.map((feat) => {
+                const paperPop = PAPER_FULL_POPULATION_KS[selectedDomain]?.[feat.feature];
+                return (
+                  <tr key={feat.feature} className="hover:bg-slate-900/50">
+                    <td className="p-3 font-bold text-cyan-300">{feat.feature}</td>
+                    <td className="p-3">{typeof feat.ks_statistic === 'number' ? feat.ks_statistic.toFixed(4) : '-'}</td>
+                    <td className="p-3 text-emerald-400 font-bold">
+                      {paperPop ? paperPop.ks.toFixed(4) : '-'}
+                    </td>
+                    <td className="p-3 text-slate-400">{feat.ks_pvalue.toExponential(2)}</td>
+                    <td className="p-3">{typeof feat.psi_statistic === 'number' ? feat.psi_statistic.toFixed(4) : '-'}</td>
+                    <td className="p-3">
+                      {feat.shift_detected ? (
+                        <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold text-[10px]">
+                          SHIFTED
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-[10px]">
+                          STABLE
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-3 text-[10px] text-slate-400">
+                      {paperPop?.provenance || (selectedDomain === 'iec104' ? 'domain_shift_statistics.csv' : 'data/samples/nfton.parquet')}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

@@ -36,7 +36,7 @@ class ModelInfo(BaseModel):
     model_id: str
     name: str
     protocol_status: str = Field(..., description="Protocol classification: native, coral_aligned, dann_adapted, or diagnostic_only")
-    threshold: float = Field(..., description="Decision threshold for binary classification")
+    threshold: Optional[float] = Field(None, description="Decision threshold for binary classification (null if unavailable)")
     source_domain: str
     status: str = Field(default="verified", description="verified, partial, or planned")
     target_domain: str

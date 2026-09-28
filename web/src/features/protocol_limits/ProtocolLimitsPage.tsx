@@ -28,7 +28,7 @@ export default function ProtocolLimitsPage() {
         <ul className="text-xs text-slate-300 font-mono list-disc pl-5 space-y-2">
           <li><strong>Clean Class-Aware CORAL (D2)</strong>: Verified leakage-controlled baseline in <code>five_model_complete_comparison.csv</code>.</li>
           <li><strong>DANN (D2)</strong>: Verified collapsed performance accurately tracked in <code>dann_final_test_metrics.csv</code> and raw predictions.</li>
-          <li><strong>D3 Native Models</strong>: Operational threshold sweeps in <code>d3_native_threshold_sweep.csv</code> evaluated under zero-leakage frozen constraints.</li>
+          <li><strong>D3 Native Models</strong>: Operational threshold sweeps in <code>d3_native_threshold_sweep.csv</code> evaluated on a held-out calibration split (N=571,562, disjoint from training and frozen test partitions).</li>
         </ul>
       </Card>
 
@@ -39,10 +39,10 @@ export default function ProtocolLimitsPage() {
           <span>Diagnostic-Only Results (What NOT To Cite As Final)</span>
         </h2>
         <p className="text-xs text-slate-300 leading-relaxed font-sans">
-          Results marked as <strong>Diagnostic</strong> are theoretical upper-bounds or ablation checks. They explicitly violate the zero-shot assumption and must not be cited as the system's operational capability.
+          Results marked as <strong>Diagnostic</strong> are ablation checks that used target test labels during adaptation. They explicitly violate the zero-shot assumption and must not be cited as the system's operational capability.
         </p>
         <ul className="text-xs text-slate-300 font-mono list-disc pl-5 space-y-2">
-          <li><strong>Diagnostic Class-Aware CORAL</strong>: Found in <code>five_model_complete_comparison.csv</code>. This model used target labels during the alignment phase to perfectly pair source and target classes, calculating an artificial alignment ceiling. It also defaults to an uncalibrated 0.50 diagnostic threshold.</li>
+          <li><strong>Diagnostic Class-Aware CORAL</strong>: Found in <code>five_model_complete_comparison.csv</code>. This model used NF-ToN test labels during the alignment phase to pair source and target classes, violating zero-shot protocol constraints. It defaults to an uncalibrated 0.50 diagnostic threshold.</li>
         </ul>
       </Card>
 

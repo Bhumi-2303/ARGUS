@@ -172,7 +172,7 @@ export default function InputAnalysisPage() {
     for (const tc of testCases) {
       try {
         const [coralRes, sourceRes] = await Promise.all([
-          api.predict({ model_name: 'model_d2_coral', features: tc.features }),
+          api.predict({ model_name: 'xgb_adapted', features: tc.features }),
           api.predict({ model_name: 'xgb_source', features: tc.features }),
         ]);
 
@@ -199,7 +199,7 @@ export default function InputAnalysisPage() {
             <span>Telemetry Input & Live Pipeline Inference</span>
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Input genuine network telemetry flows, execute live multi-agent inference, and observe empirical cross-domain behavior.
+            Input genuine network telemetry flows, execute live multi-agent inference, and observe cross-domain behavior.
           </p>
         </div>
 
@@ -330,7 +330,8 @@ export default function InputAnalysisPage() {
                 onChange={(e) => setSelectedModel(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs font-mono text-cyan-300 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
               >
-                <option value="model_d2_coral">Clean Class-Aware CORAL (D2 Target Aligned, Thresh 0.99)</option>
+                <option value="xgb_adapted">Clean Class-Aware CORAL (XGBoost, D2 Target Aligned, Thresh 0.99)</option>
+                <option value="model_d2_coral">LightGBM D2 CORAL (Legacy Booster, Thresh 0.85)</option>
                 <option value="xgb_source">XGBoost Source-Only (Unadapted Baseline, Thresh 0.50)</option>
                 <option value="model_d1_baseline">LightGBM D1 Baseline (Source Trained, Thresh 0.50)</option>
                 <option value="dann" disabled>
@@ -490,6 +491,9 @@ export default function InputAnalysisPage() {
               <p className="text-xs text-slate-400 mt-1">
                 Real binary-labeled flows from CICIoT2023 (Source) and NF-ToN-IoT-v2 (Target) evaluated live across Clean CORAL and unadapted XGBoost.
               </p>
+              <p className="text-[11px] text-slate-400 mt-1 font-mono">
+                <span className="text-cyan-400 font-semibold">Selection Rule:</span> First benign and first attack row of each test CSV (<code>ciciot_test_features.csv</code> for D1, <code>nfton_test_features.csv</code> for D2).
+              </p>
             </div>
 
             <button
@@ -540,58 +544,78 @@ export default function InputAnalysisPage() {
                       <div>log_pkt_max: <span className="text-cyan-300">{tc.features.log_pkt_max.toFixed(4)}</span></div>
                     </div>
 
-                    {/* Live Results comparison */}
+                    {/* Live Results & Verified Population comparison */}
                     <div className="space-y-2 pt-2 border-t border-slate-800/80">
-                      <div className="text-[10px] uppercase font-bold text-slate-400">Live Model Predictions:</div>
+                      <div className="text-[10px] uppercase font-bold text-slate-400">Live Model Predictions & Population Context:</div>
 
-                      <div className="flex items-center justify-between p-2 rounded bg-slate-900 border border-slate-800">
-                        <div>
-                          <span className="text-slate-300 font-bold block">Clean CORAL (D2 Aligned):</span>
-                          <span className="text-[10px] text-slate-400">Threshold: 0.99</span>
-                        </div>
-                        {res?.loading ? (
-                          <span className="text-cyan-400 text-xs animate-pulse">Running...</span>
-                        ) : coralPred !== undefined ? (
-                          <div className="text-right">
-                            <span
-                              className={`font-bold ${
-                                coralPred === tc.ground_truth_label ? 'text-emerald-400' : 'text-amber-400'
-                              }`}
-                            >
-                              {coralPred === 1 ? 'ATTACK' : 'BENIGN'} ({((coralProb || 0) * 100).toFixed(1)}%)
-                            </span>
-                            <span className="text-[10px] block text-slate-400">
-                              {coralPred === tc.ground_truth_label ? 'Correct' : 'Shift Error'}
-                            </span>
+                      {/* Clean CORAL Live + Verified Population */}
+                      <div className="p-2.5 rounded bg-slate-900 border border-slate-800 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <span className="text-slate-300 font-bold block">Clean Class-Aware CORAL (XGBoost, D2 Aligned):</span>
+                            <span className="text-[10px] text-slate-400">Calibrated Threshold: 0.99</span>
                           </div>
-                        ) : (
-                          <span className="text-slate-400 text-xs">Awaiting execution</span>
-                        )}
+                          {res?.loading ? (
+                            <span className="text-cyan-400 text-xs animate-pulse">Running...</span>
+                          ) : coralPred !== undefined ? (
+                            <div className="text-right">
+                              <span
+                                className={`font-bold ${
+                                  coralPred === tc.ground_truth_label ? 'text-emerald-400' : 'text-amber-400'
+                                }`}
+                              >
+                                {coralPred === 1 ? 'ATTACK' : 'BENIGN'} ({((coralProb || 0) * 100).toFixed(1)}%)
+                              </span>
+                              <span className="text-[10px] block text-slate-400">
+                                {coralPred === tc.ground_truth_label ? 'Correct' : 'Shift Error'}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-slate-400 text-xs">Awaiting execution</span>
+                          )}
+                        </div>
+                        {/* Verified Population Metrics Badge */}
+                        <div className="pt-1.5 border-t border-slate-800/60 flex flex-wrap items-center justify-between text-[10px] text-slate-400">
+                          <span className="text-cyan-400 font-semibold">Population (Clean CORAL XGBoost, N=2.62M):</span>
+                          <span>MCC: <strong className="text-slate-200">0.3855</strong></span>
+                          <span>Prec: <strong className="text-slate-200">94.00%</strong></span>
+                          <span>Spec: <strong className="text-slate-200">91.43%</strong></span>
+                        </div>
                       </div>
 
-                      <div className="flex items-center justify-between p-2 rounded bg-slate-900 border border-slate-800">
-                        <div>
-                          <span className="text-slate-300 font-bold block">Source-Only XGBoost:</span>
-                          <span className="text-[10px] text-slate-400">Threshold: 0.50</span>
-                        </div>
-                        {res?.loading ? (
-                          <span className="text-cyan-400 text-xs animate-pulse">Running...</span>
-                        ) : sourcePred !== undefined ? (
-                          <div className="text-right">
-                            <span
-                              className={`font-bold ${
-                                sourcePred === tc.ground_truth_label ? 'text-emerald-400' : 'text-rose-400'
-                              }`}
-                            >
-                              {sourcePred === 1 ? 'ATTACK' : 'BENIGN'} ({((sourceProb || 0) * 100).toFixed(1)}%)
-                            </span>
-                            <span className="text-[10px] block text-slate-400">
-                              {sourcePred === tc.ground_truth_label ? 'Correct' : 'False Positive on Target'}
-                            </span>
+                      {/* Source-Only XGBoost Live + Verified Population */}
+                      <div className="p-2.5 rounded bg-slate-900 border border-slate-800 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <span className="text-slate-300 font-bold block">Source-Only XGBoost:</span>
+                            <span className="text-[10px] text-slate-400">Threshold: 0.50</span>
                           </div>
-                        ) : (
-                          <span className="text-slate-400 text-xs">Awaiting execution</span>
-                        )}
+                          {res?.loading ? (
+                            <span className="text-cyan-400 text-xs animate-pulse">Running...</span>
+                          ) : sourcePred !== undefined ? (
+                            <div className="text-right">
+                              <span
+                                className={`font-bold ${
+                                  sourcePred === tc.ground_truth_label ? 'text-emerald-400' : 'text-rose-400'
+                                }`}
+                              >
+                                {sourcePred === 1 ? 'ATTACK' : 'BENIGN'} ({((sourceProb || 0) * 100).toFixed(1)}%)
+                              </span>
+                              <span className="text-[10px] block text-slate-400">
+                                {sourcePred === tc.ground_truth_label ? 'Correct' : 'False Positive on Target'}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-slate-400 text-xs">Awaiting execution</span>
+                          )}
+                        </div>
+                        {/* Verified Population Metrics Badge */}
+                        <div className="pt-1.5 border-t border-slate-800/60 flex flex-wrap items-center justify-between text-[10px] text-slate-400">
+                          <span className="text-amber-400 font-semibold">Population (Source-Only XGBoost, N=2.62M):</span>
+                          <span>MCC: <strong className="text-slate-200">-0.0311</strong></span>
+                          <span>Prec: <strong className="text-slate-200">72.47%</strong></span>
+                          <span>Spec: <strong className="text-rose-400">0.25%</strong></span>
+                        </div>
                       </div>
                     </div>
                   </div>

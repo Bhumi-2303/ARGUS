@@ -40,7 +40,7 @@ export interface ModelInfo {
   model_id: string;
   name: string;
   protocol_status: 'native' | 'coral_aligned' | 'dann_adapted' | string;
-  threshold: number;
+  threshold: number | null;
   source_domain: string;
   target_domain: string;
   status: string;

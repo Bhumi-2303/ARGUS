@@ -21,9 +21,7 @@ env/
 *.swp
 *.swo
 
-# Data & Large Artifacts
-data/
-*.parquet
+# Large Binary & Model Archives
 *.7z
 *.zip
 *.tar.gz
@@ -32,29 +30,43 @@ data/
 *.h5
 *.onnx
 
-# Raw dataset dumps & heavy cross-domain CSV backups (keep verified summary CSVs in results/verified/)
+# Raw and Interim Datasets (Heavy Storage)
+data/raw/
+data/interim/
+data/processed/
+data/cic_iot_2023/**
+data/nf_ton_iot/**
+data/ton_iot/**
+data/hai/**
+data/IEC104/**
+data/reproduction/
+data/ARGUS_*
+results/raw_predictions/
+
+# Allow demo sample parquets and test data
+!data/samples/
+!data/samples/*.parquet
+!tests/data/1_percent_sample.parquet
+
+# Raw dataset dumps & heavy cross-domain CSV backups (keep verified summary CSVs and JSON in results/verified/)
 ARGUS_Cross_Domain_Results/
 BoT-IoT dataset/
 LightGBM_CICIoT2023_Backup/
 TF_ToN_IoT_LightGBM_Final/
 TF_ToN_IoT_XGBoost/
 !results/verified/*.csv
-
+!results/verified/*.json
+!results/verified/*.md
 
 # Frontend & Web
 node_modules/
+web/dist/
 dist/
 .next/
 
 # macOS / System
 .DS_Store
 ._*
-
-# Large dataset files
-data/cic_iot_2023/**
-data/nf_ton_iot/**
-data/ton_iot/**
-data/hai/**
 
 # Explicitly unignore metadata directories
 !data/cic_iot_2023/
@@ -73,25 +85,17 @@ data/hai/**
 !data/hai/metadata/
 !data/hai/metadata/**
 
-# Explicitly unignore root research artifacts
+# Explicitly unignore root research manifests
 !data/FINAL_DATASET_MANIFEST.json
 !data/FINAL_DATASET_READINESS.md
 !data/DATASET_COMPLETION_REPORT.md
 !data/DATASET_MANIFEST.json
 !data/DATASET_ACQUISITION_REPORT.md
 !data/CROSS_DATASET_COMPATIBILITY.md
-data/**/metadata/downloads/
-data/raw/
-data/interim/
-data/processed/
-results/raw_predictions/
 
-# Logs and temp test results
+# Logs, temporary files, and scratch caches
 *.log
 test-results/
 *.tsbuildinfo
 scratch_argus_clone/
 scratch_pip_cache/
-
-
-
