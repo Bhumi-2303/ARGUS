@@ -21,7 +21,7 @@ def main():
         choices=["detector", "decision-agent", "risk-agent", "knowledge-agent", "orchestrator", "consumer"],
         help="Service to start",
     )
-    start_parser.add_argument("--host", default="0.0.0.0", help="Host to bind to")
+    start_parser.add_argument("--host", default="127.0.0.1", help="Host to bind to")
     start_parser.add_argument("--port", type=int, default=None, help="Port to bind to")
 
     # Subcommand: version

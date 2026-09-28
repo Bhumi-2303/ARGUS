@@ -99,3 +99,5 @@ test-results/
 *.tsbuildinfo
 scratch_argus_clone/
 scratch_pip_cache/
+scratch/
+

@@ -1,20 +1,24 @@
-version: '3.8'
-
 services:
   argus-platform:
     build:
       context: .
       dockerfile: Dockerfile
+    image: argus-platform:latest
     container_name: argus-platform
     ports:
       - "${ARGUS_PORT:-8000}:8000"
     environment:
+      - ENVIRONMENT=${ENVIRONMENT:-development}
       - ARGUS_MODE=${ARGUS_MODE:-demo}
-      - ARGUS_HOST=${ARGUS_HOST:-0.0.0.0}
-      - ARGUS_PORT=${ARGUS_PORT:-8000}
-      - ARGUS_ALLOWED_ORIGINS=${ARGUS_ALLOWED_ORIGINS:-http://localhost,http://localhost:8000,http://127.0.0.1,http://127.0.0.1:8000}
-      - PYTHONPATH=/app/src
+      - ARGUS_HOST=0.0.0.0
+      - ARGUS_PORT=8000
+      - ARGUS_ALLOWED_ORIGINS=${ARGUS_ALLOWED_ORIGINS:-http://localhost:8000,http://localhost:5173,http://127.0.0.1:8000,http://127.0.0.1:5173}
+      - PYTHONPATH=/app/src:/app
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     deploy:
       resources:
         limits:

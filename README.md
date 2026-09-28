@@ -3,7 +3,8 @@
 [![Python Version](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue.svg)](https://python.org)
 [![Backend Framework](https://img.shields.io/badge/Framework-FastAPI-009688.svg)](https://fastapi.tiangolo.com)
 [![Frontend Stack](https://img.shields.io/badge/Frontend-React%20%7C%20Vite%20%7C%20TailwindCSS-61DAFB.svg)](https://react.dev)
-[![Test Suite](https://img.shields.io/badge/Tests-78%20Passing-success.svg)](tests/)
+[![Test Suite](https://img.shields.io/badge/Tests-116%20Passing-success.svg)](tests/)
+[![Security](https://img.shields.io/badge/Security-Hardened%20(OIDC%20%7C%20RBAC)-brightgreen.svg)](docs/SECURITY.md)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 **ARGUS** is an AI-powered cybersecurity platform for Smart Grid Infrastructure (SCADA/ICS & IoT network telemetry) engineered to investigate and mitigate cross-domain transfer failure and representation collapse under strict zero-leakage protocols.
@@ -109,11 +110,28 @@ The UI dashboard will run at `http://localhost:5173`, proxied directly to the Fa
 
 ### 4. Running the Test Suite
 
-Execute the full automated test suite (78 tests):
+Execute the full automated test suite (116 tests across unit, integration, RBAC, OIDC/JWKS, and security hardening):
 
 ```bash
 PYTHONPATH=.:src pytest
 ```
+
+---
+
+## 🔒 Security & Production Hardening
+
+ARGUS has undergone a rigorous security and deployment hardening audit:
+
+- **Authentication**: Production OIDC/OAuth2 JWT validation (`RS256`/`ES256`) with asymmetric JWKS signature verification, key rotation, and TTL caching (`src/argus/auth/`).
+- **Authorization**: Fine-grained Role-Based Access Control (RBAC) protecting all endpoints and incident response approvals.
+- **Fail-Closed Configuration**: Mandatory fail-closed startup validation in production (`configs/settings.py`).
+- **Defense in Depth**: CSP, HSTS, `X-Frame-Options: DENY`, strict CORS origin validation, rate limiting, and opaque error masking (no tracebacks or leakages).
+- **SAST & Secret Auditing**: Clean reports across `gitleaks` (0 secrets across all commits), `bandit` (0 issues), and `pip-audit`.
+
+For architectural details, threat analysis, and operational runbooks:
+- [Security Architecture & Controls (`docs/SECURITY.md`)](docs/SECURITY.md)
+- [Production Deployment Guide (`docs/DEPLOYMENT.md`)](docs/DEPLOYMENT.md)
+- [STRIDE Threat Model & AI Defenses (`docs/THREAT_MODEL.md`)](docs/THREAT_MODEL.md)
 
 ---
 

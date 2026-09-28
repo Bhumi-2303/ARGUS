@@ -1,68 +1,85 @@
 # ==================================================================
-# ARGUS — Multi-stage Production & Air-Gapped OT Dockerfile
+# ARGUS — Hardened Multi-Stage Production Container
 # ==================================================================
 
-# --- Stage 1: Frontend Builder ---
+# --- Stage 1: Frontend Static Build ---
 FROM node:22-slim AS frontend-builder
 
 WORKDIR /web
 
-# Copy package manifests and install dependencies
 COPY web/package.json web/package-lock.json* ./
 RUN npm ci --legacy-peer-deps
 
-# Copy frontend source and compile production static bundle
 COPY web/ ./
 RUN npm run build
 
-# --- Stage 2: Production Backend Runtime ---
-FROM python:3.11-slim AS runtime
+# --- Stage 2: Python Dependency Builder ---
+FROM python:3.11-slim AS python-builder
 
-# Install system dependencies
+WORKDIR /build
+
+# Build dependencies for C-extensions (LightGBM, XGBoost, PyArrow)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends gcc libgomp1 curl && \
+    apt-get install -y --no-install-recommends gcc g++ libgomp1 && \
     rm -rf /var/lib/apt/lists/*
 
-# Create non-root user for container security hardening
-RUN groupadd -r argusgroup && useradd -r -g argusgroup -d /app -s /sbin/nologin argususer
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
-WORKDIR /app
-
-# Copy python dependencies and source code
-COPY pyproject.toml ./
+COPY pyproject.toml README.md ./
 COPY src/ ./src/
 
-# Install python package and dependencies
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir .
 
-# Copy authoritative model artifacts, verified results, sample parquets, and prompts
+# --- Stage 3: Minimal Hardened Runtime (NO COMPILERS) ---
+FROM python:3.11-slim AS runtime
+
+# Install only essential runtime dynamic libraries and healthcheck tool
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libgomp1 curl && \
+    rm -rf /var/lib/apt/lists/*
+
+# Create hardened non-root system user & group (UID/GID 10001)
+RUN groupadd -r -g 10001 argusgroup && \
+    useradd -r -u 10001 -g argusgroup -d /app -s /sbin/nologin argususer
+
+WORKDIR /app
+
+# Copy virtual environment from builder
+COPY --from=python-builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy application modules and configurations
+COPY pyproject.toml README.md ./
+COPY src/ ./src/
+COPY configs/ ./configs/
 COPY artifacts/ ./artifacts/
 COPY results/ ./results/
 COPY data/ ./data/
 COPY prompts/ ./prompts/
 
-# Copy compiled frontend static assets from Stage 1
+# Copy compiled frontend assets
 COPY --from=frontend-builder /web/dist ./web/dist
 
-# Set permissions for non-root user
-RUN chown -R argususer:argusgroup /app
+# Harden ownership and permissions
+RUN chown -R argususer:argusgroup /app && \
+    chmod -R 550 /app && \
+    chmod -R 770 /tmp
 
-USER argususer
+USER argususer:argusgroup
 
-# Environment Variable Defaults
 ENV ARGUS_MODE=demo \
     ARGUS_HOST=0.0.0.0 \
     ARGUS_PORT=8000 \
-    PYTHONPATH=/app/src \
+    PYTHONPATH=/app/src:/app \
     PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    MPLCONFIGDIR=/tmp
 
 EXPOSE 8000
 
-# Container Healthcheck hitting /health endpoint
 HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Launch FastAPI app with Uvicorn
 CMD ["uvicorn", "argus.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

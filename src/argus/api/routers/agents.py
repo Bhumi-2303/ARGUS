@@ -5,9 +5,14 @@ import json
 import asyncio
 from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, status
+from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, status, Depends, Request
 from pydantic import BaseModel, Field
 
+from configs.settings import get_settings
+from argus.auth.rbac import get_current_user, require_permission
+from argus.auth.models import UserPrincipal
+from argus.auth.jwt import jwt_validator
+from argus.security.audit import AuditLogger, SecurityAuditEvent
 from argus.schemas.agents import AgentHealthReport, AgentRegistration
 from argus.schemas.api import APIResponse
 
@@ -161,40 +166,66 @@ TOPOLOGY_EDGES: List[TopologyEdge] = [
 class AgentStreamManager:
     def __init__(self):
         self.active_connections: List[WebSocket] = []
+        self._lock = asyncio.Lock()
 
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections.append(websocket)
+    async def connect(self, websocket: WebSocket) -> bool:
+        settings = get_settings()
+        async with self._lock:
+            if len(self.active_connections) >= settings.security.max_websocket_connections:
+                return False
+            self.active_connections.append(websocket)
+            return True
 
-    def disconnect(self, websocket: WebSocket):
-        if websocket in self.active_connections:
-            self.active_connections.remove(websocket)
+    async def disconnect(self, websocket: WebSocket):
+        async with self._lock:
+            if websocket in self.active_connections:
+                self.active_connections.remove(websocket)
 
     async def broadcast(self, message: Dict[str, Any]):
         dead_sockets = []
-        for connection in self.active_connections:
+        async with self._lock:
+            connections = list(self.active_connections)
+
+        for connection in connections:
             try:
                 await connection.send_json(message)
             except Exception:
                 dead_sockets.append(connection)
+
         for ds in dead_sockets:
-            self.disconnect(ds)
+            await self.disconnect(ds)
 
 agent_stream_manager = AgentStreamManager()
 
 
 @router.get("/topology", response_model=TopologyResponse, tags=["agents"])
-async def get_agent_topology():
+async def get_agent_topology(
+    user: UserPrincipal = Depends(require_permission("read:agent-topology"))
+):
     """Return dynamic 3D/2D agent network topology with nodes and edges."""
     return TopologyResponse(nodes=TOPOLOGY_NODES, edges=TOPOLOGY_EDGES)
 
 
 from argus.schemas.api import PredictRequest
 @router.post("/trace", response_model=TraceExecutionResponse, tags=["agents"])
-async def trace_agent_execution(request: PredictRequest):
+async def trace_agent_execution(
+    request: PredictRequest,
+    req: Request,
+    user: UserPrincipal = Depends(require_permission("run:agent-trace"))
+):
     """Trigger a end-to-end multi-step flow execution trace across the agent graph."""
     corr_id = f"flow-{uuid.uuid4().hex[:8]}"
     now_iso = datetime.now(timezone.utc).isoformat()
+    
+    # Audit log trace execution with authenticated principal
+    AuditLogger.log_event(SecurityAuditEvent(
+        actor_id=user.sub,
+        action="EXECUTE_AGENT_TRACE",
+        resource="/api/v1/agents/trace",
+        outcome="SUCCESS",
+        source_ip=req.client.host if req.client else None,
+        correlation_id=corr_id
+    ))
     
     # 1. Run REAL Data Intelligence Agent
     from argus.agents.data_intelligence.agent import DataIntelligenceAgent
@@ -311,16 +342,85 @@ async def broadcast_flow_sequence(events: List[FlowEventItem]):
 
 
 @router.websocket("/stream")
-async def websocket_agent_stream(websocket: WebSocket):
-    """WebSocket broadcasting live status updates and flow trace events."""
-    await agent_stream_manager.connect(websocket)
+async def websocket_agent_stream(
+    websocket: WebSocket,
+    token: Optional[str] = None
+):
+    """WebSocket broadcasting live status updates and flow trace events with security controls."""
+    settings = get_settings()
+
+    # 1. Validate Origin
+    origin = websocket.headers.get("origin")
+    if origin and settings.is_production:
+        origin_clean = origin.rstrip("/")
+        allowed = any(
+            o == "*" or o.rstrip("/") == origin_clean
+            for o in settings.security.cors_origins
+        )
+        if not allowed:
+            logger.warning("agent_websocket_origin_rejected", origin=origin)
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+            return
+
+    # 2. Authenticate WebSocket Connection
+    if settings.is_production or settings.security.oidc_enabled or token:
+        if not token:
+            auth_header = websocket.headers.get("authorization")
+            if auth_header and auth_header.lower().startswith("bearer "):
+                token = auth_header[7:].strip()
+
+        if not token:
+            logger.warning("agent_websocket_unauthenticated", path="/api/v1/agents/stream")
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+            return
+
+        try:
+            user = await jwt_validator.validate_token(token)
+            if not user.has_permission("read:agent-topology"):
+                logger.warning("agent_websocket_forbidden", user=user.sub, perm="read:agent-topology")
+                await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+                return
+        except Exception as e:
+            logger.warning("agent_websocket_auth_failed", error=str(e))
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+            return
+
+    # 3. Connect with connection bounds checking
+    connected = await agent_stream_manager.connect(websocket)
+    if not connected:
+        logger.warning("agent_websocket_max_connections_reached")
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        return
+
+    await websocket.accept()
+
     try:
+        idle_timeout = settings.security.websocket_idle_timeout_seconds
+        max_bytes = settings.security.websocket_max_message_bytes
+        start_time = time.time()
+        max_duration = settings.security.max_websocket_duration_seconds
+
         while True:
-            # Keepalive read
-            data = await websocket.receive_text()
+            if (time.time() - start_time) > max_duration:
+                logger.info("agent_websocket_max_duration_exceeded")
+                break
+
+            # Read with idle timeout
+            data = await asyncio.wait_for(websocket.receive_text(), timeout=idle_timeout)
+            if len(data) > max_bytes:
+                logger.warning("agent_websocket_message_oversized", size=len(data))
+                break
+
             if data == "ping":
                 await websocket.send_text("pong")
-    except WebSocketDisconnect:
-        agent_stream_manager.disconnect(websocket)
-    except Exception:
-        agent_stream_manager.disconnect(websocket)
+
+    except (WebSocketDisconnect, asyncio.TimeoutError):
+        pass
+    except Exception as ex:
+        logger.error("agent_websocket_error", error=str(ex))
+    finally:
+        await agent_stream_manager.disconnect(websocket)
+        try:
+            await websocket.close()
+        except Exception:
+            pass

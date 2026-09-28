@@ -23,8 +23,11 @@ env/
 .env.local
 .env.production
 
-# Data
-data/
+# Large raw dataset caches (preserve data/samples/ for runtime container)
+data/raw/
+data/interim/
+data/processed/
+data/reproduction/
 *.db
 *.sqlite
 *.sqlite3
@@ -38,18 +41,16 @@ logs/
 
 # Node
 node_modules/
-frontend/node_modules/
-frontend/dist/
+web/node_modules/
+web/dist/
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Testing
+# Testing & Caches
 .coverage
 htmlcov/
 .pytest_cache/
 .mypy_cache/
-
-# Ruff
 .ruff_cache/

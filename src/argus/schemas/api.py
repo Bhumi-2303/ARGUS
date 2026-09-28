@@ -1,14 +1,15 @@
-"""Pydantic schemas for the ARGUS FastAPI v1 endpoints."""
+"""Pydantic schemas for the ARGUS FastAPI v1 endpoints with strict bounds validation."""
 
+import math
 from typing import Dict, List, Any, Optional, Generic, TypeVar
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 T = TypeVar('T')
+
 
 class APIResponse(BaseModel, Generic[T]):
     data: Optional[T] = None
     error: Optional[str] = None
-
 
 
 class HealthResponse(BaseModel):
@@ -57,15 +58,46 @@ class ResultTableResponse(BaseModel):
 
 
 class FeatureInput(BaseModel):
-    pkt_mean_to_max: float = Field(..., description="Ratio of mean packet size to max packet size")
-    tcp_flag_density: float = Field(..., description="Density of TCP flags across connection")
-    log_pkt_mean: float = Field(..., description="Logarithm of mean packet length")
-    log_pkt_max: float = Field(..., description="Logarithm of max packet length")
+    """Input feature vector with strict finite number and range bounds."""
+    pkt_mean_to_max: float = Field(
+        ...,
+        ge=0.0,
+        le=1000.0,
+        allow_inf_nan=False,
+        description="Ratio of mean packet size to max packet size"
+    )
+    tcp_flag_density: float = Field(
+        ...,
+        ge=0.0,
+        le=1000.0,
+        allow_inf_nan=False,
+        description="Density of TCP flags across connection"
+    )
+    log_pkt_mean: float = Field(
+        ...,
+        ge=0.0,
+        le=100.0,
+        allow_inf_nan=False,
+        description="Logarithm of mean packet length"
+    )
+    log_pkt_max: float = Field(
+        ...,
+        ge=0.0,
+        le=100.0,
+        allow_inf_nan=False,
+        description="Logarithm of max packet length"
+    )
 
 
 class PredictRequest(BaseModel):
     features: FeatureInput
-    model_name: str = Field("model_d2_coral", description="Target model for prediction")
+    model_name: str = Field(
+        "model_d2_coral",
+        min_length=1,
+        max_length=64,
+        pattern=r"^[a-zA-Z0-9_-]+$",
+        description="Target model for prediction"
+    )
 
 
 class ModelPredictionDetail(BaseModel):
@@ -110,7 +142,13 @@ class ShiftResponse(BaseModel):
 
 class ExplainRequest(BaseModel):
     features: FeatureInput
-    model_name: str = Field("model_d2_coral", description="Target model for SHAP attribution")
+    model_name: str = Field(
+        "model_d2_coral",
+        min_length=1,
+        max_length=64,
+        pattern=r"^[a-zA-Z0-9_-]+$",
+        description="Target model for SHAP attribution"
+    )
 
 
 class ExplainResponse(BaseModel):
@@ -123,10 +161,31 @@ class ExplainResponse(BaseModel):
 
 
 class OnboardRequest(BaseModel):
-    target_domain: str = Field("nfton", description="Target domain identifier for demo onboarding")
-    adaptation_window_size: int = Field(5000, description="Size of adaptation window for CORAL transform")
-    calibration_window_size: int = Field(2000, description="Size of calibration window for threshold selection")
-    test_window_size: int = Field(3000, description="Size of test window for evaluation")
+    target_domain: str = Field(
+        "nfton",
+        min_length=1,
+        max_length=32,
+        pattern=r"^[a-zA-Z0-9_-]+$",
+        description="Target domain identifier for demo onboarding"
+    )
+    adaptation_window_size: int = Field(
+        5000,
+        ge=10,
+        le=50000,
+        description="Size of adaptation window for CORAL transform"
+    )
+    calibration_window_size: int = Field(
+        2000,
+        ge=10,
+        le=50000,
+        description="Size of calibration window for threshold selection"
+    )
+    test_window_size: int = Field(
+        3000,
+        ge=10,
+        le=50000,
+        description="Size of test window for evaluation"
+    )
 
 
 class OnboardResponse(BaseModel):
@@ -147,4 +206,3 @@ class TestCaseItem(BaseModel):
     ground_truth_class: str
     features: Dict[str, float]
     provenance: str
-
