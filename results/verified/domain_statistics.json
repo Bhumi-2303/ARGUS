@@ -1,0 +1,33 @@
+{
+  "ciciot": {
+    "name": "CICIoT2023",
+    "split": "test_holdout",
+    "split_basis": "Held-out test split (ciciot_test_features.csv, N=1,176,851)",
+    "sample_size": 1176851,
+    "attack_samples": 1149142,
+    "benign_samples": 27709,
+    "attack_ratio": 0.976455,
+    "source_file": "data/raw/legacy_package/argus_coral_data/ciciot_test_features.csv"
+  },
+  "nfton": {
+    "name": "NF-ToN-IoT-v2",
+    "split": "test_holdout",
+    "split_basis": "Held-out test split (nfton_test_features.csv, N=2,627,177)",
+    "sample_size": 2627177,
+    "attack_samples": 1906920,
+    "benign_samples": 720257,
+    "attack_ratio": 0.725844,
+    "source_file": "data/raw/legacy_package/argus_coral_data/nfton_test_features.csv"
+  },
+  "iec104": {
+    "name": "IEC104 SCADA",
+    "split": "full_population_and_calibration",
+    "split_basis": "Calibration split & full corpus (N=571,562 calib; N=3,572,265 full corpus)",
+    "sample_size": 571562,
+    "total_population": 3572265,
+    "attack_samples": 802547,
+    "benign_samples": 2769718,
+    "attack_ratio": 0.224661,
+    "source_file": "archive/backups/phase3_results/domain_shift/class_prior_summary.csv"
+  }
+}
