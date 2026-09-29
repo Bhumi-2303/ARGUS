@@ -40,6 +40,14 @@ class ImpactEstimator(BaseTool):
         threat_level = input_data.threat_event.threat_level.lower()
         asset_priority = criticality.asset_priority
 
+        if asset_priority is None:
+            return ImpactResult(
+                severity=None,
+                estimated_downtime_hours=None,
+                impacted_services=[],
+                reasoning="Asset criticality unavailable; cannot estimate impact."
+            )
+
         # Simple matrix for impact estimation
         if asset_priority == AssetPriority.CRITICAL and threat_level in ("critical", "high"):
             severity = ImpactSeverity.CATASTROPHIC

@@ -11,7 +11,8 @@ import sys
 import pandas as pd
 import numpy as np
 
-# Add src to path
+# Add src and root to path
+sys.path.insert(0, os.path.abspath("."))
 sys.path.insert(0, os.path.abspath("src"))
 
 from argus.data.manager import data_manager

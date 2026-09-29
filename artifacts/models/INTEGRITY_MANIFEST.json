@@ -1,0 +1,32 @@
+{
+  "_description": "Trusted SHA-256 integrity manifest for ARGUS model artifacts. Hashes computed at commit f8f473c.",
+  "_format": "{ model_identifier: { artifact_path: relative_path, sha256: hex_digest } }",
+  "model_d1_baseline": {
+    "artifact_path": "artifacts/models/model_d1_baseline.txt",
+    "sha256": "7f9a8ccc22e3d0c5f8ee45d536cf161a02cf8d9b00a4901db41d1a908f510b7b"
+  },
+  "model_d1_coral": {
+    "artifact_path": "artifacts/models/model_d1_coral.txt",
+    "sha256": "bd0e425490db7b220224ee95d811d160f1db555d6e0e18d24ebe5b968431b548"
+  },
+  "model_d2_baseline": {
+    "artifact_path": "artifacts/models/model_d2_baseline.txt",
+    "sha256": "4c03b27006e24bb6805751435667cbc82e19eafbbc514c85edcb17e8ebc042e2"
+  },
+  "model_d2_coral": {
+    "artifact_path": "artifacts/models/model_d2_coral.txt",
+    "sha256": "c71055c80df00fd887c21d052dadf1bb20f6596bc9f1ed9490b6107ddbe0ec28"
+  },
+  "model_d3_native": {
+    "artifact_path": "artifacts/models/model_d3_native.txt",
+    "sha256": "0dcac73c8655cca3f1a7a5c6df73836a0d5c4ad1d882fab2676b2e32f8bfc21c"
+  },
+  "xgb_source": {
+    "artifact_path": "artifacts/models/xgb_source.json",
+    "sha256": "bca5465ace699d1c31ff50396c9b6229b601b8b4bf3b8fff42eb3cc29bbb61bc"
+  },
+  "xgb_adapted": {
+    "artifact_path": "artifacts/models/xgb_adapted.json",
+    "sha256": "6697c214a3c83fb1422f15fee34a89f2d320a95d28f8036768f01fb513e78a3d"
+  }
+}

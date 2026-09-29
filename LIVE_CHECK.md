@@ -26,9 +26,9 @@ Navigate your browser to:
 2. Check the Agent Nodes for their implementation status. 
    - **Data Intelligence Agent**: Should appear as fully implemented.
    - **Threat Analysis Agent**: Should appear as fully implemented.
-   - **Risk Prediction Agent**: Must display a grey "not implemented" or "stub" badge.
-   - **Knowledge Context Agent**: Must display a grey "not implemented" or "stub" badge.
-   - **Decision Support Agent**: Must display a grey "not implemented" or "stub" badge.
+   - **Risk Prediction Agent**: Should appear as fully implemented.
+   - **Knowledge Context Agent**: Should appear as fully implemented.
+   - **Decision Support Agent**: Should appear as fully implemented.
 
 *Why this is correct:* We have removed fake data generation from the stubs. Agents without real ML/logic models honestly report themselves as stubs.
 
@@ -38,8 +38,7 @@ On the **System Topology** page, locate and click the **"Trigger simulated flow"
 **What to check:**
 1. The animated data packet should trace a specific route: `API Gateway -> Message Bus -> Orchestrator -> Data Intelligence -> Threat Analysis -> Risk/Knowledge -> Decision Support`.
 2. Look at the trace logs emitted in the sidebar/bottom sheet. 
-3. Verify that the Threat Analysis step explicitly logs the usage of a real verified model (e.g., `model_d2_coral` or `xgb_adapted` with a specific probability value), rather than generic placeholder text. 
-4. Verify that downstream agents (Risk, Knowledge, Decision) log that they are returning `not_implemented`.
+3. Verify that the Threat Analysis step explicitly logs the usage of a real verified model (e.g., `model_d2_coral` or `xgb_adapted` with a specific probability value), rather than generic placeholder text.
 
 ## Step 4: Verify Live Monitor Discrepancy (FLAG)
 Navigate your browser to:

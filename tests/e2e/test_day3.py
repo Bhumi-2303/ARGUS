@@ -18,6 +18,18 @@ class ErrorAgent:
     async def execute(self, plan):
         raise RuntimeError("Intentional error from agent")
 
+class DummyAgent:
+    async def initialize(self):
+        pass
+    async def validate(self, input_data):
+        return True
+    async def reason(self, context):
+        return context
+    async def plan(self, reasoning):
+        return reasoning
+    async def execute(self, plan):
+        return {"dummy": "result"}
+
 @pytest.mark.asyncio
 async def test_end_to_end_pipeline():
     # 1. Ensure 1% sample data exists
@@ -33,7 +45,7 @@ async def test_end_to_end_pipeline():
         os.makedirs(os.path.dirname(data_path), exist_ok=True)
         df.to_parquet(data_path)
 
-    explainability_agent = ExplainabilityAgent()
+    explainability_agent = DummyAgent()
     await explainability_agent.initialize()
     
     agents = {

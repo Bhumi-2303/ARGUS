@@ -40,6 +40,13 @@ class TrendAnalyzer(BaseTool):
         related_incidents = knowledge.related_incidents
         vulns = knowledge.known_vulnerabilities
 
+        if not related_incidents and not vulns:
+            return EscalationResult(
+                escalation_factor=None,
+                historical_context="No related incidents or vulnerabilities available.",
+                reasoning="Escalation analysis unavailable due to missing historical context."
+            )
+
         escalation_factor = 1.0
         context_notes = []
 

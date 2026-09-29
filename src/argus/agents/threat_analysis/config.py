@@ -7,7 +7,7 @@ class ThreatAnalysisConfig(BaseSettings):
     """Agent-specific configuration."""
     model_config = SettingsConfigDict(env_prefix="ARGUS_TA_")
 
-    model_dir: str = "/tmp/argus_models"
+    model_dir: str = "artifacts/models"
     default_model_type: ModelType = ModelType.XGBOOST
     confidence_threshold: float = 0.7
     gemini_enabled: bool = True

@@ -1,12 +1,21 @@
+"""Data exploration and sample retrieval endpoint with RBAC and error logging."""
+
 import os
+from typing import List, Dict
 import pandas as pd
-from fastapi import APIRouter, HTTPException
-from typing import List, Dict, Any
 from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, status
+from structlog import get_logger
+
 from argus.data.manager import data_manager
 from argus.schemas.api import TestCaseItem
+from argus.auth.rbac import require_permission
+from argus.auth.models import UserPrincipal
+
+logger = get_logger("argus.api.data")
 
 router = APIRouter()
+
 
 class SampleResponse(BaseModel):
     id: str
@@ -18,17 +27,18 @@ class SampleResponse(BaseModel):
 
 
 @router.get("/samples", response_model=List[SampleResponse], tags=["data"])
-async def get_samples():
-    """Discover and return actual verified data samples from parquet files."""
+async def get_samples(
+    user: UserPrincipal = Depends(require_permission("read:telemetry"))
+):
+    """Discover and return actual verified data samples from parquet files with RBAC enforcement."""
     samples = []
-    
+
     try:
         nfton_path = "data/samples/nfton.parquet"
         ciciot_path = "data/samples/ciciot.parquet"
-        
+
         if os.path.exists(nfton_path):
             df_nf = pd.read_parquet(nfton_path)
-            # Take first benign and first attack
             for lbl, cname in [(0, "Benign"), (1, "Attack")]:
                 subset = df_nf[df_nf["label"] == lbl]
                 if not subset.empty:
@@ -46,7 +56,7 @@ async def get_samples():
                             "log_pkt_max": float(row["log_pkt_max"])
                         }
                     ))
-                
+
         if os.path.exists(ciciot_path):
             df_ci = pd.read_parquet(ciciot_path)
             for lbl, cname in [(0, "Benign"), (1, "Attack")]:
@@ -67,13 +77,18 @@ async def get_samples():
                         }
                     ))
     except Exception as e:
-        pass
-        
+        logger.error("failed_to_load_samples", error=str(e), exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to load telemetry samples."
+        )
+
     return samples
 
 
 @router.get("/test-cases", response_model=List[TestCaseItem], tags=["data"])
-async def get_test_cases():
-    """Return the four verified test case rows extracted from source and target test sets."""
+async def get_test_cases(
+    user: UserPrincipal = Depends(require_permission("read:telemetry"))
+):
+    """Return verified test case rows extracted from source and target test sets."""
     return data_manager.get_test_cases()
-

@@ -3,7 +3,7 @@ import structlog
 import asyncio
 from typing import Dict, Any
 from argus.security.audit import SecurityAuditEvent
-from config.settings import get_settings
+from configs.settings import get_settings
 
 logger = structlog.get_logger("argus.security.sink")
 

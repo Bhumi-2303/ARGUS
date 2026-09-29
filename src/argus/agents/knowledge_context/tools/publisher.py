@@ -36,10 +36,12 @@ class KnowledgePublisher(BaseTool):
         result: SynthesisResult = kwargs["synthesis_result"]
         agent_id: str = kwargs["agent_id"]
         duration_ms: float = kwargs["processing_duration_ms"]
+        event_id = kwargs.get("event_id") or str(uuid.uuid4())
+        correlation_id = kwargs.get("correlation_id") or str(uuid.uuid4())
 
         return KnowledgeEvent(
-            request_id=str(uuid.uuid4()),
-            trace_id=str(uuid.uuid4()),
+            request_id=event_id,
+            trace_id=correlation_id,
             agent_id=agent_id,
             timestamp=datetime.now(timezone.utc),
             priority=TaskPriority.HIGH,

@@ -1,0 +1,13 @@
+{
+  "artifacts/models/model_d1_baseline.txt": "7f9a8ccc22e3d0c5f8ee45d536cf161a02cf8d9b00a4901db41d1a908f510b7b",
+  "artifacts/models/model_d2_coral.txt": "c71055c80df00fd887c21d052dadf1bb20f6596bc9f1ed9490b6107ddbe0ec28",
+  "artifacts/models/model_d3_native.txt": "0dcac73c8655cca3f1a7a5c6df73836a0d5c4ad1d882fab2676b2e32f8bfc21c",
+  "artifacts/models/xgb_source.json": "bca5465ace699d1c31ff50396c9b6229b601b8b4bf3b8fff42eb3cc29bbb61bc",
+  "artifacts/models/xgb_adapted.json": "6697c214a3c83fb1422f15fee34a89f2d320a95d28f8036768f01fb513e78a3d",
+  "results/verified/five_model_complete_comparison.csv": "d5113fa9c5afd245fb89f0ffdf5e3f841aba36c6e075a9061f531725c28ad62c",
+  "results/verified/dann_final_test_metrics.csv": "5fa74af70c28e767b555475806644f2c3b41445b6d1a46df7b2a9935e9119809",
+  "results/verified/d3_native_threshold_sweep.csv": "fe60e795e0aa410cdce62670dd31101ff7783929dabc7f4320bba5f4627147f7",
+  "results/verified/SHAP_vs_Target_Gain.csv": "60bddc4db80999d3a89ef5066b783080d90ceec698f66ad75a1369f70a0528ed",
+  "data/samples/ciciot.parquet": "51f0b8b7ee73f2940029d7b9158556bf5825013f4b9b86339a3b59f22801def4",
+  "data/samples/nfton.parquet": "030ea6210260b8abfb90a90721b31a6ec9abfa018b39bfdb6a1039df09e07723"
+}

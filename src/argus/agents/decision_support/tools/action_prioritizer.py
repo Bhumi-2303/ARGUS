@@ -37,7 +37,7 @@ class ActionPrioritizer(BaseTool):
         if not await self.validate(input_data, recommendations):
             raise ValueError("Invalid input for ActionPrioritizer")
 
-        severity = input_data.risk_event.severity.upper()
+        severity = input_data.risk_event.severity.upper() if input_data.risk_event.severity else "UNKNOWN"
         
         # Determine global urgency based on Risk severity
         if severity == "CRITICAL":

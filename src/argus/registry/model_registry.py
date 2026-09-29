@@ -5,6 +5,8 @@ if any artifact is missing or invalid.
 """
 
 import os
+import hashlib
+import json
 from typing import Dict, Any, Tuple, List
 import numpy as np
 import lightgbm as lgb
@@ -134,14 +136,70 @@ class ModelRegistry:
         self.loaded_models: Dict[str, Any] = {}
         self.explainers: Dict[str, Any] = {}
         self.is_loaded: bool = False
+        self._integrity_manifest: Dict[str, Any] = {}
+
+    def _load_integrity_manifest(self) -> Dict[str, Any]:
+        """Load the trusted SHA-256 integrity manifest from disk."""
+        manifest_path = os.path.join(self.base_dir, "artifacts", "models", "INTEGRITY_MANIFEST.json")
+        if not os.path.exists(manifest_path):
+            logger.warning("integrity_manifest_not_found", path=manifest_path)
+            return {}
+        try:
+            with open(manifest_path, "r", encoding="utf-8") as f:
+                manifest = json.load(f)
+            # Strip metadata keys
+            return {k: v for k, v in manifest.items() if not k.startswith("_")}
+        except Exception as e:
+            logger.error("integrity_manifest_load_failed", error=str(e))
+            return {}
+
+    @staticmethod
+    def _compute_sha256(file_path: str) -> str:
+        """Compute SHA-256 hex digest of a file."""
+        h = hashlib.sha256()
+        with open(file_path, "rb") as f:
+            for chunk in iter(lambda: f.read(8192), b""):
+                h.update(chunk)
+        return h.hexdigest()
+
+    def _verify_artifact_integrity(self, model_name: str, full_path: str) -> None:
+        """Verify a model artifact against the trusted integrity manifest.
+
+        Raises:
+            RuntimeError: If hash mismatch or model not in manifest.
+        """
+        if model_name not in self._integrity_manifest:
+            raise RuntimeError(
+                f"Model '{model_name}' is not present in the trusted integrity manifest. "
+                "Cannot verify artifact integrity — refusing to load."
+            )
+
+        expected_hash = self._integrity_manifest[model_name].get("sha256")
+        if not expected_hash:
+            raise RuntimeError(
+                f"Model '{model_name}' has no SHA-256 hash in the integrity manifest."
+            )
+
+        actual_hash = self._compute_sha256(full_path)
+        if actual_hash != expected_hash:
+            raise RuntimeError(
+                f"INTEGRITY FAILURE for model '{model_name}': "
+                f"expected SHA-256 {expected_hash}, got {actual_hash}. "
+                "Artifact may have been tampered with — refusing to load."
+            )
+        logger.info("artifact_integrity_verified", model_name=model_name, sha256=actual_hash)
 
     def load_all(self) -> None:
         """Load all configured model artifacts into memory.
         
-        Fails loudly if any required model artifact is missing.
+        Verifies SHA-256 integrity BEFORE deserialization.
+        Fails loudly if any required model artifact is missing or tampered.
         """
         logger.info("model_registry_loading_started")
         missing_artifacts = []
+
+        # Load the trusted integrity manifest
+        self._integrity_manifest = self._load_integrity_manifest()
 
         for model_name, meta in MODEL_METADATA.items():
             rel_path = meta["artifact_path"]
@@ -152,6 +210,10 @@ class ModelRegistry:
                 continue
 
             try:
+                # Verify integrity BEFORE loading (critical for joblib deserialization safety)
+                if model_name in self._integrity_manifest:
+                    self._verify_artifact_integrity(model_name, full_path)
+
                 model_type = meta["type"]
                 if model_type == "lightgbm":
                     # Normalize line endings if needed
@@ -182,6 +244,10 @@ class ModelRegistry:
                     pass
                     
                 logger.info("model_loaded_successfully", model_name=model_name, path=full_path)
+            except RuntimeError as e:
+                # Integrity failures are fatal — do not silently continue
+                logger.error("model_integrity_check_failed", model_name=model_name, error=str(e))
+                raise
             except Exception as e:
                 logger.error("model_load_failed", model_name=model_name, path=full_path, error=str(e))
                 missing_artifacts.append((model_name, full_path))

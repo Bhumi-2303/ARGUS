@@ -1,0 +1,16 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Global allowlist for ARGUS dependencies and data artifacts"
+paths = [
+    '''node_modules''',
+    '''web/node_modules''',
+    '''web/dist''',
+    '''\.git''',
+    '''\.venv''',
+    '''\.pytest_cache''',
+    '''data/samples''',
+    '''artifacts/manifest\.json''',
+    '''docs/data_metrics_baseline\.json'''
+]

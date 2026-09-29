@@ -47,14 +47,17 @@ class Evidence(BaseModel):
 class FeatureEventInput(BaseModel):
     """Schema for incoming FEATURE_EVENT payloads."""
     event_id: str = Field(..., description="Unique event ID")
+    correlation_id: Optional[str] = Field(default=None, description="Pipeline trace correlation ID")
     source: str = Field(..., description="Source of the features")
     features: Dict[str, float] = Field(..., description="Feature vector")
     timestamp: str = Field(..., description="ISO 8601 timestamp")
+    model_version: Optional[str] = Field(default=None, description="Target model requested")
 
 
 class ThreatAnalysisResult(BaseModel):
     """Combined output of the entire reasoning/execution pipeline."""
     source_event_id: str
+    correlation_id: Optional[str] = None
     threat_level: ThreatLevel
     confidence: float
     evidence: List[Evidence] = Field(default_factory=list)
@@ -62,3 +65,5 @@ class ThreatAnalysisResult(BaseModel):
     recommended_actions: List[str] = Field(default_factory=list)
     model_version: str
     protocol_status: str
+    latency_ms: float = Field(default=0.0, description="Model inference latency")
+

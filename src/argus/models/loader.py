@@ -38,7 +38,7 @@ class ArgusModelWrapper:
                 self._model = joblib.load(self.model_path)
         elif self.model_type == "dann":
             import torch
-            self._model = torch.load(self.model_path, map_location="cpu", weights_only=False)
+            self._model = torch.load(self.model_path, map_location="cpu", weights_only=True)
         else:
             import joblib
             self._model = joblib.load(self.model_path)

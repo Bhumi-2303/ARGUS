@@ -41,7 +41,7 @@ class EvidenceCollector(BaseTool):
         
         # 1. Look for extreme feature values as basic evidence
         # In a real system, this would compare against a baseline mean/stddev.
-        # For this mock, we highlight features with large absolute values.
+        # For this basic heuristic, we highlight features with large absolute values.
         for feat_name, feat_val in features.items():
             # Heuristic: arbitrarily flag values > 100 or < -100 as 'anomalous' features
             if abs(feat_val) > 100.0:

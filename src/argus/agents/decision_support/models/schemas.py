@@ -11,11 +11,11 @@ import uuid
 class RiskEventInput(BaseModel):
     """The RiskEvent payload received from the MessageBus."""
     source_event_id: str
-    risk_score: int
-    severity: str
-    confidence: float
-    asset_priority: str
-    impact_estimation: Dict[str, Any]
+    risk_score: Optional[int] = None
+    severity: Optional[str] = None
+    confidence: Optional[float] = None
+    asset_priority: Optional[str] = None
+    impact_estimation: Optional[Dict[str, Any]] = None
     reasoning: str
     metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
 
@@ -72,7 +72,7 @@ class DecisionEvent(BaseModel):
     recommended_actions: List[Recommendation]
     priority: int
     urgency: str
-    confidence: float
+    confidence: Optional[float] = None
     estimated_impact: ImpactAssessment
     approval_required: bool
     execution_plan: str
