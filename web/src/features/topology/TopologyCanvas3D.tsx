@@ -1,6 +1,6 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Text, Html } from '@react-three/drei';
+import { OrbitControls, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { TopologyNode, TopologyEdge, FlowEventItem } from '../../api/client';
 
@@ -64,15 +64,11 @@ function NodeMesh({ node, position, isSelected, onSelect }: Node3DProps) {
       </mesh>
 
       {/* Dynamic 3D Label */}
-      <Text
-        position={[0, 1.5, 0]}
-        fontSize={0.45}
-        color="#f8fafc"
-        anchorX="center"
-        anchorY="bottom"
-      >
-        {node.name}
-      </Text>
+      <Html position={[0, 1.4, 0]} center>
+        <div className="text-[10px] font-mono font-medium text-slate-200 whitespace-nowrap bg-slate-900/90 px-1.5 py-0.5 rounded border border-slate-700/80 shadow pointer-events-none select-none">
+          {node.name}
+        </div>
+      </Html>
 
       {/* Implementation Pill */}
       {node.implementation_type === 'stub' && (
@@ -176,15 +172,15 @@ export function TopologyCanvas3D({
       posMap[node.id] = [0, (idx - (centerNodes.length - 1) / 2) * 2.5, 0];
     });
 
-    // Inner ring (Radius 6)
-    const R_inner = 6.5;
+    // Inner ring (Radius 8)
+    const R_inner = 8.0;
     innerNodes.forEach((node, idx) => {
       const angle = (idx / innerNodes.length) * Math.PI * 2;
-      posMap[node.id] = [Math.cos(angle) * R_inner, Math.sin(angle) * R_inner * 0.5, Math.sin(angle) * R_inner];
+      posMap[node.id] = [Math.cos(angle) * R_inner, Math.sin(angle) * R_inner * 0.4, Math.sin(angle) * R_inner];
     });
 
-    // Outer ring (Radius 10)
-    const R_outer = 11.0;
+    // Outer ring (Radius 13.5)
+    const R_outer = 13.5;
     outerNodes.forEach((node, idx) => {
       const angle = (idx / Math.max(1, outerNodes.length)) * Math.PI * 2 + Math.PI / 4;
       posMap[node.id] = [Math.cos(angle) * R_outer, (idx % 2 === 0 ? 2 : -2), Math.sin(angle) * R_outer];
@@ -204,7 +200,7 @@ export function TopologyCanvas3D({
 
   return (
     <Canvas
-      camera={{ position: [0, 16, 26], fov: 55 }}
+      camera={{ position: [0, 12, 18], fov: 45 }}
       style={{ background: 'transparent' }}
       onPointerDown={() => onSelectNode(null as any)}
     >
@@ -214,37 +210,39 @@ export function TopologyCanvas3D({
 
       <OrbitControls enablePan enableZoom enableRotate maxPolarAngle={Math.PI / 2} />
 
-      {/* Render Edges */}
-      {edges.map((edge) => {
-        const srcPos = nodePositions[edge.source] || [0, 0, 0];
-        const tgtPos = nodePositions[edge.target] || [0, 0, 0];
-        const isActive = activeEdgeKeys.has(`${edge.source}->${edge.target}`);
+      <Suspense fallback={null}>
+        {/* Render Edges */}
+        {edges.map((edge) => {
+          const srcPos = nodePositions[edge.source] || [0, 0, 0];
+          const tgtPos = nodePositions[edge.target] || [0, 0, 0];
+          const isActive = activeEdgeKeys.has(`${edge.source}->${edge.target}`);
 
-        return (
-          <Edge3D
-            key={`${edge.source}->${edge.target}`}
-            sourcePos={srcPos}
-            targetPos={tgtPos}
-            isActive={isActive}
-          />
-        );
-      })}
+          return (
+            <Edge3D
+              key={`${edge.source}->${edge.target}`}
+              sourcePos={srcPos}
+              targetPos={tgtPos}
+              isActive={isActive}
+            />
+          );
+        })}
 
-      {/* Render Nodes */}
-      {nodes.map((node) => {
-        const pos = nodePositions[node.id] || [0, 0, 0];
-        const isSelected = selectedNode?.id === node.id;
+        {/* Render Nodes */}
+        {nodes.map((node) => {
+          const pos = nodePositions[node.id] || [0, 0, 0];
+          const isSelected = selectedNode?.id === node.id;
 
-        return (
-          <NodeMesh
-            key={node.id}
-            node={node}
-            position={pos}
-            isSelected={isSelected}
-            onSelect={onSelectNode}
-          />
-        );
-      })}
+          return (
+            <NodeMesh
+              key={node.id}
+              node={node}
+              position={pos}
+              isSelected={isSelected}
+              onSelect={onSelectNode}
+            />
+          );
+        })}
+      </Suspense>
     </Canvas>
   );
 }

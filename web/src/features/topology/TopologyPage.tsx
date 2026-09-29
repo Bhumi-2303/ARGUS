@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import {
   Activity,
@@ -103,8 +103,19 @@ export default function TopologyPage() {
 
   const nodeEventList = selectedNode ? nodeEvents[selectedNode.id] || [] : [];
 
+
+  const AGENTS = [
+    { id: 'data_intelligence', name: 'Data Intelligence' },
+    { id: 'threat_analysis', name: 'Threat Analysis' },
+    { id: 'explainability', name: 'Explainability' },
+    { id: 'knowledge_context', name: 'Knowledge Context' },
+    { id: 'risk_prediction', name: 'Risk Prediction' },
+    { id: 'decision_support', name: 'Decision Support' }
+  ];
+
   return (
     <div className="space-y-6 pb-12 max-w-7xl mx-auto">
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -172,13 +183,15 @@ export default function TopologyPage() {
           {loadingTopology ? (
             <Skeleton className="w-full h-full" />
           ) : viewMode === '3D' ? (
-            <TopologyCanvas3D
-              nodes={nodes}
-              edges={edges}
-              selectedNode={selectedNode}
-              onSelectNode={setSelectedNode}
-              activeEvents={eventTrace}
-            />
+            <Suspense fallback={<Skeleton className="w-full h-full" />}>
+              <TopologyCanvas3D
+                nodes={nodes}
+                edges={edges}
+                selectedNode={selectedNode}
+                onSelectNode={setSelectedNode}
+                activeEvents={eventTrace}
+              />
+            </Suspense>
           ) : (
             <TopologyGraph2D
               nodes={nodes}
@@ -304,92 +317,66 @@ export default function TopologyPage() {
         <div className="flex items-center justify-between border-b border-slate-800 pb-2">
           <h2 className="text-sm font-bold font-mono text-slate-100 flex items-center gap-2">
             <Layers className="w-4 h-4 text-cyan-400" />
-            <span>Agent Implementation & Real-Time Dispatch Status</span>
+            <span>Agent Execution Results</span>
           </h2>
           <span className="text-xs font-mono text-slate-400">Strict honest reporting — zero fake completion</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 font-mono text-xs">
-          {/* Data Intelligence */}
-          <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-slate-200">Data Intelligence</span>
-              <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
-                LIVE INFERENCE
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
-              Validates 4-feature harmonized schema and feeds real normalized telemetry vectors to downstream agents.
-            </p>
-          </div>
+          {AGENTS.map((agent, index) => {
+            // Find the trace event for this agent
+            // Note: eventTrace might have target_node matching the agent id
+            const traceEvent = eventTrace.find(e => e.target_node.toLowerCase() === agent.id.toLowerCase());
+            
+            let status = 'WAITING';
+            let duration = null;
+            let output = 'Awaiting execution...';
+            let error = null;
+            let statusColor = 'bg-slate-800 text-slate-400';
 
-          {/* Threat Analysis */}
-          <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-slate-200">Threat Analysis</span>
-              <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
-                LIVE INFERENCE
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
-              Executes Clean Class-Aware CORAL (D2) and baseline models in real time with calibrated thresholds.
-            </p>
-          </div>
+            if (traceEvent && traceEvent.payload) {
+              status = traceEvent.payload.status;
+              duration = traceEvent.payload.duration_ms;
+              output = traceEvent.payload.output || traceEvent.summary || 'No output summary provided.';
+              error = traceEvent.payload.error;
 
-          {/* Explainability */}
-          <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-slate-200">Decision & Explainability</span>
-              <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold">
-                PARTIAL (SHAP ONLY)
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
-              Computes real Shapley feature attributions via TreeExplainer. Automated text explanation stubbed.
-            </p>
-          </div>
+              if (status === 'SUCCESS') statusColor = 'bg-emerald-500/20 text-emerald-300';
+              else if (status === 'FAILED') statusColor = 'bg-red-500/20 text-red-300';
+              else if (status === 'SKIPPED') statusColor = 'bg-amber-500/20 text-amber-300';
+              else statusColor = 'bg-blue-500/20 text-blue-300';
+            }
 
-          {/* Risk Prediction */}
-          <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-slate-200">Risk Prediction</span>
-              <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px] font-bold">
-                NOT YET IMPLEMENTED
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
-              Asset criticality scoring and electrical power-grid impact consequence modeling planned for future phase.
-            </p>
-          </div>
-
-          {/* Knowledge & Context */}
-          <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-slate-200">Knowledge & Context</span>
-              <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px] font-bold">
-                NOT YET IMPLEMENTED
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
-              RAG-assisted MITRE ATT&CK for Industrial Control Systems (ICS) technique lookup planned for future phase.
-            </p>
-          </div>
-
-          {/* Decision Support */}
-          <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-slate-200">Decision Support</span>
-              <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px] font-bold">
-                NOT YET IMPLEMENTED
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
-              Automated countermeasure and firewall rule recommendation engine planned for future phase.
-            </p>
-          </div>
+            return (
+              <div key={agent.id} className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-bold text-slate-200">
+                      {index + 1}. {agent.name}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${statusColor}`}>
+                      {status}
+                    </span>
+                  </div>
+                  {duration !== null && duration !== undefined && typeof duration === 'number' && (
+                    <div className="text-[10px] text-slate-500 mb-2">
+                      Duration: {duration.toFixed(2)}ms
+                    </div>
+                  )}
+                  {error ? (
+                    <div className="text-[11px] text-red-400 font-sans leading-relaxed p-2 bg-red-950/30 rounded border border-red-900/50">
+                      <strong>Error:</strong> {error}
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
+                      {output}
+                    </p>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </Card>
     </div>
   );
 }
-
