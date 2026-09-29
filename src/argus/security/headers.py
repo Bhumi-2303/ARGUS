@@ -36,6 +36,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "img-src 'self' data: https:",
             "font-src 'self' data:",
             "connect-src 'self' ws: wss:",
+            "worker-src 'self' blob:",
+            "child-src 'self' blob:",
             "frame-ancestors 'none'",
             "object-src 'none'",
             "base-uri 'self'",
