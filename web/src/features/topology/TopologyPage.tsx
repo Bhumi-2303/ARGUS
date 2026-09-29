@@ -12,6 +12,8 @@ import {
   Server,
   Zap,
   Cpu,
+  Network,
+  GitBranch,
 } from 'lucide-react';
 import { api, TopologyNode, TopologyEdge, FlowEventItem, SimulateFlowResponse } from '../../api/client';
 import { ProvenanceBadge } from '../../components/ProvenanceBadge';
@@ -21,8 +23,10 @@ import { StatusPill } from '../../components/StatusPill';
 import { TopologyCanvas3D } from './TopologyCanvas3D';
 import { TopologyGraph2D } from './TopologyGraph2D';
 
+export type ViewMode = '3D_ARCHITECTURE' | '3D_TOPOLOGY' | '2D';
+
 export default function TopologyPage() {
-  const [viewMode, setViewMode] = useState<'3D' | '2D'>('3D');
+  const [viewMode, setViewMode] = useState<ViewMode>('3D_ARCHITECTURE');
   const [selectedNode, setSelectedNode] = useState<TopologyNode | null>(null);
   const [activeCorrelationId, setActiveCorrelationId] = useState<string | null>(null);
   const [eventTrace, setEventTrace] = useState<FlowEventItem[]>([]);
@@ -136,14 +140,42 @@ export default function TopologyPage() {
 
       {/* Top Controls Bar */}
       <Card className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setViewMode(viewMode === '3D' ? '2D' : '3D')}
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-mono border border-slate-700 transition-colors"
-          >
-            <Eye className="w-4 h-4 text-cyan-400" />
-            <span>Switch to {viewMode === '3D' ? '2D Fallback View' : '3D WebGL View'}</span>
-          </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center bg-slate-950/90 border border-slate-800 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('3D_ARCHITECTURE')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono font-medium transition-all ${
+                viewMode === '3D_ARCHITECTURE'
+                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.25)]'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-transparent'
+              }`}
+            >
+              <Network className="w-3.5 h-3.5" />
+              <span>3D Architecture</span>
+            </button>
+            <button
+              onClick={() => setViewMode('3D_TOPOLOGY')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono font-medium transition-all ${
+                viewMode === '3D_TOPOLOGY'
+                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.25)]'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-transparent'
+              }`}
+            >
+              <GitBranch className="w-3.5 h-3.5" />
+              <span>3D Topology Flow</span>
+            </button>
+            <button
+              onClick={() => setViewMode('2D')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-mono font-medium transition-all ${
+                viewMode === '2D'
+                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.25)]'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-transparent'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>2D Schematic</span>
+            </button>
+          </div>
 
           <StatusPill
             status={wsConnected ? 'connected' : 'connecting'}
@@ -179,10 +211,10 @@ export default function TopologyPage() {
       {/* Main Viewport & Detail Panels Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Canvas Viewport (2 Cols) */}
-        <Card className="lg:col-span-2 relative h-[520px] p-0 overflow-hidden border border-slate-800 flex flex-col justify-between">
+        <Card className="lg:col-span-2 relative h-[560px] p-0 overflow-hidden border border-slate-800 flex flex-col justify-between bg-slate-950">
           {loadingTopology ? (
             <Skeleton className="w-full h-full" />
-          ) : viewMode === '3D' ? (
+          ) : viewMode === '3D_ARCHITECTURE' || viewMode === '3D_TOPOLOGY' ? (
             <Suspense fallback={<Skeleton className="w-full h-full" />}>
               <TopologyCanvas3D
                 nodes={nodes}
@@ -190,6 +222,7 @@ export default function TopologyPage() {
                 selectedNode={selectedNode}
                 onSelectNode={setSelectedNode}
                 activeEvents={eventTrace}
+                layoutMode={viewMode === '3D_TOPOLOGY' ? 'topology' : 'architecture'}
               />
             </Suspense>
           ) : (
@@ -199,13 +232,20 @@ export default function TopologyPage() {
               selectedNode={selectedNode}
               onSelectNode={setSelectedNode}
               activeEvents={eventTrace}
+              layoutMode="architecture"
             />
           )}
 
           {/* Canvas Bottom Overlay Banner */}
-          <div className="absolute bottom-3 left-3 right-3 pointer-events-none flex justify-between items-center px-3 py-2 rounded-lg bg-slate-950/80  border border-slate-800 text-xs font-mono text-slate-400">
-            <span>Nodes: <strong className="text-cyan-300">{nodes.length}</strong> | Connections: <strong className="text-cyan-300">{edges.length}</strong></span>
-            <span>View Mode: <strong className="text-slate-200">{viewMode}</strong></span>
+          <div className="absolute bottom-3 left-3 right-3 pointer-events-none flex justify-between items-center px-3.5 py-2 rounded-lg bg-slate-950/85 backdrop-blur-md border border-slate-800 text-[11px] font-mono text-slate-400">
+            <span className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+              Nodes: <strong className="text-cyan-300">{nodes.length}</strong> | Connections: <strong className="text-cyan-300">{edges.length}</strong>
+            </span>
+            <span className="text-slate-500 hidden sm:inline">Drag to rotate • Scroll to zoom • Click node to inspect</span>
+            <span className="text-slate-300">
+              Mode: <strong className="text-cyan-300 uppercase">{viewMode === '3D_ARCHITECTURE' ? '3D Architecture' : viewMode === '3D_TOPOLOGY' ? '3D Flow' : '2D Schematic'}</strong>
+            </span>
           </div>
         </Card>
 
