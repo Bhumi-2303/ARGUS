@@ -42,7 +42,7 @@ class MitreTool(BaseTool):
     def _lookup(self, attack_type: str) -> List[Dict[str, Any]]:
         """Retrieve technique records matching *attack_type*."""
         mapping = self._db.get("attack_type_mapping", {})
-        technique_ids = mapping.get(attack_type, mapping.get("default", []))
+        technique_ids = mapping.get(attack_type, mapping.get("default", []) if attack_type not in ("benign", "normal", "unknown") else [])
         techniques = self._db.get("techniques", {})
         return [techniques[tid] for tid in technique_ids if tid in techniques]
 

@@ -37,7 +37,7 @@ class PlaybookTool(BaseTool):
 
     def _lookup(self, attack_type: str) -> List[Dict[str, Any]]:
         mapping = self._db.get("attack_type_mapping", {})
-        playbook_ids = mapping.get(attack_type, mapping.get("default", []))
+        playbook_ids = mapping.get(attack_type, mapping.get("default", []) if attack_type not in ("benign", "normal", "unknown") else [])
         playbooks = self._db.get("playbooks", {})
         return [playbooks[pid] for pid in playbook_ids if pid in playbooks]
 

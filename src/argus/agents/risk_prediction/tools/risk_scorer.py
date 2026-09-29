@@ -45,6 +45,13 @@ class RiskScorer(BaseTool):
         """Calculate the overall risk score."""
         if not await self.validate(criticality, impact, escalation):
             raise ValueError("Invalid input for RiskScorer")
+            
+        if impact.severity is None or criticality.asset_priority is None:
+            return RiskScoreResult(
+                score=None,
+                severity=None,
+                reasoning="Risk score calculation unavailable due to missing impact or criticality data."
+            )
 
         # Base score derived from Impact
         impact_base = {
@@ -62,8 +69,10 @@ class RiskScorer(BaseTool):
             AssetPriority.MEDIUM: 0.8,
             AssetPriority.LOW: 0.5
         }.get(criticality.asset_priority, 1.0)
+        
+        esc_factor = escalation.escalation_factor if escalation.escalation_factor is not None else 1.0
 
-        raw_score = impact_base * crit_multiplier * escalation.escalation_factor
+        raw_score = impact_base * crit_multiplier * esc_factor
         
         # Clamp between 0 and 100
         final_score = int(max(0, min(100, round(raw_score))))
@@ -80,7 +89,7 @@ class RiskScorer(BaseTool):
 
         reasoning = (
             f"Calculated base {impact_base} from {impact.severity.value.upper()} impact. "
-            f"Applied criticality mult {crit_multiplier} and escalation factor {escalation.escalation_factor:.2f}. "
+            f"Applied criticality mult {crit_multiplier} and escalation factor {esc_factor:.2f}. "
             f"Resulting score: {final_score}/100 ({severity})."
         )
 

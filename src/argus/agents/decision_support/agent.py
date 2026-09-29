@@ -135,8 +135,6 @@ class DecisionSupportAgent(BaseAgent):
             top_urgency = action_plan.recommendations[0].urgency
         
         result = DecisionEvent(
-            implementation_status="not_implemented",
-
             source_event_id=input_data.risk_event.source_event_id,
             recommended_actions=action_plan.recommendations,
             priority=top_priority,

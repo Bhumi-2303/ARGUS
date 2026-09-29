@@ -62,3 +62,57 @@ class PipelineConfig:
     drop_ips: bool = True
     max_chunks: Optional[int] = None
 
+
+# ------------------------------------------------------------------
+# Single-flow processing schemas
+# ------------------------------------------------------------------
+
+class FlowInput(BaseModel):
+    """A single raw network flow record for feature extraction.
+
+    Accepts either:
+    - Pre-computed harmonized features (pkt_mean_to_max, tcp_flag_density,
+      log_pkt_mean, log_pkt_max) — passed through with validation only.
+    - Raw network telemetry columns (e.g. Pkt Len Mean, Pkt Len Max, TCP flags)
+      — harmonized features are computed via ``extract_four_features()``.
+    """
+    correlation_id: Optional[str] = Field(default=None, description="Pipeline correlation ID")
+    event_id: Optional[str] = Field(default=None, description="Unique event identifier")
+    source_domain: str = Field(default="unknown", description="Source domain (e.g. nfton, ciciot)")
+    fields: Dict[str, Any] = Field(..., description="Raw flow fields or pre-computed features")
+
+
+class FlowValidationError(BaseModel):
+    """Structured error when a flow cannot be processed."""
+    correlation_id: Optional[str] = None
+    event_id: Optional[str] = None
+    error: str
+    error_type: str
+    received_fields: List[str] = Field(default_factory=list)
+    required_fields: List[str] = Field(default_factory=list)
+
+
+class FlowResult(BaseModel):
+    """Structured DIA output for a single processed network flow.
+
+    Contains exactly the feature vector consumed by the Threat Analysis Agent
+    (``FeatureEventInput.features``).
+    """
+    correlation_id: Optional[str] = None
+    event_id: Optional[str] = None
+    source_domain: str = "unknown"
+    status: str = Field(..., description="'success' or 'error'")
+    features: Dict[str, float] = Field(
+        default_factory=dict,
+        description="The 4 harmonized features: pkt_mean_to_max, tcp_flag_density, log_pkt_mean, log_pkt_max",
+    )
+    feature_source: str = Field(
+        default="unknown",
+        description="'pre_computed' if features were passed in, 'extracted' if computed from raw telemetry",
+    )
+    input_field_count: int = Field(default=0, description="Number of fields received")
+    warnings: List[str] = Field(default_factory=list, description="Non-fatal issues")
+    processing_duration_ms: float = Field(default=0.0, description="Processing time in ms")
+    error: Optional[FlowValidationError] = None
+
+

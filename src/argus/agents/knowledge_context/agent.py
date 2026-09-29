@@ -20,6 +20,16 @@ class KnowledgeContextAgent(BaseAgent):
     predicts risks, or makes final decisions.
     """
 
+    def __init__(self, **kwargs):
+        kwargs.setdefault("agent_id", "agent_knowledge_context")
+        kwargs.setdefault("name", "Knowledge Context Agent")
+        kwargs.setdefault("version", "1.0.0")
+        kwargs.setdefault("description", "Enriches threats with security intelligence.")
+        kwargs.setdefault("capabilities", ["threat_enrichment", "mitre_mapping", "cve_lookup"])
+        kwargs.setdefault("permissions", ["read:security_context"])
+        kwargs.setdefault("tools", [])
+        super().__init__(**kwargs)
+
     async def initialize(self) -> None:
         self.logger.info("initializing_knowledge_context_agent")
 
@@ -48,6 +58,8 @@ class KnowledgeContextAgent(BaseAgent):
         # Extract threat data from context
         threat_data = {}
         if isinstance(context, dict):
+            threat_data["event_id"] = context.get("event_id")
+            threat_data["correlation_id"] = context.get("correlation_id")
             threat_data["attack_type"] = context.get("attack_type", "unknown")
             threat_data["cve_id"] = context.get("cve_id")
             threat_data["mitre_technique_id"] = context.get("mitre_technique_id")
@@ -76,7 +88,6 @@ class KnowledgeContextAgent(BaseAgent):
         self.logger.debug("executing_plan")
         threat_data = plan["threat_data"]
         event = await self.pipeline.process_threat(threat_data)
-        event.implementation_status = "not_implemented"
         return event
 
     async def call_tools(self, tool_requests: List[Any]) -> List[Any]:

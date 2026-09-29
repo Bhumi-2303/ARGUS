@@ -60,24 +60,20 @@ class ThreatAnalysisAgent(BaseAgent):
             
         self.logger.info("reasoning_started", event_id=event.event_id)
         
-        # We will run both xgb_source and xgb_adapted to get results.
-        # But we'll primary use xgb_adapted (Clean Class-aware CORAL).
-        model_to_use = "xgb_adapted"
+        # Use the requested model version or default to the verified xgb_adapted
+        model_to_use = event.model_version if event.model_version else "xgb_adapted"
         
         start_t = time.time()
-        try:
-            prob, label, threshold = model_registry.predict(model_to_use, event.features)
-            # Try to get SHAP attributions
-            base_val, shap_vals, class_str, conf = model_registry.explain(model_to_use, event.features)
-        except Exception as e:
-            self.logger.error("inference_failed", error=str(e))
-            prob, label, threshold = 0.5, 0, 0.5
-            shap_vals = {}
-            conf = 0.5
-            
-        latency = (time.time() - start_t) * 1000
         
-        # Calculate Threat Level
+        # Do not catch and fabricate predictions! Let registry errors propagate as real pipeline errors.
+        prob, label, threshold = model_registry.predict(model_to_use, event.features)
+        
+        # Explainability attributions are collected as evidence
+        base_val, shap_vals, top_feat, top_impact = model_registry.explain(model_to_use, event.features)
+            
+        latency = (time.time() - start_t) * 1000.0
+        
+        # Calculate Threat Level (standard argus thresholds)
         threat_level = ThreatLevel.LOW
         if label == 1:
             if prob > 0.90:
@@ -87,7 +83,7 @@ class ThreatAnalysisAgent(BaseAgent):
             else:
                 threat_level = ThreatLevel.MEDIUM
                 
-        # Format Evidence
+        # Format Evidence from SHAP attributions
         evidence = []
         for feat, imp in shap_vals.items():
             if abs(imp) > 0.01:
@@ -107,7 +103,8 @@ class ThreatAnalysisAgent(BaseAgent):
             "confidence": prob,
             "evidence": evidence,
             "model_version": model_to_use,
-            "protocol_status": protocol_status
+            "protocol_status": protocol_status,
+            "latency_ms": latency
         }
 
     async def plan(self, reasoning: Any) -> Any:
@@ -120,13 +117,15 @@ class ThreatAnalysisAgent(BaseAgent):
         
         result = ThreatAnalysisResult(
             source_event_id=event.event_id,
+            correlation_id=event.correlation_id,
             threat_level=plan["threat_level"],
             confidence=plan["confidence"],
             evidence=plan["evidence"],
             gemini_analysis=None,
             recommended_actions=[],
             model_version=plan["model_version"],
-            protocol_status=plan["protocol_status"]
+            protocol_status=plan["protocol_status"],
+            latency_ms=plan["latency_ms"]
         )
         return result
 

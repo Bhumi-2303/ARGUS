@@ -139,8 +139,6 @@ class RiskPredictionAgent(BaseAgent):
         )
         
         result = RiskEvent(
-            implementation_status="not_implemented",
-
             source_event_id=input_data.threat_event.source_event_id,
             risk_score=risk_score.score,
             severity=risk_score.severity,
@@ -153,6 +151,7 @@ class RiskPredictionAgent(BaseAgent):
                 "historical_context": escalation.historical_context
             }
         )
+        self.logger.info("risk_event_created", source_event_id=result.source_event_id)
         return result
 
     async def call_tools(self, tool_requests: List[Any]) -> List[Any]:

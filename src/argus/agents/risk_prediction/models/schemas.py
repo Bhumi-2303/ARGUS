@@ -42,7 +42,7 @@ class AssetPriority(StrEnum):
 
 class CriticalityResult(BaseModel):
     """Output from the Critical Asset Analyzer tool."""
-    asset_priority: AssetPriority
+    asset_priority: Optional[AssetPriority] = None
     critical_assets: List[str]
     reasoning: str
 
@@ -56,21 +56,21 @@ class ImpactSeverity(StrEnum):
 
 class ImpactResult(BaseModel):
     """Output from the Impact Estimator tool."""
-    severity: ImpactSeverity
-    estimated_downtime_hours: float
+    severity: Optional[ImpactSeverity] = None
+    estimated_downtime_hours: Optional[float] = None
     impacted_services: List[str]
     reasoning: str
 
 class EscalationResult(BaseModel):
     """Output from the Trend Analyzer tool."""
-    escalation_factor: float = Field(..., description="Multiplier for risk score based on trends")
+    escalation_factor: Optional[float] = Field(default=None, description="Multiplier for risk score based on trends")
     historical_context: str
     reasoning: str
 
 class RiskScoreResult(BaseModel):
     """Output from the Risk Scorer tool."""
-    score: int = Field(..., description="Numeric risk score 0-100")
-    severity: str = Field(..., description="Categorical risk severity")
+    score: Optional[int] = Field(default=None, description="Numeric risk score 0-100")
+    severity: Optional[str] = Field(default=None, description="Categorical risk severity")
     reasoning: str
 
 
@@ -81,10 +81,10 @@ class RiskScoreResult(BaseModel):
 class RiskEvent(BaseModel):
     """Final output schema to be published as a RISK_EVENT."""
     source_event_id: str
-    risk_score: int
-    severity: str
-    confidence: float
-    asset_priority: AssetPriority
-    impact_estimation: ImpactResult
+    risk_score: Optional[int] = None
+    severity: Optional[str] = None
+    confidence: Optional[float] = None
+    asset_priority: Optional[AssetPriority] = None
+    impact_estimation: Optional[ImpactResult] = None
     reasoning: str
     metadata: Dict[str, Any] = Field(default_factory=dict)

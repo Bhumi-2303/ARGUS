@@ -35,7 +35,7 @@ class PlaybookSelector(BaseTool):
         if not await self.validate(input_data):
             raise ValueError("Invalid input for PlaybookSelector")
 
-        severity = input_data.risk_event.severity.upper()
+        severity = input_data.risk_event.severity.upper() if input_data.risk_event.severity else "UNKNOWN"
         assets = input_data.knowledge_event.affected_assets
         vulns = input_data.knowledge_event.known_vulnerabilities
 

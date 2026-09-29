@@ -45,6 +45,13 @@ class CriticalAssetAnalyzer(BaseTool):
         affected = knowledge.affected_assets
         asset_types = knowledge.asset_types
         
+        if not affected:
+            return CriticalityResult(
+                asset_priority=None,
+                critical_assets=[],
+                reasoning="No affected assets identified in knowledge context; criticality unavailable."
+            )
+            
         highest_priority = AssetPriority.LOW
         critical_assets = []
         
