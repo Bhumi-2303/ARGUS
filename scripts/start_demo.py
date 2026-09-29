@@ -9,8 +9,9 @@ import sys
 import subprocess
 import uvicorn
 
-# Ensure repository root is on sys.path
+# Ensure repository root and src are on sys.path
 sys.path.insert(0, os.path.abspath("."))
+sys.path.insert(0, os.path.abspath("src"))
 
 from scripts.startup_check import run_startup_check
 

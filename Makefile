@@ -13,7 +13,7 @@ test:
 	pytest tests/
 
 demo:
-	python scripts/start_demo.py
+	PYTHONPATH=src python scripts/start_demo.py
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +

@@ -25,12 +25,14 @@ RUN apt-get update && \
 
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
+ENV VIRTUAL_ENV="/opt/venv"
 
-COPY pyproject.toml README.md ./
+COPY pyproject.toml uv.lock README.md ./
 COPY src/ ./src/
 
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir .
+RUN pip install --no-cache-dir uv && \
+    uv sync --frozen --no-dev
+
 
 # --- Stage 3: Minimal Hardened Runtime (NO COMPILERS) ---
 FROM python:3.11-slim AS runtime

@@ -31,9 +31,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install ruff mypy
-          pip install -e ".[dev]"
+          python -m pip install --upgrade pip uv
+          uv sync --frozen
+          uv pip install ruff mypy
 
       - name: Run Ruff linter
         run: ruff check src/ tests/ configs/
@@ -59,8 +59,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[test]"
+          python -m pip install --upgrade pip uv
+          uv sync --frozen
 
       - name: Run Full Test Suite
         run: pytest tests/ --tb=short -v
@@ -87,7 +87,9 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: web
-        run: npm ci
+        run: |
+          npm ci
+          npm audit --audit-level=high
 
       - name: Build frontend
         working-directory: web
@@ -114,9 +116,20 @@ jobs:
           context: .
           file: Dockerfile
           push: false
+          load: true
           tags: argus/detector-api:ci-test
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'argus/detector-api:ci-test'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
 
   security-scan:
     name: Security Audit & Scan
@@ -131,11 +144,12 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install audit tools
+      - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install pip-audit bandit
-          pip install -e ".[test]"
+          python -m pip install --upgrade pip uv
+          uv sync --frozen
+          # Install bandit and pip-audit for security scanning globally or within venv
+          uv pip install bandit pip-audit
 
       - name: Python Dependency Audit (pip-audit)
         run: pip-audit .
