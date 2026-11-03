@@ -32,7 +32,8 @@ for c in cols:
     else:
         inf_rates[c] = 0.0
 
-with open("audit_metrics.json") as f:
+metrics_file = "audit/historical/audit_metrics.json" if os.path.exists("audit/historical/audit_metrics.json") else "audit_metrics.json"
+with open(metrics_file) as f:
     results = json.load(f)
 
 results['CICIoT2023'] = {
@@ -49,6 +50,6 @@ results['CICIoT2023'] = {
     'constant_columns': ["[REQUIRES VERIFICATION]"]
 }
 
-with open("audit_metrics.json", "w") as f:
+with open(metrics_file, "w") as f:
     json.dump(results, f, indent=2)
 

@@ -121,7 +121,7 @@ def audit_csvs_chunked(file_pattern, label_col='label', benign_val='Benign', chu
     }
 
 if __name__ == "__main__":
-    out_file = "audit_metrics.json"
+    out_file = "audit/historical/audit_metrics.json" if os.path.exists("audit/historical/audit_metrics.json") else "audit_metrics.json"
     results = {}
     if os.path.exists(out_file):
         with open(out_file) as f:
