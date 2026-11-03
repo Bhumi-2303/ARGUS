@@ -1,0 +1,45 @@
+{
+  "manifest_version": "1.0.0",
+  "experiment": "ARGUS P2 Coordinate-Disjoint Supervised Benchmark",
+  "timestamp": "2026-11-01T16:07:40Z",
+  "partition_strategy": "strictly_group_aware_multi_objective_bin_packing",
+  "features": [
+    "pkt_mean_to_max",
+    "tcp_flag_density",
+    "log_pkt_mean",
+    "log_pkt_max"
+  ],
+  "target": "label",
+  "total_records": 13135881,
+  "total_unique_coordinates": 257870,
+  "partitions": {
+    "train": {
+      "rows": 9195024,
+      "row_percentage": 69.99929429933172,
+      "groups": 187526,
+      "group_percentage": 72.72113855818823,
+      "attack_rows": 6674150,
+      "benign_rows": 2520874,
+      "attack_prevalence": 0.7258436737087364
+    },
+    "cal": {
+      "rows": 1970429,
+      "row_percentage": 15.000356656702357,
+      "groups": 35213,
+      "group_percentage": 13.655330205142127,
+      "attack_rows": 1430224,
+      "benign_rows": 540205,
+      "attack_prevalence": 0.7258439659586821
+    },
+    "test": {
+      "rows": 1970428,
+      "row_percentage": 15.000349043965914,
+      "groups": 35131,
+      "group_percentage": 13.623531236669638,
+      "attack_rows": 1430223,
+      "benign_rows": 540205,
+      "attack_prevalence": 0.725843826823411
+    }
+  },
+  "zero_coordinate_overlap_verified": true
+}

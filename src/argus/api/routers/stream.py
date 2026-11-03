@@ -89,12 +89,15 @@ async def stream_generator(
         predictions_detail = {}
         for m_name in model_names:
             try:
-                prob, pred_lbl, _ = model_registry.predict(m_name, feat_dict)
+                expected_feats = model_registry.get_expected_features(m_name)
+                m_feat_dict = {col: float(row[col]) for col in expected_feats}
+                prob, pred_lbl, _ = model_registry.predict(m_name, m_feat_dict)
                 predictions_detail[m_name] = ModelPredictionDetail(
                     probability=round(prob, 6),
                     label=pred_lbl
                 ).model_dump()
-            except Exception:
+            except Exception as ex:
+                logger.warning("stream_inference_failed", model=m_name, error=str(ex))
                 predictions_detail[m_name] = ModelPredictionDetail(
                     probability=0.50,
                     label=0

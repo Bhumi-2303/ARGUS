@@ -21,7 +21,7 @@ from configs.settings import get_settings, ArgusSettings
 from argus.auth.jwks import JWKSClient
 from argus.auth.jwt import JWTValidator
 from argus.auth.models import UserPrincipal
-from argus.api.main import app
+from argus.api.main import app, create_app
 from argus.security.audit import AuditLogger
 
 
@@ -507,7 +507,8 @@ async def test_error_masking_no_tracebacks_leaked(mock_prod_environment, valid_r
 @pytest.mark.asyncio
 async def test_cors_rejects_unauthorized_origins(mock_prod_environment):
     """Unauthorized origins do not receive Access-Control-Allow-Origin."""
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+    prod_app = create_app(mock_prod_environment)
+    async with AsyncClient(transport=ASGITransport(app=prod_app), base_url="http://test") as client:
         # Malicious origin
         res = await client.options("/health", headers={
             "Origin": "https://malicious-attacker.com",

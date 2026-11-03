@@ -1,0 +1,15 @@
+{
+  "calibration_dataset": "data/raw/legacy_package/argus_coral_data/nfton_train_calibration.csv",
+  "calibration_sha256": "c1574c73ea80f30d51eb9473182fbfdf2d4a1547f42481a0c66baab2c7e3f101",
+  "calibration_samples": 2101742,
+  "selection_objective": "Maximum Matthews Correlation Coefficient (MCC)",
+  "search_grid": "np.linspace(0.01, 0.99, 99)",
+  "xgboost": {
+    "selected_threshold": 0.5700000000000001,
+    "calibration_mcc": 0.8319231453608037
+  },
+  "lightgbm": {
+    "selected_threshold": 0.55,
+    "calibration_mcc": 0.8317969132617012
+  }
+}

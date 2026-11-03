@@ -1,0 +1,253 @@
+{
+  "audit_phase": "ARGUS P2.3 \u2014 Cluster-Bootstrap Reconciliation",
+  "resampling_unit": "Unique coordinate group cluster (preserving full flow size & label joint distribution)",
+  "number_of_groups_in_test_partition": 35131,
+  "purported_group_count_in_prompt": 1466613,
+  "group_count_reconciliation": {
+    "verified_unique_groups_in_test": 35131,
+    "verified_unique_groups_in_full_pool": 257870,
+    "reconciliation_finding": "The purported 1,466,613 groups figure cited in the chat summary is spurious. The total number of unique coordinate groups in the entire 13.1M NF-ToN pool is only 257,870. The coordinate-disjoint test partition contains exactly 35,131 unique groups. The statistical audit script (scripts/p2_2_statistical_audit.py) correctly performed cluster bootstrap on K = 35,131 groups."
+  },
+  "resampling_specifications": {
+    "num_resamples": 1000,
+    "random_seed": 42,
+    "distribution": "Multinomial(K, 1/K)",
+    "degenerate_replicates_audit": "0 degenerate replicates across all 1,000 resamples for all 6 models"
+  },
+  "cluster_bootstrap_confidence_intervals": {
+    "xgb_05": {
+      "model_name": "In-Domain Disjoint XGBoost (th=0.50)",
+      "mcc": {
+        "point_estimate": 0.25394065523068493,
+        "bootstrap_mean": 0.2580237422860025,
+        "bootstrap_std_err": 0.2006983246086353,
+        "ci_95_lower": -0.10133951732196687,
+        "ci_95_upper": 0.634467947737715
+      },
+      "accuracy": {
+        "point_estimate": 0.6894821835662099,
+        "bootstrap_mean": 0.6833546202525704,
+        "bootstrap_std_err": 0.10304799072064605,
+        "ci_95_lower": 0.47808150938413635,
+        "ci_95_upper": 0.8673247879812263
+      },
+      "balanced_accuracy": {
+        "point_estimate": 0.6320008190143263,
+        "bootstrap_mean": 0.6270722946023475,
+        "bootstrap_std_err": 0.09720699565134486,
+        "ci_95_lower": 0.44417600334948615,
+        "ci_95_upper": 0.8059481314761504
+      },
+      "specificity": {
+        "point_estimate": 0.5047417184217102,
+        "bootstrap_mean": 0.4995073458540011,
+        "bootstrap_std_err": 0.15919731162578268,
+        "ci_95_lower": 0.17473440559621403,
+        "ci_95_upper": 0.7928287384636691
+      },
+      "f1_score": {
+        "point_estimate": 0.7801995563418862,
+        "bootstrap_mean": 0.7661352193537715,
+        "bootstrap_std_err": 0.09053993895892454,
+        "ci_95_lower": 0.5640392743205453,
+        "ci_95_upper": 0.9169547976745905
+      },
+      "degenerate_replicates": 0
+    },
+    "lgb_05": {
+      "model_name": "In-Domain Disjoint LightGBM (th=0.50)",
+      "mcc": {
+        "point_estimate": 0.32975522388984807,
+        "bootstrap_mean": 0.3386036106789598,
+        "bootstrap_std_err": 0.19179268426354074,
+        "ci_95_lower": -0.011958019038172812,
+        "ci_95_upper": 0.7017385382286072
+      },
+      "accuracy": {
+        "point_estimate": 0.7104892947116058,
+        "bootstrap_mean": 0.7055891773351852,
+        "bootstrap_std_err": 0.1044919428994011,
+        "ci_95_lower": 0.49250766648316435,
+        "ci_95_upper": 0.8913798540518315
+      },
+      "balanced_accuracy": {
+        "point_estimate": 0.675486567225491,
+        "bootstrap_mean": 0.6730147488351527,
+        "bootstrap_std_err": 0.09309389831688682,
+        "ci_95_lower": 0.4938529917461722,
+        "ci_95_upper": 0.8414858746047745
+      },
+      "specificity": {
+        "point_estimate": 0.5979933543747281,
+        "bootstrap_mean": 0.6005014736545737,
+        "bootstrap_std_err": 0.15239523566086885,
+        "ci_95_lower": 0.27508291043804767,
+        "ci_95_upper": 0.85407849006836
+      },
+      "f1_score": {
+        "point_estimate": 0.790604474220704,
+        "bootstrap_mean": 0.7759504542177229,
+        "bootstrap_std_err": 0.09426142318882393,
+        "ci_95_lower": 0.5668620287043291,
+        "ci_95_upper": 0.9308970712218826
+      },
+      "degenerate_replicates": 0
+    },
+    "coral_clean_05": {
+      "model_name": "Clean Class-Aware CORAL (th=0.50)",
+      "mcc": {
+        "point_estimate": 0.050395814324766655,
+        "bootstrap_mean": 0.06132721837333697,
+        "bootstrap_std_err": 0.10575542669080491,
+        "ci_95_lower": -0.14660474338202242,
+        "ci_95_upper": 0.2922933807398615
+      },
+      "accuracy": {
+        "point_estimate": 0.37220339946448183,
+        "bootstrap_mean": 0.3884716769296767,
+        "bootstrap_std_err": 0.10151559951516446,
+        "ci_95_lower": 0.22174788155712014,
+        "ci_95_upper": 0.6099171422673028
+      },
+      "balanced_accuracy": {
+        "point_estimate": 0.5216502144024735,
+        "bootstrap_mean": 0.5244981768467545,
+        "bootstrap_std_err": 0.0488662470187619,
+        "ci_95_lower": 0.41968252548070645,
+        "ci_95_upper": 0.6327594235285313
+      },
+      "specificity": {
+        "point_estimate": 0.852513397691617,
+        "bootstrap_mean": 0.8358185271663903,
+        "bootstrap_std_err": 0.07917427643203855,
+        "ci_95_lower": 0.6354966451573716,
+        "ci_95_upper": 0.9332709784721896
+      },
+      "f1_score": {
+        "point_estimate": 0.306117915775728,
+        "bootstrap_mean": 0.3260112483546527,
+        "bootstrap_std_err": 0.09671950546367733,
+        "ci_95_lower": 0.173333428892795,
+        "ci_95_upper": 0.5510192252393844
+      },
+      "degenerate_replicates": 0
+    },
+    "coral_clean_99": {
+      "model_name": "Clean Class-Aware CORAL (th=0.99)",
+      "mcc": {
+        "point_estimate": 0.07950734007547441,
+        "bootstrap_mean": 0.08643721967818942,
+        "bootstrap_std_err": 0.08752197002474958,
+        "ci_95_lower": -0.06941633499290811,
+        "ci_95_upper": 0.2825258521555835
+      },
+      "accuracy": {
+        "point_estimate": 0.3593863871199557,
+        "bootstrap_mean": 0.3749087126399684,
+        "bootstrap_std_err": 0.09898110216405055,
+        "ci_95_lower": 0.21023712863263896,
+        "ci_95_upper": 0.5888102969915527
+      },
+      "balanced_accuracy": {
+        "point_estimate": 0.5304553360934812,
+        "bootstrap_mean": 0.5331926589395327,
+        "bootstrap_std_err": 0.036701518091482054,
+        "ci_95_lower": 0.4665189746547279,
+        "ci_95_upper": 0.6192218111445754
+      },
+      "specificity": {
+        "point_estimate": 0.9091881785618423,
+        "bootstrap_mean": 0.8963004738692134,
+        "bootstrap_std_err": 0.04411057551020221,
+        "ci_95_lower": 0.7723823495502691,
+        "ci_95_upper": 0.947187496865032
+      },
+      "f1_score": {
+        "point_estimate": 0.2558509017100391,
+        "bootstrap_mean": 0.275771996756363,
+        "bootstrap_std_err": 0.08607237514044223,
+        "ci_95_lower": 0.15053322414272255,
+        "ci_95_upper": 0.4870485219384616
+      },
+      "degenerate_replicates": 0
+    },
+    "coral_global_05": {
+      "model_name": "Global CORAL + XGBoost (th=0.50)",
+      "mcc": {
+        "point_estimate": -0.05542428367817953,
+        "bootstrap_mean": -0.06002447477872755,
+        "bootstrap_std_err": 0.050712986722961866,
+        "ci_95_lower": -0.1658483327750515,
+        "ci_95_upper": 0.035346675794020836
+      },
+      "accuracy": {
+        "point_estimate": 0.6912427147807482,
+        "bootstrap_mean": 0.6790896955039437,
+        "bootstrap_std_err": 0.09003582563246396,
+        "ci_95_lower": 0.4824123922237621,
+        "ci_95_upper": 0.831984168059007
+      },
+      "balanced_accuracy": {
+        "point_estimate": 0.4861765678312357,
+        "bootstrap_mean": 0.4845898859189131,
+        "bootstrap_std_err": 0.014379579543391195,
+        "ci_95_lower": 0.45120856631875655,
+        "ci_95_upper": 0.5109035101348118
+      },
+      "specificity": {
+        "point_estimate": 0.03217667367018077,
+        "bootstrap_mean": 0.0367986359938622,
+        "bootstrap_std_err": 0.015942379586778757,
+        "ci_95_lower": 0.018910727447942692,
+        "ci_95_upper": 0.08595129142497306
+      },
+      "f1_score": {
+        "point_estimate": 0.8155130775678138,
+        "bootstrap_mean": 0.8029555023480286,
+        "bootstrap_std_err": 0.06710977218081929,
+        "ci_95_lower": 0.6446543679314098,
+        "ci_95_upper": 0.9073035660149268
+      },
+      "degenerate_replicates": 0
+    },
+    "source_only_05": {
+      "model_name": "Source-Only XGBoost (th=0.50)",
+      "mcc": {
+        "point_estimate": 0.005978162399972009,
+        "bootstrap_mean": 0.006223591013597394,
+        "bootstrap_std_err": 0.0020089117899144736,
+        "ci_95_lower": 0.0031949518564151863,
+        "ci_95_upper": 0.011033154994849595
+      },
+      "accuracy": {
+        "point_estimate": 0.7258590519420146,
+        "bootstrap_mean": 0.7167722237434837,
+        "bootstrap_std_err": 0.08639164113797329,
+        "ci_95_lower": 0.5314804580837148,
+        "ci_95_upper": 0.8651760634518956
+      },
+      "balanced_accuracy": {
+        "point_estimate": 0.5000323750662572,
+        "bootstrap_mean": 0.5000370459760796,
+        "bootstrap_std_err": 1.9297536532503533e-05,
+        "ci_95_lower": 0.5000138087233842,
+        "ci_95_upper": 0.5000903143526975
+      },
+      "specificity": {
+        "point_estimate": 7.034366583056432e-05,
+        "bootstrap_mean": 8.038639886167051e-05,
+        "bootstrap_std_err": 3.8796227310317846e-05,
+        "ci_95_lower": 3.4010470176554504e-05,
+        "ci_95_upper": 0.0001866700484873875
+      },
+      "f1_score": {
+        "point_estimate": 0.8411532653748377,
+        "bootstrap_mean": 0.8319971972784564,
+        "bootstrap_std_err": 0.060252320389127395,
+        "ci_95_lower": 0.6940661505249657,
+        "ci_95_upper": 0.9277125881645065
+      },
+      "degenerate_replicates": 0
+    }
+  }
+}

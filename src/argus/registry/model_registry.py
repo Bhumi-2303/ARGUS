@@ -20,6 +20,26 @@ logger = structlog.get_logger("argus.registry")
 
 HARMONIZED_FEATURES = ["pkt_mean_to_max", "tcp_flag_density", "log_pkt_mean", "log_pkt_max"]
 
+D3_NATIVE_FEATURES = [
+    "Flow_Duration", "Tot_Fwd_Pkts", "Tot_Bwd_Pkts", "TotLen_Fwd_Pkts", "TotLen_Bwd_Pkts",
+    "Fwd_Pkt_Len_Max", "Fwd_Pkt_Len_Min", "Fwd_Pkt_Len_Mean", "Fwd_Pkt_Len_Std",
+    "Bwd_Pkt_Len_Max", "Bwd_Pkt_Len_Min", "Bwd_Pkt_Len_Mean", "Bwd_Pkt_Len_Std",
+    "Flow_Byts/s", "Flow_Pkts/s", "Flow_IAT_Mean", "Flow_IAT_Std", "Flow_IAT_Max", "Flow_IAT_Min",
+    "Fwd_IAT_Tot", "Fwd_IAT_Mean", "Fwd_IAT_Std", "Fwd_IAT_Max", "Fwd_IAT_Min",
+    "Bwd_IAT_Tot", "Bwd_IAT_Mean", "Bwd_IAT_Std", "Bwd_IAT_Max", "Bwd_IAT_Min",
+    "Bwd_PSH_Flags", "Fwd_Header_Len", "Bwd_Header_Len", "Fwd_Pkts/s", "Bwd_Pkts/s",
+    "Pkt_Len_Min", "Pkt_Len_Max", "Pkt_Len_Mean", "Pkt_Len_Std", "Pkt_Len_Var",
+    "FIN_Flag_Cnt", "SYN_Flag_Cnt", "RST_Flag_Cnt", "PSH_Flag_Cnt", "ACK_Flag_Cnt",
+    "Down/Up_Ratio", "Pkt_Size_Avg", "Fwd_Seg_Size_Avg", "Bwd_Seg_Size_Avg",
+    "Subflow_Fwd_Pkts", "Subflow_Fwd_Byts", "Subflow_Bwd_Pkts", "Subflow_Bwd_Byts",
+    "Init_Bwd_Win_Byts", "Fwd_Act_Data_Pkts",
+    "Active_Mean", "Active_Std", "Active_Max", "Active_Min",
+    "Idle_Mean", "Idle_Std", "Idle_Max", "Idle_Min",
+    "pkt_mean_to_max", "log_pkt_mean", "log_pkt_max", "tcp_flag_density",
+    "pkt_min_to_max", "pkt_range_ratio", "log_flow_activity", "log_flow_bytes",
+    "fwd_pkt_ratio", "log_flow_duration", "iat_cv"
+]
+
 MODEL_METADATA = {
     "model_d1_baseline": {
         "model_id": "mod-d1-base-001",
@@ -69,7 +89,7 @@ MODEL_METADATA = {
         "provenance": {
             "training_dataset": "IEC104 Train (2.29M)",
             "adaptation_method": "NONE",
-            "features": HARMONIZED_FEATURES,
+            "features": D3_NATIVE_FEATURES,
             "training_date": "2026-08-20",
         }
     },
@@ -286,8 +306,68 @@ class ModelRegistry:
             ))
         return res
 
+    def get_expected_features(self, model_name: str) -> List[str]:
+        """Return the expected list of feature names for a given model."""
+        if model_name not in MODEL_METADATA:
+            raise KeyError(f"Unknown model name '{model_name}'. Available: {list(MODEL_METADATA.keys())}")
+        meta = MODEL_METADATA[model_name]
+        return list(meta.get("provenance", {}).get("features", HARMONIZED_FEATURES))
+
+    def _validate_and_prepare_features(
+        self, model_name: str, features: Dict[str, float]
+    ) -> Tuple[np.ndarray, List[str]]:
+        """Validate input features against model schema and return aligned numpy array.
+
+        Enforces:
+        - Exact schema compatibility (expected feature names).
+        - No silent truncation (e.g. 73 features truncated to 4).
+        - No silent padding (missing features are rejected).
+        - Rejection of unknown/unexpected extra features.
+        - Rejection of invalid non-finite numbers (NaN, Inf).
+        - Proper schema alignment regardless of dictionary insertion order.
+        - Flexible matching for feature names containing spaces or underscores.
+        """
+        expected_features = self.get_expected_features(model_name)
+
+        # Normalize keys (handle spaces vs underscores from training artifacts)
+        norm_features: Dict[str, Any] = {
+            k.replace(" ", "_"): v for k, v in features.items()
+        }
+
+        # Check for missing features
+        missing = [col for col in expected_features if col not in norm_features]
+        if missing:
+            raise ValueError(
+                f"Model '{model_name}' requires {len(expected_features)} features, "
+                f"but {len(missing)} required feature(s) are missing. "
+                f"Missing: {missing[:10]}{'...' if len(missing) > 10 else ''}."
+            )
+
+        # Check for unexpected extra features
+        extra = sorted(set(norm_features.keys()) - set(expected_features))
+        if extra:
+            raise ValueError(
+                f"Model '{model_name}' received {len(extra)} unexpected feature(s): "
+                f"{extra[:10]}{'...' if len(extra) > 10 else ''}. "
+                f"Expected exactly {len(expected_features)} features."
+            )
+
+        # Check for non-finite values (NaN, Inf)
+        for col in expected_features:
+            val = norm_features[col]
+            if val is None or not isinstance(val, (int, float, np.number)) or np.isnan(val) or np.isinf(val):
+                raise ValueError(
+                    f"Feature '{col}' contains invalid non-finite value: {val!r} (type {type(val).__name__})."
+                )
+
+        x_vec = np.array(
+            [[float(norm_features[col]) for col in expected_features]],
+            dtype=np.float32
+        )
+        return x_vec, expected_features
+
     def predict(self, model_name: str, features: Dict[str, float]) -> Tuple[float, int, float]:
-        """Predict probability and binary label for 4 features."""
+        """Predict probability and binary label for input features."""
         if not self.is_loaded:
             self.load_all()
         if model_name not in MODEL_METADATA:
@@ -300,9 +380,8 @@ class ModelRegistry:
         threshold = meta["threshold"]
         if threshold is None:
             raise NotImplementedError(f"Model '{model_name}' has no calibrated threshold.")
-        
-        # Prepare input array
-        x_vec = np.array([[features[col] for col in HARMONIZED_FEATURES]], dtype=np.float32)
+
+        x_vec, expected_features = self._validate_and_prepare_features(model_name, features)
 
         model = self.loaded_models.get(model_name)
         if model is None:
@@ -312,7 +391,7 @@ class ModelRegistry:
             prob_arr = model.predict(x_vec)
             prob = float(prob_arr[0])
         elif meta["type"] == "xgboost":
-            dmat = xgb.DMatrix(x_vec, feature_names=HARMONIZED_FEATURES)
+            dmat = xgb.DMatrix(x_vec, feature_names=expected_features)
             prob_arr = model.predict(dmat)
             prob = float(prob_arr[0])
         else:
@@ -322,13 +401,33 @@ class ModelRegistry:
         return prob, label, threshold
 
     def predict_batch(self, model_name: str, x_matrix: np.ndarray) -> np.ndarray:
-        """Predict batch of probabilities for array of shape (N, 4)."""
+        """Predict batch of probabilities for array of shape (N, D)."""
+        if not self.is_loaded:
+            self.load_all()
         meta = MODEL_METADATA.get(model_name)
         if not meta:
-            raise KeyError(f"Unknown model '{model_name}'")
+            raise KeyError(f"Unknown model '{model_name}'. Available: {list(MODEL_METADATA.keys())}")
 
-        if model_name == "dann":
-            raise ValueError("No verified checkpoint — unavailable for live inference.")
+        if model_name == "dann" or meta.get("status") == "unavailable":
+            raise NotImplementedError("Model 'dann' is unavailable for live inference: no verified checkpoint found.")
+
+        expected_features = self.get_expected_features(model_name)
+        expected_dim = len(expected_features)
+
+        if not isinstance(x_matrix, np.ndarray):
+            x_matrix = np.asarray(x_matrix, dtype=np.float32)
+
+        if x_matrix.ndim == 1:
+            x_matrix = x_matrix.reshape(1, -1)
+
+        if x_matrix.shape[1] != expected_dim:
+            raise ValueError(
+                f"Model '{model_name}' expects {expected_dim} features, "
+                f"but input matrix has shape {x_matrix.shape} (dimension {x_matrix.shape[1]})."
+            )
+
+        if np.isnan(x_matrix).any() or np.isinf(x_matrix).any():
+            raise ValueError("Input matrix contains non-finite values (NaN or Inf).")
 
         model = self.loaded_models.get(model_name)
         if not model:
@@ -337,20 +436,22 @@ class ModelRegistry:
         if meta["type"] == "lightgbm":
             return model.predict(x_matrix)
         elif meta["type"] == "xgboost":
-            dmat = xgb.DMatrix(x_matrix, feature_names=HARMONIZED_FEATURES)
+            dmat = xgb.DMatrix(x_matrix, feature_names=expected_features)
             return model.predict(dmat)
         raise ValueError(f"Unsupported model type '{meta['type']}' for live inference.")
 
     def explain(self, model_name: str, features: Dict[str, float]) -> Tuple[float, Dict[str, float], str, float]:
         """Compute real SHAP feature attributions for a single flow using TreeExplainer."""
+        if not self.is_loaded:
+            self.load_all()
         if model_name not in MODEL_METADATA:
-            raise KeyError(f"Unknown model '{model_name}'.")
-
-        if model_name == "dann":
-            raise ValueError("No verified checkpoint — unavailable for live inference.")
+            raise KeyError(f"Unknown model '{model_name}'. Available: {list(MODEL_METADATA.keys())}")
 
         meta = MODEL_METADATA[model_name]
-        x_vec = np.array([[features[col] for col in HARMONIZED_FEATURES]], dtype=np.float32)
+        if model_name == "dann" or meta.get("status") == "unavailable":
+            raise NotImplementedError("Model 'dann' is unavailable for live inference: no verified checkpoint found.")
+
+        x_vec, expected_features = self._validate_and_prepare_features(model_name, features)
 
         explainer = self.explainers.get(model_name)
         if explainer is None:
@@ -359,10 +460,10 @@ class ModelRegistry:
         sv = explainer.shap_values(x_vec)
         if isinstance(sv, list):
             sv = sv[1] if len(sv) > 1 else sv[0]
-        
+
         sv_flat = sv[0] if len(sv.shape) > 1 else sv
-        shap_dict = {feat: float(val) for feat, val in zip(HARMONIZED_FEATURES, sv_flat)}
-        
+        shap_dict = {feat: float(val) for feat, val in zip(expected_features, sv_flat)}
+
         # Base value
         bv = getattr(explainer, "expected_value", 0.50)
         if isinstance(bv, (list, np.ndarray)):

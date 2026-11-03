@@ -31,11 +31,11 @@ async def predict_flow(
             threshold=threshold,
             features=features_dict
         )
-    except KeyError as ke:
+    except (KeyError, ValueError) as ke:
         logger.warning("predict_unknown_model_or_feature", model=model_name, error=str(ke))
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unknown model '{model_name}' or invalid feature structure."
+            detail=str(ke)
         )
     except NotImplementedError as nie:
         # Expected response for unverified DANN model

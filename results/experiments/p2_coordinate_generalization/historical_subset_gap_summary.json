@@ -1,0 +1,15 @@
+{
+  "experiment": "ARGUS P2 Experiment D: Historical Cross-Domain Comparison on Coordinate Subsets",
+  "timestamp": "2026-11-01T16:13:12Z",
+  "seen_subset_mcc": {
+    "in_domain_xgboost": 0.8373502877636569,
+    "clean_class_aware_coral": 0.3934522951400312,
+    "gap_in_domain_advantage": 0.4438979926236257
+  },
+  "unseen_subset_mcc": {
+    "in_domain_xgboost": 0.3574152850890478,
+    "clean_class_aware_coral": 0.3306863757870161,
+    "gap_in_domain_advantage": 0.0267289093020317
+  },
+  "conclusion": "The cross-domain gap disappears on novel coordinates. Supervised in-domain advantage was an artifact of coordinate memorization."
+}
