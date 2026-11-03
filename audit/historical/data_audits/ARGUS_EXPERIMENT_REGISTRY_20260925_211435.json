@@ -1,0 +1,24 @@
+{
+  "experiments": [
+    {
+      "name": "Source-only XGBoost",
+      "status": "UNREPRODUCIBLE",
+      "reproducibility": "NO"
+    },
+    {
+      "name": "Global CORAL",
+      "status": "NOT TRACEABLE",
+      "reproducibility": "NO"
+    },
+    {
+      "name": "Clean Class-Aware CORAL",
+      "status": "NOT TRACEABLE",
+      "reproducibility": "NO"
+    },
+    {
+      "name": "DANN",
+      "status": "BROKEN",
+      "reproducibility": "NO"
+    }
+  ]
+}

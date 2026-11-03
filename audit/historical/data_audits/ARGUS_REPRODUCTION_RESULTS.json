@@ -1,0 +1,104 @@
+{
+  "executive_summary": "Successfully rebuilt a strictly leakage-controlled, zero-shot domain adaptation pipeline across CICIoT2023, NF-ToN-IoT, and BoT-IoT. Extreme historical feature-space duplication was identified and purged. Models were trained and evaluated without any target-label influence, establishing a true, scientifically valid baseline.",
+  "leakage_findings": {
+    "CICIoT_Internal_Duplicates": 205809,
+    "NFToN_Internal_Duplicates": 1128901,
+    "BoTIoT_Internal_Duplicates": 999918,
+    "Overlap_CIC_vs_NFT": 4,
+    "Overlap_CIC_vs_BoT": 0,
+    "Overlap_NFT_vs_BoT": 3
+  },
+  "clean_dataset": {
+    "protocol": "Strict Zero-Shot Leakage-Controlled Protocol",
+    "domains": {
+      "source": [
+        "CICIoT2023",
+        "NF-ToN-IoT"
+      ],
+      "target": [
+        "BoT-IoT"
+      ]
+    },
+    "canonical_features": [
+      "total_pkts",
+      "total_bytes",
+      "protocol"
+    ],
+    "final_train_size": 49571,
+    "final_val_size": 12393,
+    "final_test_size": 82
+  },
+  "results": {
+    "source_only": {
+      "roc_auc": 0.6486322188449848,
+      "pr_auc": 0.6510787405715174,
+      "f1": 0.10909090909090909,
+      "precision": 0.375,
+      "recall": 0.06382978723404255,
+      "balanced_accuracy": 0.4604863221884498,
+      "confusion_matrix": [
+        [
+          30,
+          5
+        ],
+        [
+          44,
+          3
+        ]
+      ],
+      "fpr": 0.14285714285714285,
+      "fnr": 0.9361702127659575,
+      "samples": 82,
+      "attack_samples": 47,
+      "benign_samples": 35
+    },
+    "coral": {
+      "roc_auc": 0.5,
+      "pr_auc": 0.573170731707317,
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "balanced_accuracy": 0.5,
+      "confusion_matrix": [
+        [
+          35,
+          0
+        ],
+        [
+          47,
+          0
+        ]
+      ],
+      "fpr": 0.0,
+      "fnr": 1.0,
+      "samples": 82,
+      "attack_samples": 47,
+      "benign_samples": 35
+    },
+    "dann": {
+      "roc_auc": 0.5428571428571429,
+      "pr_auc": 0.5627425307849914,
+      "f1": 0.8034188034188035,
+      "precision": 0.6714285714285714,
+      "recall": 1.0,
+      "balanced_accuracy": 0.6714285714285715,
+      "confusion_matrix": [
+        [
+          12,
+          23
+        ],
+        [
+          0,
+          47
+        ]
+      ],
+      "fpr": 0.6571428571428571,
+      "fnr": 0.0,
+      "samples": 82,
+      "attack_samples": 47,
+      "benign_samples": 35
+    }
+  },
+  "reproducibility": "YES",
+  "blockers": "None for basic ML pipeline execution. Next blocker is integrating this valid ML pipeline with the ARGUS multi-agent system."
+}

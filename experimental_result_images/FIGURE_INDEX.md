@@ -188,7 +188,7 @@ Every figure is exported in three formats:
 - **Experiment Represented**: Bidirectional transfer matrix (D1 $\leftrightarrow$ D2) showing in-domain diagonal vs cross-domain off-diagonal collapse.
 - **Dataset / Domain**: D1 (CICIoT) and D2 (NF-ToN).
 - **Metrics Displayed**: Panel A: F1 Score matrix (D1 $\to$ D1: 98.61%, D1 $\to$ D2: 68.40%, D2 $\to$ D2: 94.93%, D2 $\to$ D1: 64.99%); Panel B: ROC-AUC matrix (99.31%, 32.07%, 96.95%, 68.52%).
-- **Source Data File**: `paper/paper_text.txt` Table III.
+- **Source Data File**: `paper/manuscripts/paper_text.txt` Table III.
 - **Research Relevance**: Visualizes asymmetric cross-domain transfer failure (RQ1).
 - **Suggested Paper Placement**: Section V-A (Figure 2 in paper).
 - **Publication Readiness**: **READY FOR PUBLICATION**.
@@ -212,7 +212,7 @@ Every figure is exported in three formats:
 - **Experiment Represented**: Comparison of in-domain performance vs zero-shot transfer to D3 SCADA vs native D3 ceiling.
 - **Dataset / Domain**: D1, D2, and D3 ($N = 714,453$).
 - **Metrics Displayed**: ROC-AUC and MCC across 6 evaluation regimes.
-- **Source Data File**: `paper/paper_text.txt` Table V, `ARGUS_ALL_RESEARCH_RESULTS.xlsx` Sheet `Table3_Harmonized_vs_Native`.
+- **Source Data File**: `paper/manuscripts/paper_text.txt` Table V, `ARGUS_ALL_RESEARCH_RESULTS.xlsx` Sheet `Table3_Harmonized_vs_Native`.
 - **Research Relevance**: Quantifies the severe generalization penalty when transferring models to critical power grid infrastructure.
 - **Suggested Paper Placement**: Section V-D.
 - **Publication Readiness**: **READY FOR PUBLICATION**.
@@ -222,7 +222,7 @@ Every figure is exported in three formats:
 - **Experiment Represented**: Attack detection recall under realistic False Positive Rate constraints ($\le 0.1\%, 1.0\%, 5.0\%$).
 - **Dataset / Domain**: D3 Native FT-Transformer Large (5-seed evaluation: seeds 42, 123, 456, 789, 1011).
 - **Metrics Displayed**: Recall: $7.22\% \pm 0.04\%$ (FPR $\le 0.1\%$), $8.11\% \pm 0.44\%$ (FPR $\le 1.0\%$), $9.54\% \pm 1.69\%$ (FPR $\le 5.0\%$).
-- **Source Data File**: `paper/paper_text.txt` Table VI, `ARGUS_ALL_RESEARCH_RESULTS.xlsx` Sheet `Table5_Operational_Perf`.
+- **Source Data File**: `paper/manuscripts/paper_text.txt` Table VI, `ARGUS_ALL_RESEARCH_RESULTS.xlsx` Sheet `Table5_Operational_Perf`.
 - **Research Relevance**: Operationally vital finding: Aggregate ROC-AUC (0.67) severely overstates deployable security utility where false alarm tolerance is constrained.
 - **Suggested Paper Placement**: Section V-E (Figure 6 in paper).
 - **Publication Readiness**: **READY FOR PUBLICATION**.
@@ -354,7 +354,7 @@ Every figure is exported in three formats:
 - **Experiment Represented**: Evaluation of 4-feature, 6-feature, 8-feature, and 70-feature representations on SCADA.
 - **Dataset / Domain**: D3 (IEC 60870-5-104).
 - **Metrics Displayed**: ROC-AUC: 4-feat (0.608), 6-feat (0.565), 8-feat (0.445), 70-feat (0.674); MCC: 0.065, 0.065, 0.000, 0.249.
-- **Source Data File**: `paper/paper_text.txt` Table V, `ARGUS_ALL_RESEARCH_RESULTS.xlsx` Sheet `Table4_Feature_Scaling`.
+- **Source Data File**: `paper/manuscripts/paper_text.txt` Table V, `ARGUS_ALL_RESEARCH_RESULTS.xlsx` Sheet `Table4_Feature_Scaling`.
 - **Research Relevance**: Core research contribution: Proves representation scaling is non-monotonic and representation collapse destroys information.
 - **Suggested Paper Placement**: Section V-D (Figure 5 in paper).
 - **Publication Readiness**: **READY FOR PUBLICATION**.

@@ -36,12 +36,12 @@ However, the repository currently exists in a state of **transition between an e
 #### Disclosed Scoring Criteria & Formulas
 
 1. **Engineering Implementation Score (71.7%)**:
-   - Evaluated across **60 specific subcomponents** spanning Data Pipeline, ML Architecture, Cross-Domain Adapters, Explainability, API Backend, Frontend, Security, and MLOps (see [IMPLEMENTATION_STATUS.md](file:///home/bhumi/GitHub/ARGUS/ARGUS_INDEPENDENT_AUDIT/IMPLEMENTATION_STATUS.md)):
+   - Evaluated across **60 specific subcomponents** spanning Data Pipeline, ML Architecture, Cross-Domain Adapters, Explainability, API Backend, Frontend, Security, and MLOps (see [IMPLEMENTATION_STATUS.md](file:///home/bhumi/GitHub/ARGUS/audit/independent/IMPLEMENTATION_STATUS.md)):
      $$\text{Score}_{\text{Eng}} = \frac{\text{Verified Complete (43)} + 0.5 \times \text{Partially Complete (10)}}{\text{Total Evaluated (60)}} = \frac{48.0}{60} = \mathbf{71.7\%}$$
    - *Note*: Broken subcomponents (3), unvalidated implementations (3), and missing items (1) score zero.
 
 2. **Research & Experimental Score (68.8%)**:
-   - Evaluated across the **17 mandatory research areas** specified in Phase 4 (see [EXPERIMENT_GAP_ANALYSIS.md](file:///home/bhumi/GitHub/ARGUS/ARGUS_INDEPENDENT_AUDIT/EXPERIMENT_GAP_ANALYSIS.md)):
+   - Evaluated across the **17 mandatory research areas** specified in Phase 4 (see [EXPERIMENT_GAP_ANALYSIS.md](file:///home/bhumi/GitHub/ARGUS/audit/independent/EXPERIMENT_GAP_ANALYSIS.md)):
      - **Verified Complete (9 areas)**: Cross-domain transfer, Zero-shot generalization, Domain adaptation comparisons, CORAL effectiveness, Feature reduction studies, Model architecture comparisons, Class imbalance analysis, Inference latency, Data leakage verification.
      - **Partially Complete (7 areas)**: In-domain baseline, Ablation studies, Hyperparameter sensitivity, Statistical significance testing, Computational complexity, Explainability stability, Multi-seed reproducibility.
      - **Missing (1 area)**: Robustness & adversarial noise testing.
