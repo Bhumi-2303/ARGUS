@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY src/ ./src/
 
 # Copy config
-COPY config/ ./config/
+COPY configs/ ./configs/
 
 # Environment variables for Docker container communication
 ENV KAFKA_BOOTSTRAP_SERVERS=kafka:9092

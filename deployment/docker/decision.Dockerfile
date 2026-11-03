@@ -15,7 +15,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY src/ ./src/
 
 # Copy config and prompt files
-COPY config/ ./config/
+COPY configs/ ./configs/
 COPY prompts/decision_support_system_prompt.txt ./prompts/decision_support_system_prompt.txt
 
 # Environment variables

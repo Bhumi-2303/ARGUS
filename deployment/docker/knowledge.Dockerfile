@@ -22,7 +22,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY src/ ./src/
 
 # Copy config and persistent Chroma DB
-COPY config/ ./config/
+COPY configs/ ./configs/
 COPY knowledge_agent/chroma_db ./knowledge_agent/chroma_db
 
 # Environment variables

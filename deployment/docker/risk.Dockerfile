@@ -15,7 +15,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY src/ ./src/
 
 # Copy config and asset inventory
-COPY config/ ./config/
+COPY configs/ ./configs/
 COPY risk_agent/asset_inventory.json ./risk_agent/asset_inventory.json
 
 # Environment variables

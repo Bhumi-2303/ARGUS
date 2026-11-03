@@ -24,7 +24,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY src/ ./src/
 
 # Copy config files
-COPY config/ ./config/
+COPY configs/ ./configs/
 
 # Set environment configuration
 ENV MODEL_PATH=/app/models/model_d2_coral.txt

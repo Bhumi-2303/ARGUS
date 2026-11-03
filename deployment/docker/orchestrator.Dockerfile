@@ -15,7 +15,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY src/ ./src/
 
 # Copy config
-COPY config/ ./config/
+COPY configs/ ./configs/
 
 # Microservice URLs configuration
 ENV DETECTOR_API_URL=http://detector-api:8000/predict
