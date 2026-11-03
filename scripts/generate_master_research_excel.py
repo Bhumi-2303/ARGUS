@@ -325,7 +325,7 @@ def build_sheet_3_master_experiment_execution(wb):
         end_col=23
     )
 
-    df_master = pd.read_csv("scratch_argus_clone/experiment_execution/FINAL_MASTER_RESULTS.csv")
+    df_master = pd.read_csv("experiments/execution/FINAL_MASTER_RESULTS.csv")
 
     format_map = {
         "threshold": "0.00",
@@ -360,7 +360,7 @@ def build_sheet_4_paper_table1_datasets(wb):
         end_col=8
     )
 
-    t1 = pd.read_csv("scratch_argus_clone/experiment_execution/tables/Table1_Dataset_Characteristics.csv")
+    t1 = pd.read_csv("experiments/execution/tables/Table1_Dataset_Characteristics.csv")
     curr_row = write_dataframe_table(ws, t1, curr_row)
     curr_row += 2
 
@@ -390,7 +390,7 @@ def build_sheet_5_paper_table2_primary_benchmark(wb):
         end_col=10
     )
 
-    t2 = pd.read_csv("scratch_argus_clone/experiment_execution/tables/Table2_Primary_Benchmark.csv")
+    t2 = pd.read_csv("experiments/execution/tables/Table2_Primary_Benchmark.csv")
     curr_row = write_dataframe_table(ws, t2, curr_row)
     ws.freeze_panes = "A5"
     auto_fit_columns(ws)
@@ -408,7 +408,7 @@ def build_sheet_6_paper_table3_harmonized_vs_native(wb):
         end_col=9
     )
 
-    t3 = pd.read_csv("scratch_argus_clone/experiment_execution/tables/Table3_Harmonized_vs_Native.csv")
+    t3 = pd.read_csv("experiments/execution/tables/Table3_Harmonized_vs_Native.csv")
     curr_row = write_dataframe_table(ws, t3, curr_row)
     ws.freeze_panes = "A5"
     auto_fit_columns(ws)
@@ -426,7 +426,7 @@ def build_sheet_7_paper_table4_feature_scaling(wb):
         end_col=12
     )
 
-    t4 = pd.read_csv("scratch_argus_clone/experiment_execution/tables/Table4_Feature_Resolution_Scaling.csv")
+    t4 = pd.read_csv("experiments/execution/tables/Table4_Feature_Resolution_Scaling.csv")
     cols_clean = [
         "feature_set", "dimensions", "unique_test_tuples", "accuracy_formatted",
         "precision_formatted", "recall_formatted", "f1_formatted", "fpr_formatted",
@@ -456,7 +456,7 @@ def build_sheet_8_paper_table5_operational_perf(wb):
         end_col=8
     )
 
-    t5 = pd.read_csv("scratch_argus_clone/experiment_execution/tables/Table5_Operational_Performance.csv")
+    t5 = pd.read_csv("experiments/execution/tables/Table5_Operational_Performance.csv")
     format_map = {
         "selected_threshold": "0.0000",
         "fpr": "0.0000",
@@ -645,7 +645,7 @@ def build_sheet_12_phase4_experiment_suite(wb):
     c.fill = fill_section
     curr_row += 1
 
-    xl4 = pd.ExcelFile("scratch_argus_clone/phase4_results/ARGUS_Phase4_Results.xlsx")
+    xl4 = pd.ExcelFile("archive/backups/phase4_results/ARGUS_Phase4_Results.xlsx")
     df_inc = xl4.parse("Incremental_Improvement")
     format_map_inc = {
         "F1": "0.0000",
@@ -672,7 +672,7 @@ def build_sheet_13_phase4_calibration_fusion(wb):
         end_col=8
     )
 
-    xl4 = pd.ExcelFile("scratch_argus_clone/phase4_results/ARGUS_Phase4_Results.xlsx")
+    xl4 = pd.ExcelFile("archive/backups/phase4_results/ARGUS_Phase4_Results.xlsx")
 
     ws.merge_cells(start_row=curr_row, start_column=1, end_row=curr_row, end_column=4)
     c = ws.cell(row=curr_row, column=1, value="1. CLASS PRIOR SHIFT & THEORETICAL CORRECTION RATIOS")
@@ -727,7 +727,7 @@ def build_sheet_14_phase3_domain_shift_ablation(wb):
         end_col=17
     )
 
-    xl3 = pd.ExcelFile("scratch_argus_clone/phase3_results/ARGUS_Phase3_Results.xlsx")
+    xl3 = pd.ExcelFile("archive/backups/phase3_results/ARGUS_Phase3_Results.xlsx")
 
     ws.merge_cells(start_row=curr_row, start_column=1, end_row=curr_row, end_column=12)
     c = ws.cell(row=curr_row, column=1, value="1. FEATURE-LEVEL STATISTICAL DOMAIN SHIFT DIAGNOSTICS")
@@ -884,7 +884,7 @@ def build_sheet_17_research_audit_integrity(wb):
     c.fill = fill_section
     curr_row += 1
 
-    df_claims = pd.read_csv("scratch_argus_clone/ARGUS_PAPER_READINESS_AUDIT/claim_audit.csv")
+    df_claims = pd.read_csv("archive/audits/ARGUS_PAPER_READINESS_AUDIT/claim_audit.csv")
     curr_row = write_dataframe_table(ws, df_claims, curr_row)
     curr_row += 2
 
@@ -894,7 +894,7 @@ def build_sheet_17_research_audit_integrity(wb):
     c.fill = fill_section
     curr_row += 1
 
-    df_ev = pd.read_csv("scratch_argus_clone/ARGUS_PAPER_READINESS_AUDIT/evidence_matrix.csv")
+    df_ev = pd.read_csv("archive/audits/ARGUS_PAPER_READINESS_AUDIT/evidence_matrix.csv")
     curr_row = write_dataframe_table(ws, df_ev, curr_row)
     curr_row += 2
 

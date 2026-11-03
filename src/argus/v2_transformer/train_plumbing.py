@@ -179,7 +179,7 @@ if __name__ == "__main__":
         print(f"Model: NF-ToN -> Test: CICIoT -> B.Acc: {x2_bacc:.4f}")
 
     print("\nMasking Sanity Check on BoT-IoT...")
-    df_bot = pd.read_csv("../../../scratch/BoT-IoT dataset/csv/data_32.csv", nrows=1000, low_memory=False)
+    df_bot = pd.read_csv("../../../data/raw/bot_iot/data_32.csv", nrows=1000, low_memory=False)
     X_bot = extract_groups(df_bot, "bot")
     try:
         model_cic.eval()
