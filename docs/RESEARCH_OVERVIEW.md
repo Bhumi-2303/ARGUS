@@ -62,11 +62,18 @@ Table IV summarizes the definitive benchmark on the frozen random-row target par
 | DANN (Domain Adversarial NN) | 0.60 | 0.7259 | 0.7259 | 0.9998 | 0.8412 | 0.5002 | 0.0006 | +0.0129 | 0.3321 | Majority-Class Collapse |
 | *Diagnostic Class-Aware CORAL* | *0.50* | *0.5506* | *0.7262* | *0.6113* | *0.6638* | *0.5006* | *0.3899* | *+0.0011* | *0.6361* | *Diagnostic (Used Test Labels)* |
 
-### Benchmark 2: Coordinate-Disjoint Evaluation (Phase 2.3 Reconciliation)
-To test whether spatial network correlation (IP address / subnet sharing) influences performance, a coordinate-disjoint partition ($N=1,970,428$) was evaluated:
+### Benchmark 2: 4D Feature-Coordinate Disjoint Evaluation (Phase 2.3 Reconciliation)
+Under random row splitting, 2,592,203 out of 2,627,177 historical test observations ($98.67\%$) map to identical four-feature coordinate tuples `(pkt_mean_to_max, tcp_flag_density, log_pkt_mean, log_pkt_max)` present in the adaptation training partition. To eliminate this feature-space overlap, a **4D Feature-Coordinate Disjoint Partition** ($N=1,970,428$) was constructed, where no identical 4D feature tuple appears in more than one partition:
+- Note: This partitioning separates identical 4D feature tuples in representation space, not IP addresses, subnets, or network sessions (the available tabular NF-ToN data contains only 4 flow features plus label).
 - At default threshold ($\theta = 0.50$): CORAL achieves $\text{MCC} = 0.0504$.
 - At calibrated threshold ($\tau^* = 0.99$): CORAL achieves $\text{MCC} = 0.0795$.
-- *(Scientific Clarification: The metric $\text{MCC} = 0.3896$ referenced in intermediate audit drafts was an editorial transcription error / threshold misattribution; the authoritative random-row result is $+0.3855$ and coordinate-disjoint result is $+0.0795$).*
+- *(Scientific Clarification: The metric $\text{MCC} = 0.3896$ referenced in intermediate audit drafts was an editorial transcription error / threshold misattribution; the authoritative random-row result is $+0.3855$ and the 4D feature-coordinate disjoint result is $+0.0795$).*
+
+#### DANN Reproducibility Tiers:
+- **Level A (Stored prediction metric recomputation)**: Verified from `dann_final_test_predictions.csv` ($\text{ROC-AUC} = 0.3321$, $\text{Accuracy} = 0.7259$, $\text{MCC} = 0.0129$, $\text{Specificity} = 0.0006$).
+- **Level B (Checkpoint loading & forward pass)**: Verified using `DANNNetwork` loaded with `dann_best_model.pt`.
+- **Level C (Full test-set regeneration)**: Executed across all $2,627,177$ observations.
+- **Level D (Exact tensor equality with stored probabilities)**: Divergent due to PyTorch BatchNorm running statistics and evaluation mode dynamics in legacy training code. Level D exact prediction equality has not been achieved. DANN is kept unavailable in the production `ModelRegistry`.
 
 ### Benchmark 3: Representation Resolution Non-Monotonicity (D3 SCADA)
 Table V evaluates representation scaling from 4 to 73 features on IEC-104 SCADA traffic ($N=714,453$):

@@ -82,7 +82,7 @@ All methodological specifications are modularly organized in [`paper/methodology
 3. **P1–P2.3 Research Deliverables**:  
    Under [`results/experiments/`](file:///home/bhumi/GitHub/ARGUS/results/experiments/):
    - `p1_1_nfton_in_domain/`: In-domain NF-ToN supervised reference baseline.
-   - `p2_coordinate_generalization/`: Coordinate-disjoint splits and label ambiguity analysis.
+   - `p2_coordinate_generalization/`: 4D Feature-Coordinate Disjoint splits and label ambiguity analysis.
    - `p2_1_validation/`: Same-test-set cross-domain evaluation with bootstrap CIs and DeLong tests.
    - `p2_2_robustness/`: 5-split evaluations and 1,000-resample cluster bootstrap.
    - `p2_3_reconciliation/`: Adversarial partition identity reconciliation and sample ordering audit.
@@ -101,6 +101,10 @@ In keeping with strict academic integrity, the following items are flagged as re
    Table III (Bidirectional D1↔D2 transfer) is derived from single-run historical exports. Running 5-seed replications with DeLong paired statistical tests on D1↔D2 would strengthen the manuscript to the same level of rigor as D3.
 3. **Few-Shot Label Scarcity Curves**:  
    Clean Class-Aware CORAL is evaluated on the full adaptation split ($N=10.5\text{M}$ flows). A parametric experiment showing performance as a function of available target labels ($k \in \{10, 50, 100, 500, 1000\}$) would solidify the few-shot supervised adaptation claim.
+4. **4D Feature-Coordinate Disjoint Evaluation vs. Random-Row Target Benchmark**:  
+   Table IV evaluates models on a random-row held-out target split ($N=2,627,177$). Because the underlying 5-column feature representation contains discrete repetitive coordinate vectors, 98.67% ($2,592,203 / 2,627,177$) of test observations share identical 4D feature coordinates with observations present in the adaptation partition. The raw tabular data contains no IP addresses, subnets, or session IDs; the partition separates feature tuples in representation space. When evaluated under a strictly 4D feature-coordinate disjoint partition (isolating unseen coordinate tuples), CORAL MCC drops to 0.0504 (threshold 0.50) / 0.0795 (threshold 0.99).
+5. **DANN Reproducibility Tiers**:  
+   DANN stored prediction metrics match Table IV down to 16 decimal places (Level A from `dann_final_test_predictions.csv`), and weights load cleanly for forward inference (Level B). However, exact bit-for-bit raw prediction reproduction from weights (Level D) diverges due to PyTorch BatchNorm running statistics and evaluation dynamics in the legacy training code. DANN is retained for historical traceability only and is excluded from the production `ModelRegistry`.
 
 ---
 

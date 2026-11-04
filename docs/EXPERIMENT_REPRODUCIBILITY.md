@@ -56,6 +56,9 @@ Every table in `paper/tables/` is backed by raw prediction files, frozen test se
   3. *Global CORAL + XGBoost* ($\tau = 0.50$): $\text{MCC} = -0.1610$, $\text{ROC-AUC} = 0.2852$.
   4. *DANN* ($\tau^* = 0.60$): $\text{MCC} = +0.0129$, $\text{ROC-AUC} = 0.3321$ (Majority-class collapse).
   5. *Diagnostic Class-Aware CORAL* ($\tau = 0.50$): Diagnostic only (used target test labels).
+- **Partition Characteristics & DANN Reproducibility**:
+  - *Random-Row Coordinate Overlap*: Under random row splitting, 2,592,203 out of 2,627,177 test observations ($98.67\%$) map to identical 4D feature coordinates present in the adaptation training split. The available data does not contain IP addresses or subnets.
+  - *DANN Reproducibility Status*: Stored prediction metric recomputation (**Level A**) and checkpoint loading with forward-pass execution (**Level B**) are verified against frozen test metrics ($\text{ROC-AUC} = 0.3321$, $\text{Accuracy} = 0.7259$). Full test-set forward pass is executed (**Level C**). Level D exact tensor equality against stored probabilities is divergent due to PyTorch BatchNorm running statistics. DANN is kept unavailable in the production `ModelRegistry`.
 
 ### Table V: Representation Resolution Scaling Sweep (D3 SCADA)
 - **Canonical CSV**: [`paper/tables/Table_V_Feature_Resolution_Scaling.csv`](file:///home/bhumi/GitHub/ARGUS/paper/tables/Table_V_Feature_Resolution_Scaling.csv)
@@ -92,9 +95,9 @@ This script reads the raw predictions from `results/verification/predictions/` a
 
 ---
 
-## 4. Coordinate-Disjoint Protocol Reproduction (Phase 2.3)
+## 4. 4D Feature-Coordinate Disjoint Protocol Reproduction (Phase 2.3)
 
-To reproduce the spatial coordinate-disjoint benchmarks where IP subnets are strictly disjoint between training and test sets:
+To reproduce the 4D feature-coordinate disjoint benchmarks where no identical four-dimensional feature tuple appears in more than one partition:
 ```bash
 python -c "
 import pandas as pd
@@ -102,7 +105,8 @@ df = pd.read_csv('results/experiments/p2_3_reconciliation/p2_3_coordinate_disjoi
 print(df[['model', 'threshold', 'mcc', 'balanced_accuracy', 'roc_auc']])
 "
 ```
-**Results Confirm**:
+**Protocol Notes & Results**:
+- **Separation Definition**: This protocol strictly separates identical four-dimensional feature tuples `(pkt_mean_to_max, tcp_flag_density, log_pkt_mean, log_pkt_max)` in representation space, not IP addresses, subnets, or network sessions (which are not present in the 5-column tabular data).
 - Default threshold ($\theta = 0.50$): $\text{MCC} = 0.0504$.
 - Calibrated threshold ($\tau^* = 0.99$): $\text{MCC} = 0.0795$.
 - Historical audit mention of $0.3896$ was an editorial typo referencing split thresholds.

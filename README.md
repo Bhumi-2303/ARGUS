@@ -124,10 +124,15 @@ All experimental numbers backing the research are frozen and cryptographically v
 
 #### Key Scientific Disclosures & Verification Protocols:
 1. **Separation of Evaluation Protocols**:
-   - **Random-Row Held-Out Benchmark ($N = 2,627,177$)**: The primary Table IV benchmark evaluates observations strictly held out from training, achieving $\text{MCC} = +0.3855$ at $\tau^* = 0.99$. Note: The metric $\text{MCC} = 0.3896$ referenced in earlier audit drafts was an editorial transcription error / threshold misattribution.
-   - **Coordinate-Disjoint Benchmark ($N = 1,970,428$)**: When enforcing strict IP address and subnet disjointness between training and test sets (Phase 2.3), Class-Aware CORAL achieves $\text{MCC} = 0.0504$ ($\theta = 0.50$) and $\text{MCC} = 0.0795$ ($\tau^* = 0.99$).
+   - **Random-Row Held-Out Benchmark ($N = 2,627,177$)**: The primary Table IV benchmark evaluates observations held out from training under random row splitting, achieving $\text{MCC} = +0.3855$ at $\tau^* = 0.99$. Note: The metric $\text{MCC} = 0.3896$ referenced in earlier audit drafts was an editorial transcription error / threshold misattribution. Because this benchmark operates at the row level without coordinate deduplication, $2,592,203$ out of $2,627,177$ test observations ($98.67\%$) map to identical 4D feature-coordinate tuples present in the adaptation training set. The available data does not contain IP addresses or subnets.
+   - **4D Feature-Coordinate Disjoint Benchmark ($N = 1,970,428$)**: When enforcing that NO identical four-dimensional feature tuple `(pkt_mean_to_max, tcp_flag_density, log_pkt_mean, log_pkt_max)` appears in more than one partition (Phase 2.3), Class-Aware CORAL achieves $\text{MCC} = 0.0504$ ($\theta = 0.50$) and $\text{MCC} = 0.0795$ ($\tau^* = 0.99$). This protocol strictly separates 4D feature coordinates in representation space, not IP addresses, subnets, or network sessions.
 2. **DANN Reproducibility vs. Production Availability**:
-   - DANN is reproducible bit-for-bit from checkpoint `dann_best_model.pt` via `scripts/p2_1_same_test_comparison.py`, but is deliberately marked `status="unavailable"` in the production `ModelRegistry` due to catastrophic collapse into majority-class predictions ($\text{ROC-AUC} = 0.3321$).
+   - DANN reproducibility is documented across four rigorous tiers:
+     - **Level A (Stored metric recomputation)**: **Verified** from stored predictions (`dann_final_test_predictions.csv`), matching Table IV metrics down to 16 decimal places ($\text{ROC-AUC} = 0.3321$, $\text{MCC} = 0.0129$, $\text{Accuracy} = 0.7259$).
+     - **Level B (Checkpoint loading & forward pass)**: **Verified** using `DANNNetwork` loaded with `dann_best_model.pt`.
+     - **Level C (Full test-set regeneration)**: **Executed** over all $2,627,177$ observations.
+     - **Level D (Exact tensor equality with stored probabilities)**: **Divergent** due to PyTorch BatchNorm running statistics and evaluation dynamics in legacy code.
+   - DANN is deliberately marked `status="unavailable"` in the production `ModelRegistry` due to majority-class collapse ($\text{Specificity} = 0.06\%$).
 3. **Observation Pool Accounting**:
    - Target domain D2 comprises $8,406,962$ (adaptation) + $2,101,742$ (calibration) + $2,627,177$ (frozen test) = **$13,135,881$ total rows**. The historical line-count of $11,034,141$ was an arithmetic artifact that omitted the calibration split.
 
