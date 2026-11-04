@@ -521,7 +521,7 @@ def build_sheet_9_multiseed_statistical_analysis(wb):
     c.fill = fill_section
     curr_row += 1
 
-    df_stat = pd.read_csv("paper/ARGUS_Paper_Data/2_REP01_Deliverables/tables/REP01_STATISTICAL_ANALYSIS.csv")
+    df_stat = pd.read_csv("paper/data/2_REP01_Deliverables/tables/REP01_STATISTICAL_ANALYSIS.csv")
     format_map_stat = {
         "Baseline_Mean": "0.0000",
         "Target_Mean": "0.0000",
@@ -547,7 +547,7 @@ def build_sheet_10_representation_ablation_rep01(wb):
         end_col=16
     )
 
-    rep_df = pd.read_csv("paper/ARGUS_Paper_Data/2_REP01_Deliverables/tables/REP01_REPRESENTATION_COMPARISON.csv")
+    rep_df = pd.read_csv("paper/data/2_REP01_Deliverables/tables/REP01_REPRESENTATION_COMPARISON.csv")
     format_map = {
         "Accuracy": "0.00%",
         "Balanced_Accuracy": "0.00%",
@@ -807,7 +807,7 @@ def build_sheet_15_explainability_shap(wb):
     c.fill = fill_section
     curr_row += 1
 
-    df_rep_shap = pd.read_csv("paper/ARGUS_Paper_Data/2_REP01_Deliverables/tables/REP01_SHAP_importance.csv").head(30)
+    df_rep_shap = pd.read_csv("paper/data/2_REP01_Deliverables/tables/REP01_SHAP_importance.csv").head(30)
     format_map_rep_shap = {"mean_abs_gradient": "0.0000", "normalized_importance": "0.00%"}
     curr_row = write_dataframe_table(ws, df_rep_shap, curr_row, format_map=format_map_rep_shap)
 

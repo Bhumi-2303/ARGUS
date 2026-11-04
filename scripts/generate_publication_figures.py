@@ -54,7 +54,7 @@ plt.rcParams['grid.alpha'] = 0.35
 plt.rcParams['grid.linestyle'] = '--'
 plt.rcParams['axes.axisbelow'] = True
 
-BASE_OUT = "experimental_result_images"
+BASE_OUT = "paper/figures/experimental_results"
 
 # Professional Palette
 COLORS = {

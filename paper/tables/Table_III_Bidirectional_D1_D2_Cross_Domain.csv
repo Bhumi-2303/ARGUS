@@ -1,0 +1,9 @@
+Setting,Direction,Classifier,F1_Score,ROC_AUC,Balanced_Accuracy,MCC,Target_Test_Size,Evidence_Status
+A (In-Domain),D1 -> D1,XGBoost,0.9918,0.8206,0.8206,0.647,"1,176,851",Verified Native
+A (In-Domain),D1 -> D1,LightGBM,0.9918,0.8206,0.8206,0.647,"1,176,851",Verified Native
+B (Cross-Domain),D1 -> D2,XGBoost,0.8375,0.323,0.4972,-0.031,"2,627,177",Verified Degradation
+B (Cross-Domain),D1 -> D2,LightGBM,0.8375,0.323,0.4972,-0.031,"2,627,177",Verified Degradation
+C (In-Domain),D2 -> D2,XGBoost,0.9547,0.9077,0.9077,0.831,"2,627,177",Verified Native
+C (In-Domain),D2 -> D2,LightGBM,0.9547,0.9077,0.9077,0.831,"2,627,177",Verified Native
+D (Cross-Domain),D2 -> D1,XGBoost,0.988,0.4963,0.5,0.0,"1,176,851",Verified Degradation
+D (Cross-Domain),D2 -> D1,LightGBM,0.988,0.4963,0.5,0.0,"1,176,851",Verified Degradation
