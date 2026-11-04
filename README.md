@@ -26,7 +26,18 @@ ARGUS combines a **leakage-controlled domain adaptation model** (Class-Aware COR
    - Evaluated against raw prediction exports ($N = 2,627,177$), DANN achieves $\text{ROC-AUC} = 0.3321$ and $\text{Specificity} = 0.06\%$, demonstrating complete collapse into majority-class prediction rather than domain invariance.
 4. **Representation Resolution Drives Transfer Feasibility**:
    - Extending compact 4-feature representations to SCADA traffic (D3) fails non-monotonically (an 8-feature representation collapses to $\text{ROC-AUC} = 0.445$).
-   - Only D3's native 70-feature flow representation restores non-trivial discriminability ($\text{ROC-AUC} = 0.6744$).
+   - Only D3's native 73-feature flow representation restores non-trivial discriminability ($\text{ROC-AUC} = 0.6744$, $\text{MCC} = +0.2486$; 62 standard network flow features + 11 derived statistical features, historically referenced as 70 in early informal shorthand).
+
+---
+
+## 🏛️ Platform Architecture: Production System vs. Scientific Research Layer
+
+ARGUS strictly separates its **production autonomous software system** from its **scientific research and publication artifacts**:
+
+| System Layer | Primary Components | Purpose & Scope |
+| :--- | :--- | :--- |
+| **Production Defense Platform** | `src/argus/`, `web/`, `artifacts/models/`, `configs/` | Real-time FastAPI & WebSocket engine executing the 6-agent autonomous response pipeline, 3D/2D React Three.js visualizer, model registry, and SOC operator workflows. |
+| **Scientific Research & Publication** | `paper/`, `results/`, `experiments/`, `audit/` | Academic manuscript, verified publication tables (`paper/tables/`), publication figures (`paper/figures/`), master research workbook (`results/ARGUS_ALL_RESEARCH_RESULTS.xlsx`), and experiment reproducibility tooling. |
 
 ---
 
@@ -98,17 +109,27 @@ ARGUS executes an autonomous, sequential 6-agent pipeline with a shared, strictl
 
 ## 📊 Authoritative Empirical Results
 
-All experimental numbers backing the research are frozen and cryptographically verifiable in [`results/verified/`](results/verified/):
+All experimental numbers backing the research are frozen and cryptographically verifiable in [`results/verified/`](results/verified/) and [`results/ARGUS_ALL_RESEARCH_RESULTS.xlsx`](results/ARGUS_ALL_RESEARCH_RESULTS.xlsx) (SHA-256 `f4ddc451a0c0d97f1eeea0a57668562b1bf9bb13437e2f30c5ac95d8bdb678f1`):
 
-### D1 (CICIoT2023) $\to$ D2 (NF-ToN-IoT-v2) Cross-Domain Benchmark ($N = 2,627,177$)
+### Table IV: D1→D2 Domain Adaptation Benchmark (Random-Row Held-Out Partition, N=2,627,177)
+*Canonical File*: [`paper/tables/Table_IV_Random_Row_Domain_Adaptation.csv`](paper/tables/Table_IV_Random_Row_Domain_Adaptation.csv) (legacy alias: [`paper/tables/Table_IV_Leakage_Controlled_Domain_Adaptation.csv`](paper/tables/Table_IV_Leakage_Controlled_Domain_Adaptation.csv))
 
 | Model | Decision $\tau$ | Accuracy | Precision | Recall | F1 | Balanced Acc. | Specificity | MCC | ROC-AUC | Status |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
 | **Clean Class-Aware CORAL + XGBoost** | **0.99** | **0.6191** | **0.9400** | 0.5076 | 0.6592 | **0.7109** | **0.9143** | **+0.3855** | 0.5970 | **Verified Winner** |
 | Source-Only XGBoost | 0.50 | 0.7207 | 0.7247 | 0.9919 | 0.8375 | 0.4972 | 0.0025 | -0.0311 | 0.3230 | Unadapted Baseline |
 | Global CORAL + XGBoost | 0.50 | 0.6347 | 0.7013 | 0.8652 | 0.7747 | 0.4448 | 0.0244 | -0.1610 | 0.2852 | Marginal Alignment Only |
-| DANN | 0.60 | 0.7259 | 0.7259 | 0.9998 | 0.8412 | 0.5002 | 0.0006 | +0.0129 | 0.3321 | Majority-Class Collapse |
+| DANN (Domain Adversarial NN) | 0.60 | 0.7259 | 0.7259 | 0.9998 | 0.8412 | 0.5002 | 0.0006 | +0.0129 | 0.3321 | Majority-Class Collapse |
 | *Diagnostic Class-Aware CORAL* | *0.50* | *0.5506* | *0.7262* | *0.6113* | *0.6638* | *0.5006* | *0.3899* | *+0.0011* | *0.6361* | *Diagnostic (Used Target Test Labels)* |
+
+#### Key Scientific Disclosures & Verification Protocols:
+1. **Separation of Evaluation Protocols**:
+   - **Random-Row Held-Out Benchmark ($N = 2,627,177$)**: The primary Table IV benchmark evaluates observations strictly held out from training, achieving $\text{MCC} = +0.3855$ at $\tau^* = 0.99$. Note: The metric $\text{MCC} = 0.3896$ referenced in earlier audit drafts was an editorial transcription error / threshold misattribution.
+   - **Coordinate-Disjoint Benchmark ($N = 1,970,428$)**: When enforcing strict IP address and subnet disjointness between training and test sets (Phase 2.3), Class-Aware CORAL achieves $\text{MCC} = 0.0504$ ($\theta = 0.50$) and $\text{MCC} = 0.0795$ ($\tau^* = 0.99$).
+2. **DANN Reproducibility vs. Production Availability**:
+   - DANN is reproducible bit-for-bit from checkpoint `dann_best_model.pt` via `scripts/p2_1_same_test_comparison.py`, but is deliberately marked `status="unavailable"` in the production `ModelRegistry` due to catastrophic collapse into majority-class predictions ($\text{ROC-AUC} = 0.3321$).
+3. **Observation Pool Accounting**:
+   - Target domain D2 comprises $8,406,962$ (adaptation) + $2,101,742$ (calibration) + $2,627,177$ (frozen test) = **$13,135,881$ total rows**. The historical line-count of $11,034,141$ was an arithmetic artifact that omitted the calibration split.
 
 All model weights are verified against [`artifacts/models/INTEGRITY_MANIFEST.json`](artifacts/models/INTEGRITY_MANIFEST.json).
 
@@ -246,34 +267,47 @@ curl -X POST "http://localhost:8000/api/v1/agents/trace" \
 
 ```text
 ARGUS/
-├── README.md                      # Master project architecture & guide
+├── README.md                      # Master project architecture & executive summary
+├── CONTRIBUTING.md                 # Development quality gates, testing protocols, PR guide
 ├── Makefile                       # Single-command setup, demo, test, and build targets
-├── pyproject.toml                 # Unified package configuration & dependencies
-├── dataset/                       # Centralized datasets (sample CSVs, parquets, raw links)
-│   ├── sample_attack_flow.csv     # Demo attack flow CSV
-│   ├── sample_benign_flow.csv     # Demo benign flow CSV
-│   ├── ciciot.parquet             # 10k verified source samples
-│   ├── nfton.parquet              # 10k verified target samples
-│   └── README.md                  # Dataset usage guide
+├── pyproject.toml                 # Package dependencies (core, dev, test, dann, research)
 ├── artifacts/
 │   └── models/                    # Verified model weights & INTEGRITY_MANIFEST.json
-├── configs/                       # Configuration YAMLs and settings definitions
+├── audit/                         # Staged restructuring reports, forensics, and readiness review
+├── configs/                       # Runtime settings, paths, and model thresholds
+├── dataset/                       # Centralized datasets (sample attack/benign CSVs, parquets)
+├── docs/                          # Architecture, research manual, project structure, setup
+│   ├── ARCHITECTURE.md            # Multi-agent system architecture & sequence specs
+│   ├── DEVELOPMENT_SETUP.md       # Local developer guide & testing workflows
+│   ├── EXPERIMENT_REPRODUCIBILITY.md # Research reproduction guide & master workbook checks
+│   ├── PROJECT_STRUCTURE.md       # Exhaustive file and directory catalog
+│   └── RESEARCH_OVERVIEW.md       # RQ1-RQ6 overview, findings, and domain adaptation theory
+├── experiments/                   # Research experiment configs, execution outputs, and sweeps
+├── paper/                         # Academic publication layer
+│   ├── manuscripts/               # Manuscript texts & transcripts
+│   ├── tables/                    # Publication CSV tables (Table I - VI) & TABLE_INDEX.md
+│   ├── figures/                   # 137 publication figures, vector plots & FIGURE_INDEX.md
+│   ├── PUBLICATION_TRACEABILITY.md# 7-link end-to-end evidence lineage matrix
+│   └── RESEARCH_SUPERVISOR_HANDOFF.md # Advisor review guide
 ├── results/
-│   ├── verified/                  # Authoritative CSV benchmarks & publication tables
-│   └── diagnostic/                # Exploratory ablation studies
+│   ├── ARGUS_ALL_RESEARCH_RESULTS.xlsx # Authoritative master research workbook (17 sheets)
+│   ├── verified/                  # Benchmark CSVs backing publication tables
+│   └── diagnostic/                # Exploratory ablations & distribution metrics
 ├── scripts/
-│   ├── start_demo.py              # Unified single-port demo server
+│   ├── start_demo.py              # Unified single-port demo server (FastAPI + React)
 │   ├── startup_check.py           # Pre-flight asset and model integrity verification
-│   └── verify_ui_numbers.py       # Ground-truth API-to-CSV verification
+│   ├── verify_ui_numbers.py       # Ground-truth API-to-CSV verification
+│   └── generate_publication_figures.py # Composite publication figure generator
 ├── src/argus/
-│   ├── agents/                    # The 6 autonomous agents (DIA, TAA, EA, KCA, RPA, DSA)
-│   ├── orchestrator/              # Real execution pipeline and shared context engine
+│   ├── agents/                    # 6 autonomous agents (DIA, TAA, EA, KCA, RPA, DSA)
+│   ├── orchestrator/              # Sequential execution pipeline & shared context engine
 │   ├── api/                       # FastAPI v1 REST & WebSocket routers
 │   ├── auth/                      # RBAC, JWT validation, and security audit loggers
 │   ├── security/                  # HTTP security headers, CSP, and defensive middleware
-│   ├── registry/                  # Model registry and metadata catalog
+│   ├── registry/                  # Model registry (ARGUS-4 & 73-feature D3 schema)
 │   └── shift/                     # Distribution shift analytics (KS-test, PSI)
 ├── tests/
+│   ├── unit/                      # Model registry, schemas, and agent unit tests
 │   ├── e2e/                       # End-to-end multi-agent execution pipeline tests
 │   ├── security/                  # CSP, CORS, RBAC, and adversarial verification tests
 │   └── agents/                    # Dedicated test suites for each individual agent

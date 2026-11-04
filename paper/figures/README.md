@@ -37,6 +37,10 @@ paper/figures/
 
 ## Figure Standards
 
-1. **Dual Format Availability**: All conceptual and experimental figures are provided in high-resolution raster format (minimum 300 DPI PNG) for drafts and presentations, and camera-ready vector format (SVG/PDF) for journal typesetting.
-2. **Empirical Integrity**: No experimental curve, confusion matrix, or attribution is synthetically smoothed or simulated. All plots strictly reflect underlying frozen test set inferences.
-3. **Traceability**: Every experimental figure is mapped to its underlying experiment run and source metrics in [`paper/PUBLICATION_TRACEABILITY.md`](file:///home/bhumi/GitHub/ARGUS/paper/PUBLICATION_TRACEABILITY.md).
+1. **Evidence Classification Tiers**:
+   - **Tier 1 (Empirical Evidence)**: Figures derived directly from reproducible frozen test set evaluations and quantitative benchmarks (`FIG-PUB-01` through `FIG-PUB-08`).
+   - **Tier 2 (Synthetic / Aggregated Evidence)**: Probes and diagnostic representations synthesized across intermediate experimental runs.
+   - **Tier 3 (Illustrative / Methodological Visuals)**: Conceptual architectural overviews, methodological flowcharts, protocol schematics, and UI/SOC interface previews (`FIG-ARCH-01`, `FIG-ARCH-02`, `FIG-METH-01`, `FIG-METH-02`, `FIG-SYS-01`).
+2. **Dual Format Availability**: All conceptual and experimental figures are provided in high-resolution raster format (minimum 300 DPI PNG) for drafts and presentations, and camera-ready vector format (SVG/PDF) for journal typesetting.
+3. **Empirical Integrity**: No experimental curve, confusion matrix, or attribution is synthetically smoothed or simulated. All plots strictly reflect underlying frozen test set inferences.
+4. **Traceability**: Every experimental figure is mapped to its underlying experiment run and source metrics in [`paper/PUBLICATION_TRACEABILITY.md`](file:///home/bhumi/GitHub/ARGUS/paper/PUBLICATION_TRACEABILITY.md).

@@ -81,9 +81,9 @@ Every figure is exported in three formats:
 - **Suggested Paper Placement**: Section V-D (RQ4: Extension to Industrial Control Systems).
 - **Publication Readiness**: **READY FOR PUBLICATION**.
 
-### Figure 1.8: D3 In-Domain Native 70-Feature Ceiling Confusion Matrix
+### Figure 1.8: D3 In-Domain Native 73-Feature Ceiling Confusion Matrix
 - **Filename**: `fig08_cm_d3_scada_native_ceiling.(png/pdf/svg)`
-- **Experiment Represented**: In-domain FT-Transformer Large evaluated on native 70-feature flow representation.
+- **Experiment Represented**: In-domain FT-Transformer Large evaluated on native 73-feature flow representation (62 flow features + 11 derived features; historically 70 in early shorthand).
 - **Dataset / Domain**: D3 (IEC 60870-5-104 SCADA, $N = 714,453$).
 - **Metrics Displayed**: TP (154,971), TN (148,827), FP (405,117), FN (5,538), Accuracy (42.52%), Specificity (26.87%), Recall (96.55%), MCC (+0.2375).
 - **Source Data File**: `experiments/execution/neural_robustness/native_high_performance/predictions/NR04_D3_native_seed42_predictions.csv`.
@@ -351,9 +351,9 @@ Every figure is exported in three formats:
 
 ### Figure 8.3: Representation Resolution Non-Monotonic Scaling
 - **Filename**: `fig03_representation_resolution_scaling.(png/pdf/svg)`
-- **Experiment Represented**: Evaluation of 4-feature, 6-feature, 8-feature, and 70-feature representations on SCADA.
+- **Experiment Represented**: Evaluation of 4-feature, 6-feature, 8-feature, and 73-feature representations on SCADA (historically labeled 70 in early shorthand).
 - **Dataset / Domain**: D3 (IEC 60870-5-104).
-- **Metrics Displayed**: ROC-AUC: 4-feat (0.608), 6-feat (0.565), 8-feat (0.445), 70-feat (0.674); MCC: 0.065, 0.065, 0.000, 0.249.
+- **Metrics Displayed**: ROC-AUC: 4-feat (0.608), 6-feat (0.565), 8-feat (0.445), 73-feat native (0.674); MCC: 0.065, 0.065, 0.000, 0.249.
 - **Source Data File**: `paper/manuscripts/paper_text.txt` Table V, `ARGUS_ALL_RESEARCH_RESULTS.xlsx` Sheet `Table4_Feature_Scaling`.
 - **Research Relevance**: Core research contribution: Proves representation scaling is non-monotonic and representation collapse destroys information.
 - **Suggested Paper Placement**: Section V-D (Figure 5 in paper).

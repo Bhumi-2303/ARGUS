@@ -30,7 +30,7 @@ All methodological specifications are modularly organized in [`paper/methodology
 1. **Datasets & Partitions**: [`paper/methodology/01_DATASETS_AND_PREPROCESSING.md`](file:///home/bhumi/GitHub/ARGUS/paper/methodology/01_DATASETS_AND_PREPROCESSING.md)  
    Details on CICIoT2023 (D1), NF-ToN-IoT-v2 (D2), and SCADA IEC-104 (D3), including sample counts, class distributions, and frozen test splits.
 2. **Feature Harmonization & Scaling**: [`paper/methodology/02_FEATURE_HARMONIZATION.md`](file:///home/bhumi/GitHub/ARGUS/paper/methodology/02_FEATURE_HARMONIZATION.md)  
-   Mathematical formulas for ARGUS-4 (`pkt_mean_to_max`, `tcp_flag_density`, `log_pkt_mean`, `log_pkt_max`), resolution scaling probes (ARGUS-6, ARGUS-8), and the 70-feature native SCADA ceiling.
+   Mathematical formulas for ARGUS-4 (`pkt_mean_to_max`, `tcp_flag_density`, `log_pkt_mean`, `log_pkt_max`), resolution scaling probes (ARGUS-6, ARGUS-8), and the 73-feature native SCADA ceiling (62 standard flow features + 11 derived features; historically referenced as 70/71 in informal shorthand).
 3. **Domain Adaptation Mathematics**: [`paper/methodology/03_DOMAIN_ADAPTATION_FORMULATION.md`](file:///home/bhumi/GitHub/ARGUS/paper/methodology/03_DOMAIN_ADAPTATION_FORMULATION.md)  
    Rigorous equations for Global CORAL covariance alignment, Class-Aware CORAL ($A_c = C_{s,c}^{-1/2} C_{t,c}^{1/2}$), Bayesian prior shift likelihood correction, and DANN adversarial minimax optimization.
 4. **Evaluation & Operating Constraints**: [`paper/methodology/04_EVALUATION_PROTOCOLS_AND_METRICS.md`](file:///home/bhumi/GitHub/ARGUS/paper/methodology/04_EVALUATION_PROTOCOLS_AND_METRICS.md)  
@@ -66,7 +66,7 @@ All methodological specifications are modularly organized in [`paper/methodology
 - **Table I (Domains & Profiles)**: [`paper/tables/Table_I_Domains_And_Profiles.csv`](file:///home/bhumi/GitHub/ARGUS/paper/tables/Table_I_Domains_And_Profiles.csv)
 - **Table II (Partition Sizes & Balance)**: [`paper/tables/Table_II_Partition_Sizes_And_Balance.csv`](file:///home/bhumi/GitHub/ARGUS/paper/tables/Table_II_Partition_Sizes_And_Balance.csv)
 - **Table III (Bidirectional D1↔D2 Transfer)**: [`paper/tables/Table_III_Bidirectional_D1_D2_Cross_Domain.csv`](file:///home/bhumi/GitHub/ARGUS/paper/tables/Table_III_Bidirectional_D1_D2_Cross_Domain.csv)
-- **Table IV (Leakage-Controlled UDA Benchmark)**: [`paper/tables/Table_IV_Leakage_Controlled_Domain_Adaptation.csv`](file:///home/bhumi/GitHub/ARGUS/paper/tables/Table_IV_Leakage_Controlled_Domain_Adaptation.csv)
+- **Table IV (D1→D2 Random-Row Benchmark)**: [`paper/tables/Table_IV_Random_Row_Domain_Adaptation.csv`](file:///home/bhumi/GitHub/ARGUS/paper/tables/Table_IV_Random_Row_Domain_Adaptation.csv)
 - **Table V (Resolution Scaling Sweep)**: [`paper/tables/Table_V_Feature_Resolution_Scaling.csv`](file:///home/bhumi/GitHub/ARGUS/paper/tables/Table_V_Feature_Resolution_Scaling.csv)
 - **Table VI (FPR-Constrained Operational Performance)**: [`paper/tables/Table_VI_Operational_Performance_FPR_Budgets.csv`](file:///home/bhumi/GitHub/ARGUS/paper/tables/Table_VI_Operational_Performance_FPR_Budgets.csv)
 

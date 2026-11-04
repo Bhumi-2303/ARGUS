@@ -52,6 +52,9 @@ dann = [
     "torch>=2.2.0",
     "umap-learn>=0.5.5",
 ]
+research = [
+    "psutil>=5.9.0",
+]
 dev = [
     "ruff>=0.5.0",
     "mypy>=1.10.0",

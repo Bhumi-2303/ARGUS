@@ -13,8 +13,9 @@ paper/tables/
 ├── Table_I_Domains_And_Profiles.csv                      # Table I: Dataset characteristics, sample counts, and priors
 ├── Table_II_Partition_Sizes_And_Balance.csv              # Table II: Training, adaptation, calibration, and test splits
 ├── Table_III_Bidirectional_D1_D2_Cross_Domain.csv        # Table III: In-domain vs cross-domain transfer (XGBoost / LightGBM)
-├── Table_IV_Leakage_Controlled_Domain_Adaptation.csv     # Table IV: Leakage-controlled UDA comparison on NF-ToN
-├── Table_V_Feature_Resolution_Scaling.csv                # Table V: Multi-seed representation resolution scaling (4, 6, 8, 70)
+├── Table_IV_Random_Row_Domain_Adaptation.csv             # Table IV: D1->D2 Domain Adaptation Benchmark (Random-Row, N=2.63M)
+├── Table_IV_Leakage_Controlled_Domain_Adaptation.csv     # Table IV legacy compatibility symlink
+├── Table_V_Feature_Resolution_Scaling.csv                # Table V: Multi-seed representation resolution scaling (4, 6, 8, 73)
 └── Table_VI_Operational_Performance_FPR_Budgets.csv     # Table VI: Attack recall at fixed FPR constraints (0.1%, 1%, 5%)
 ```
 
