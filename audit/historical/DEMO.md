@@ -30,16 +30,16 @@ python scripts/start_demo.py
 2. **Action**: Point out the **System Narrative in Four Tiles**:
    * **Tile 1 (In-Domain vs. Cross-Domain Performance)**:
      * *Exact Numbers*: Source Baseline MCC = `0.7203` on unadapted target domain vs. `0.9842` in-domain.
-     * *Source File*: [`results/verified/five_model_complete_comparison.csv`](file:///c:/Users/acer/Desktop/ARGUS/results/verified/five_model_complete_comparison.csv)
+     * *Source File*: [`results/verified/five_model_complete_comparison.csv`](../../results/verified/five_model_complete_comparison.csv)
    * **Tile 2 (Statistical Domain Shift)**:
      * *Exact Numbers*: 4 / 4 harmonized features shifted (KS statistic threshold `0.10`, PSI threshold `0.25`).
-     * *Source File*: [`data/samples/nfton.parquet`](file:///c:/Users/acer/Desktop/ARGUS/data/samples/nfton.parquet)
+     * *Source File*: [`data/samples/nfton.parquet`](../../data/samples/nfton.parquet)
    * **Tile 3 (CORAL Adaptation Gain)**:
      * *Exact Numbers*: Clean Class-Aware CORAL target MCC = `0.9412`, F1 Score = `0.9840`, FPR = `0.0280`.
-     * *Source File*: [`results/verified/five_model_complete_comparison.csv`](file:///c:/Users/acer/Desktop/ARGUS/results/verified/five_model_complete_comparison.csv)
+     * *Source File*: [`results/verified/five_model_complete_comparison.csv`](../../results/verified/five_model_complete_comparison.csv)
    * **Tile 4 (Honest Limitations & Protocol Controls)**:
      * *Exact Numbers*: Single-seed protocol (Seed 42) disclosure; DANN representation collapse MCC = `0.0000`.
-     * *Source File*: [`results/verified/dann_final_test_metrics.csv`](file:///c:/Users/acer/Desktop/ARGUS/results/verified/dann_final_test_metrics.csv)
+     * *Source File*: [`results/verified/dann_final_test_metrics.csv`](../../results/verified/dann_final_test_metrics.csv)
 3. **Key Highlight**: Point out that every single metric card displays a clickable `ProvenanceBadge` linking to its underlying source file.
 
 ---
@@ -72,7 +72,7 @@ python scripts/start_demo.py
 3. **Navigate to**: `http://localhost:8000/explain`.
 4. **Action**:
    * Click **Calculate SHAP Attribution**. Point out `tcp_flag_density` as top contributor ($+0.3850$).
-   * Inspect **Source Gain vs. Target Impact Disconnect Table** (referenced to [`results/verified/SHAP_vs_Target_Gain.csv`](file:///c:/Users/acer/Desktop/ARGUS/results/verified/SHAP_vs_Target_Gain.csv)).
+   * Inspect **Source Gain vs. Target Impact Disconnect Table** (referenced to [`results/verified/SHAP_vs_Target_Gain.csv`](../../results/verified/SHAP_vs_Target_Gain.csv)).
 
 ---
 
@@ -96,8 +96,8 @@ python scripts/start_demo.py
 
 | Metric / Table | Source CSV Path |
 | :--- | :--- |
-| **5-Model Comparison** | [`results/verified/five_model_complete_comparison.csv`](file:///c:/Users/acer/Desktop/ARGUS/results/verified/five_model_complete_comparison.csv) |
-| **DANN Test Metrics** | [`results/verified/dann_final_test_metrics.csv`](file:///c:/Users/acer/Desktop/ARGUS/results/verified/dann_final_test_metrics.csv) |
-| **D3 Native Sweep** | [`results/verified/d3_native_threshold_sweep.csv`](file:///c:/Users/acer/Desktop/ARGUS/results/verified/d3_native_threshold_sweep.csv) |
-| **SHAP vs Target Gain** | [`results/verified/SHAP_vs_Target_Gain.csv`](file:///c:/Users/acer/Desktop/ARGUS/results/verified/SHAP_vs_Target_Gain.csv) |
-| **Diagnostic CORAL Run** | [`results/diagnostic/diagnostic_class_aware_coral.csv`](file:///c:/Users/acer/Desktop/ARGUS/results/diagnostic/diagnostic_class_aware_coral.csv) |
+| **5-Model Comparison** | [`results/verified/five_model_complete_comparison.csv`](../../results/verified/five_model_complete_comparison.csv) |
+| **DANN Test Metrics** | [`results/verified/dann_final_test_metrics.csv`](../../results/verified/dann_final_test_metrics.csv) |
+| **D3 Native Sweep** | [`results/verified/d3_native_threshold_sweep.csv`](../../results/verified/d3_native_threshold_sweep.csv) |
+| **SHAP vs Target Gain** | [`results/verified/SHAP_vs_Target_Gain.csv`](../../results/verified/SHAP_vs_Target_Gain.csv) |
+| **Diagnostic CORAL Run** | [`results/diagnostic/diagnostic_class_aware_coral.csv`](../../results/diagnostic/diagnostic_class_aware_coral.csv) |

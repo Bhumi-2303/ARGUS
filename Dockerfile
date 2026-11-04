@@ -71,7 +71,7 @@ RUN chown -R argususer:argusgroup /app && \
 
 USER argususer:argusgroup
 
-ENV ARGUS_MODE=demo \
+ENV ENVIRONMENT=demo \
     ARGUS_HOST=0.0.0.0 \
     ARGUS_PORT=8000 \
     PYTHONPATH=/app/src:/app \

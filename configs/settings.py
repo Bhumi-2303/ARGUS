@@ -107,8 +107,8 @@ class ArgusSettings(BaseSettings):
 
     def model_post_init(self, __context) -> None:
         """Post-initialization hook to override settings from standard environment variables."""
-        # Support standard ENVIRONMENT variable alongside ARGUS_ENV / ARGUS_MODE
-        env_override = os.getenv("ENVIRONMENT") or os.getenv("ARGUS_MODE")
+        # Support standard ENVIRONMENT variable alongside ARGUS_ENV
+        env_override = os.getenv("ENVIRONMENT") or os.getenv("ARGUS_ENV")
         if env_override:
             self.env = env_override.strip()
 

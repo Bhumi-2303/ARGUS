@@ -24,7 +24,7 @@ npm run dev
 ## 4. Required environment variables
 - `ARGUS_HOST`: Bind host (default: `0.0.0.0`)
 - `ARGUS_PORT`: Port (default: `8000`)
-- `ARGUS_MODE`: Environment mode (default: `demo`)
+- `ENVIRONMENT`: Environment mode (default: `development` / `demo`)
 - `ARGUS_ALLOWED_ORIGINS`: CORS array (default allows localhost).
 
 ## 5. Model requirements

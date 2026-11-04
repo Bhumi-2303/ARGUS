@@ -100,4 +100,7 @@ test-results/
 scratch_argus_clone/
 scratch_pip_cache/
 scratch/
+run1.csv
+run*.csv
+
 
