@@ -229,16 +229,16 @@ export default function DomainShiftPage() {
               <Cpu className="w-4 h-4 text-cyan-400" />
               <span>Domain Classifier Result (Discriminability)</span>
             </h3>
-            <ProvenanceBadge sourceFile="results/verified/five_model_complete_comparison.csv" protocolStatus="final" compact />
+            <ProvenanceBadge sourceFile="results/verified/domain_statistics.json" protocolStatus="final" compact />
           </div>
 
           <p className="text-xs text-slate-400">
-            A domain discriminator trained to distinguish Source (CICIoT2023) vs Target ({selectedDomain.toUpperCase()}) features achieves near-perfect classification, proving extreme covariate shift.
+            A domain discriminator trained to distinguish Source (CICIoT2023) vs Target ({selectedDomain.toUpperCase()}) features was observed in early research notes to achieve high classification accuracy, indicating substantial covariate shift.
           </p>
 
           <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 font-mono text-xs flex items-center justify-between">
             <div>
-              <span className="text-slate-400 block text-[10px]">Domain Discriminator Accuracy</span>
+              <span className="text-slate-400 block text-[10px]">Domain Discriminator Accuracy (Finding F-05)</span>
               <span className="text-amber-400 text-sm font-extrabold flex items-center gap-1.5 mt-1">
                 REQUIRES VERIFICATION
               </span>
@@ -246,6 +246,10 @@ export default function DomainShiftPage() {
             <span className="px-2.5 py-1 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30 text-[11px] font-bold">
               UNVERIFIED DISCRIMINATOR
             </span>
+          </div>
+
+          <div className="p-2.5 rounded bg-slate-900/90 border border-slate-800/80 text-[11px] text-slate-400 leading-relaxed font-sans">
+            <strong className="text-slate-300 font-mono">Audit Note (F-05):</strong> Because no reproducible serialized discriminator artifact or frozen evaluation CSV was saved in <code>results/verified/</code>, ARGUS standing audit rules prohibit rendering hardcoded accuracy figures (such as legacy estimates of 96–98%). The badge remains flagged as <code>REQUIRES VERIFICATION</code> until an official discriminator checkpoint is frozen.
           </div>
 
         </Card>

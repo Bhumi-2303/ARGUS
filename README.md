@@ -3,11 +3,11 @@
 [![Python Version](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.14-blue.svg)](https://python.org)
 [![Backend Framework](https://img.shields.io/badge/Framework-FastAPI-009688.svg)](https://fastapi.tiangolo.com)
 [![Frontend Stack](https://img.shields.io/badge/Frontend-React%2019%20%7C%20Vite%20%7C%20Three.js%20%7C%20TailwindCSS-61DAFB.svg)](https://react.dev)
-[![Test Suite](https://img.shields.io/badge/Tests-100%25%20Passing-success.svg)](tests/)
+[![ARGUS CI/CD Pipeline](https://github.com/Bhumi-2303/ARGUS/actions/workflows/ci.yml/badge.svg)](https://github.com/Bhumi-2303/ARGUS/actions/workflows/ci.yml)
 [![Security](https://img.shields.io/badge/Security-Hardened%20(OIDC%20%7C%20RBAC%20%7C%20CSP)-brightgreen.svg)](docs/SECURITY.md)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**ARGUS** is an autonomous cyber-physical defense platform engineered for **Industrial Control Systems (ICS)**, **SCADA networks**, and **Smart Grid Infrastructure**. It investigates and resolves **cross-domain transfer failure and representation collapse** in network intrusion detection under strict zero-leakage protocols.
+**ARGUS** is an autonomous cyber-physical defense platform engineered for **Industrial Control Systems (ICS)**, **SCADA networks**, and **Smart Grid Infrastructure**. It investigates and provides **partial mitigation for cross-domain transfer failure and representation collapse** in network intrusion detection under strict zero-leakage protocols (achieving Clean CORAL MCC +0.3855 and ROC-AUC 0.5970 on held-out target data).
 
 ARGUS combines a **leakage-controlled domain adaptation model** (Class-Aware CORAL + XGBoost) with a **real-time 6-agent autonomous execution pipeline**, offering end-to-end telemetry ingestion, threat classification, TreeSHAP explainability, MITRE ATT&CK ICS context retrieval, operational risk scoring, and automated decision playbooks.
 
@@ -123,17 +123,30 @@ All experimental numbers backing the research are frozen and cryptographically v
 | *Diagnostic Class-Aware CORAL* | *0.50* | *0.5506* | *0.7262* | *0.6113* | *0.6638* | *0.5006* | *0.3899* | *+0.0011* | *0.6361* | *Diagnostic (Used Target Test Labels)* |
 
 #### Key Scientific Disclosures & Verification Protocols:
-1. **Separation of Evaluation Protocols**:
+1. **Headline Metric Reconciliation & Single Source of Truth (`results/verified/`)**:
+   - **Clean Class-Aware CORAL MCC (0.3855 vs 0.3904 vs 0.390624)**:
+     - The authoritative primary benchmark is $\text{MCC} = +0.3855$ ($\text{ROC-AUC} = 0.5970$, $\text{Precision} = 94.00\%$, $\text{Specificity} = 91.43\%$, $\tau^* = 0.99$), frozen in `results/verified/five_model_complete_comparison.csv` and `data/raw/legacy_package/argus_coral_data/final_clean_classaware_results/final_metrics.csv` (SHA-256 `68f06fc7...`).
+     - The secondary figure $\text{MCC} = 0.3904$ arose in post-hoc audit scripts (`scratch/v3_v4.py`) where retraining XGBoost with `n_jobs=-1` introduced multithreaded tree-building stochasticity when reconstructing missing raw test prediction arrays (`Clean_Class_Aware_CORAL_preds.npz`).
+     - The figure $\text{MCC} = 0.390624$ reflects direct scoring of the serialized booster checkpoint (`artifacts/models/xgb_adapted.json`) at $\tau = 0.99$ (commit `375a587`).
+     - Per the authoritative reconciliation audit ([`results/experiments/p2_1_validation/P2_1_CORAL_MCC_RECONCILIATION.json`](results/experiments/p2_1_validation/P2_1_CORAL_MCC_RECONCILIATION.json)), all official tables and UI elements strictly cite the original frozen benchmark **$\text{MCC} = +0.3855$**. Flattering post-hoc reproduction artifacts must not supersede the primary benchmark.
+   - **DANN ROC-AUC & Specificity (0.3321 / 0.0006 vs 0.5226 / 0.0108)**:
+     - Recomputation from the raw per-sample probability predictions (`data/raw/legacy_package/argus_coral_data/dann_results/dann_final_test_predictions.csv`, $N = 2,627,177$) bit-for-bit confirms $\text{ROC-AUC} = 0.33209554$, $\text{Specificity} = 0.00064560$ ($0.06\%$), and $\text{MCC} = 0.01285487$ ($\tau = 0.60$), identical to `results/verified/dann_final_test_metrics.csv`.
+     - An early narrative draft (`data/raw/legacy_package/ARGUS_RESULTS_README.txt`) reported an uncalibrated preliminary estimate ($\text{ROC-AUC} = 0.5226$, $\text{Specificity} = 0.0108$, $\text{MCC} = 0.0885$). In accordance with strict audit rules, the more flattering preliminary number is rejected in favor of the frozen raw predictions.
+   - **Sample Population Accounting ($N = 2,627,177$ vs $2,627,178$)**:
+     - The held-out target test split comprises exactly **$2,627,177$ observations** ($1,906,920$ attack, $720,257$ benign). The physical line count of `nfton_test_features.csv` is $2,627,178$, which contains 1 CSV header line plus $2,627,177$ observation rows.
+   - **Domain Classifier Discriminability (Finding F-05)**:
+     - A domain discriminator was hypothesized in preliminary research notes to distinguish Source vs Target features. However, because no reproducible serialized discriminator artifact or frozen evaluation log was archived in `results/verified/`, the dashboard strictly flags this metric as `REQUIRES VERIFICATION` (`UNVERIFIED DISCRIMINATOR`) rather than rendering unverified mock accuracy estimates.
+2. **Separation of Evaluation Protocols**:
    - **Random-Row Held-Out Benchmark ($N = 2,627,177$)**: The primary Table IV benchmark evaluates observations held out from training under random row splitting, achieving $\text{MCC} = +0.3855$ at $\tau^* = 0.99$. Note: The metric $\text{MCC} = 0.3896$ referenced in earlier audit drafts was an editorial transcription error / threshold misattribution. Because this benchmark operates at the row level without coordinate deduplication, $2,592,203$ out of $2,627,177$ test observations ($98.67\%$) map to identical 4D feature-coordinate tuples present in the adaptation training set. The available data does not contain IP addresses or subnets.
    - **4D Feature-Coordinate Disjoint Benchmark ($N = 1,970,428$)**: When enforcing that NO identical four-dimensional feature tuple `(pkt_mean_to_max, tcp_flag_density, log_pkt_mean, log_pkt_max)` appears in more than one partition (Phase 2.3), Class-Aware CORAL achieves $\text{MCC} = 0.0504$ ($\theta = 0.50$) and $\text{MCC} = 0.0795$ ($\tau^* = 0.99$). This protocol strictly separates 4D feature coordinates in representation space, not IP addresses, subnets, or network sessions.
-2. **DANN Reproducibility vs. Production Availability**:
+3. **DANN Reproducibility vs. Production Availability**:
    - DANN reproducibility is documented across four rigorous tiers:
      - **Level A (Stored metric recomputation)**: **Verified** from stored predictions (`dann_final_test_predictions.csv`), matching Table IV metrics down to 16 decimal places ($\text{ROC-AUC} = 0.3321$, $\text{MCC} = 0.0129$, $\text{Accuracy} = 0.7259$).
      - **Level B (Checkpoint loading & forward pass)**: **Verified** using `DANNNetwork` loaded with `dann_best_model.pt`.
      - **Level C (Full test-set regeneration)**: **Executed** over all $2,627,177$ observations.
      - **Level D (Exact tensor equality with stored probabilities)**: **Divergent** due to PyTorch BatchNorm running statistics and evaluation dynamics in legacy code.
    - DANN is deliberately marked `status="unavailable"` in the production `ModelRegistry` due to majority-class collapse ($\text{Specificity} = 0.06\%$).
-3. **Observation Pool Accounting**:
+4. **Observation Pool Accounting**:
    - Target domain D2 comprises $8,406,962$ (adaptation) + $2,101,742$ (calibration) + $2,627,177$ (frozen test) = **$13,135,881$ total rows**. The historical line-count of $11,034,141$ was an arithmetic artifact that omitted the calibration split.
 
 All model weights are verified against [`artifacts/models/INTEGRITY_MANIFEST.json`](artifacts/models/INTEGRITY_MANIFEST.json).
