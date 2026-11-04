@@ -192,13 +192,21 @@ async def lifespan(app: FastAPI):
     if app_settings.is_production:
         app_settings.validate_production_configuration()
 
-    # 2. Enforce cryptographic artifact integrity
+    # 2. Ensure durable database tables are initialized
+    try:
+        from argus.database.engine import get_engine
+        from argus.database.migrations import create_all_tables
+        await create_all_tables(get_engine())
+    except Exception as db_err:
+        logger.warning("database_initialization_warning", error=str(db_err))
+
+    # 3. Enforce cryptographic artifact integrity
     verify_required_artifacts()
 
-    # 3. Load ML models safely
+    # 4. Load ML models safely
     model_registry.load_all()
 
-    # 4. Start agent framework
+    # 5. Start agent framework
     await start_agent_chain()
     yield
 
@@ -206,6 +214,8 @@ async def lifespan(app: FastAPI):
     await stop_agent_chain()
     logger.info("api_shutdown_initiating")
     await global_bus.stop()
+    from argus.database.engine import close_db_connections
+    await close_db_connections()
     logger.info("api_shutdown_complete")
 
 

@@ -95,6 +95,9 @@ dist/
 
 # Logs, temporary files, and scratch caches
 *.log
+*.db
+*.db-journal
+*.sqlite*
 test-results/
 *.tsbuildinfo
 scratch_argus_clone/

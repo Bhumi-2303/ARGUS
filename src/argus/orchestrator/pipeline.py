@@ -68,12 +68,19 @@ class PipelineContext:
     completed_at: Optional[datetime] = None
     status: str = "running"
     error: Optional[str] = None
+    working_memory: Optional[Any] = None
+    shared_memory: Optional[Any] = None
+    approval_token: Optional[str] = None
 
     def __post_init__(self):
         if not isinstance(self.trace, TraceContainer):
             self.trace = TraceContainer(self.trace, event_id=self.event_id)
         else:
             self.trace.event_id = self.event_id
+
+        if self.working_memory is None:
+            from argus.memory.working_memory import WorkingMemory
+            self.working_memory = WorkingMemory(agent_id=self.correlation_id)
 
     def add_trace(self, event: TraceEvent):
         self.trace.append(event)
@@ -544,6 +551,11 @@ async def execute_pipeline(
                     ))
         
     ctx.completed_at = datetime.now(timezone.utc)
+    try:
+        from argus.orchestrator.store import pipeline_store
+        ctx.approval_token = pipeline_store.persist_pipeline_run(ctx)
+    except Exception as exc:
+        logger.error("persist_pipeline_run_failed", error=str(exc))
     return ctx
 
 
@@ -562,11 +574,15 @@ def pipeline_context_to_response(ctx: PipelineContext) -> Dict[str, Any]:
             "error": step.error,
         })
 
+    approval_required = bool(ctx.decision and getattr(ctx.decision, "approval_required", False))
+
     return {
         "correlation_id": ctx.correlation_id,
         "event_id": ctx.event_id,
         "status": ctx.status,
         "error": ctx.error,
+        "approval_required": approval_required,
+        "approval_token": ctx.approval_token,
         "started_at": ctx.started_at.isoformat(),
         "completed_at": ctx.completed_at.isoformat() if ctx.completed_at else None,
         "total_duration_ms": round(

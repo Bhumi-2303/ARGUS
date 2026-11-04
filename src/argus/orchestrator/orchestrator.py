@@ -43,12 +43,13 @@ class Orchestrator:
     async def stop(self) -> None:
         """Stop the orchestrator."""
         self._running = False
-        if self._loop_task:
+        if self._loop_task and not self._loop_task.done():
             self._loop_task.cancel()
             try:
                 await self._loop_task
-            except asyncio.CancelledError:
+            except (asyncio.CancelledError, Exception):
                 pass
+            self._loop_task = None
         logger.info("orchestrator_stopped")
         
     async def submit_task(self, task_def: TaskDefinition) -> str:
@@ -125,10 +126,15 @@ class Orchestrator:
                         # No capable agent available right now. Could implement backoff here.
                         pass
                         
+            except asyncio.CancelledError:
+                break
             except Exception as e:
                 logger.error("orchestrator_loop_error", error=str(e))
                 
-            await asyncio.sleep(1.0) # Check every second
+            try:
+                await asyncio.sleep(0.1) # Check every 100ms
+            except asyncio.CancelledError:
+                break
             
     async def _handle_task_result(self, result: TaskCompletion) -> None:
         """Handle a completed task result from an agent."""

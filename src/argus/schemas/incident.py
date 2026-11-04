@@ -50,6 +50,8 @@ class Incident(BaseModel):
     # Approval logic
     approval_required: bool = False
     approval_status: ApprovalStatus = ApprovalStatus.NOT_REQUIRED
+    approval_token: Optional[str] = None
+    approval_token_expires_at: Optional[datetime] = None
     approved_by: Optional[str] = None
     approved_at: Optional[datetime] = None
     approval_reason: Optional[str] = None

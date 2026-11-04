@@ -14,8 +14,23 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class DatabaseSettings(BaseSettings):
     """Database configuration settings."""
     sqlite_path: str = Field(default="data/argus.db")
+    database_url: Optional[str] = Field(default=None)
     chromadb_path: str = Field(default="data/chromadb")
     pool_size: int = Field(default=5)
+
+    @property
+    def async_url(self) -> str:
+        """Async database connection URL (Postgres or SQLite)."""
+        if self.database_url:
+            return self.database_url
+        return f"sqlite+aiosqlite:///{self.sqlite_path}"
+
+    @property
+    def sync_url(self) -> str:
+        """Synchronous database connection URL (Postgres or SQLite)."""
+        if self.database_url:
+            return self.database_url.replace("+aiosqlite", "").replace("+asyncpg", "")
+        return f"sqlite:///{self.sqlite_path}"
 
 
 class SecuritySettings(BaseSettings):
