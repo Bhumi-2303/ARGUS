@@ -1,9 +1,10 @@
 # ==================================================================
-# ARGUS — Hardened Multi-Stage Production Container
+# ARGUS — Multi-Arch Hardened Production Container
+# Targets: linux/amd64 and linux/arm64
 # ==================================================================
 
-# --- Stage 1: Frontend Static Build ---
-FROM node:22-slim AS frontend-builder
+# --- Stage 1: Frontend Static Build (Runs on Builder Architecture) ---
+FROM --platform=$BUILDPLATFORM node:22-slim AS frontend-builder
 
 WORKDIR /web
 
@@ -18,7 +19,7 @@ FROM python:3.11-slim AS python-builder
 
 WORKDIR /build
 
-# Build dependencies for C-extensions (LightGBM, XGBoost, PyArrow)
+# Build dependencies for C-extensions (LightGBM, XGBoost, PyArrow) on amd64 & arm64
 RUN apt-get update && \
     apt-get install -y --no-install-recommends gcc g++ libgomp1 && \
     rm -rf /var/lib/apt/lists/*
@@ -33,8 +34,7 @@ COPY src/ ./src/
 RUN pip install --no-cache-dir uv && \
     uv sync --frozen --no-dev
 
-
-# --- Stage 3: Minimal Hardened Runtime (NO COMPILERS) ---
+# --- Stage 3: Minimal Hardened Runtime (Multi-Arch, Non-Root, No Compilers) ---
 FROM python:3.11-slim AS runtime
 
 # Install only essential runtime dynamic libraries and healthcheck tool
@@ -59,9 +59,10 @@ COPY configs/ ./configs/
 COPY artifacts/ ./artifacts/
 COPY results/ ./results/
 COPY data/ ./data/
+COPY dataset/*.parquet ./dataset/
 COPY prompts/ ./prompts/
 
-# Copy compiled frontend assets
+# Copy compiled frontend assets from frontend-builder
 COPY --from=frontend-builder /web/dist ./web/dist
 
 # Harden ownership and permissions
@@ -71,7 +72,7 @@ RUN chown -R argususer:argusgroup /app && \
 
 USER argususer:argusgroup
 
-ENV ENVIRONMENT=demo \
+ENV ENVIRONMENT=production \
     ARGUS_HOST=0.0.0.0 \
     ARGUS_PORT=8000 \
     PYTHONPATH=/app/src:/app \
