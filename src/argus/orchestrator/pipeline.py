@@ -539,6 +539,16 @@ async def execute_pipeline(
                 stage_callback(start_evt)
 
     async def _emit_stage_end(trace_evt: TraceEvent):
+        try:
+            from argus.observability.metrics import metrics
+            metrics.record_agent_execution(
+                agent_name=trace_evt.agent,
+                status=trace_evt.status,
+                duration_ms=trace_evt.duration or 0.0,
+            )
+        except Exception as mexc:
+            logger.warning("metrics_record_stage_failed", agent=trace_evt.agent, error=str(mexc))
+
         if stage_callback:
             end_evt = {
                 "stage": trace_evt.agent,

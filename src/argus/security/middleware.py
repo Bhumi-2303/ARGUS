@@ -121,6 +121,18 @@ class SecurityMiddleware(BaseHTTPMiddleware):
             raise
         finally:
             process_time = time.time() - start_time
+            # Record request latency in OpenTelemetry and metrics
+            try:
+                from argus.observability.metrics import metrics
+                metrics.record_latency(
+                    path=request.url.path,
+                    method=request.method,
+                    status_code=status_code,
+                    duration_ms=round(process_time * 1000, 2),
+                )
+            except Exception:
+                pass
+
             # Inject X-Request-ID on outgoing response
             if "response" in locals() and response is not None:
                 response.headers["X-Request-ID"] = request_id

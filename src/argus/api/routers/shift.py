@@ -36,6 +36,17 @@ async def get_domain_shift(
 
     try:
         shift_res = data_manager.calculate_shift(target_domain=domain, window_size=window_size)
+        try:
+            from argus.observability.metrics import metrics
+            for f in shift_res.feature_shifts:
+                metrics.record_drift(
+                    feature_name=f.feature,
+                    domain=domain,
+                    ks_statistic=f.ks_statistic,
+                    psi_statistic=f.psi_statistic,
+                )
+        except Exception as mexc:
+            logger.warning("metrics_record_drift_failed", error=str(mexc))
         return shift_res
     except FileNotFoundError:
         raise HTTPException(
@@ -131,6 +142,19 @@ async def get_shift_pca(
             "features_before": metrics_before,
             "features_after": metrics_after,
         }
+
+        # Record drift metrics in OpenTelemetry
+        try:
+            from argus.observability.metrics import metrics
+            for idx, feat_name in enumerate(HARMONIZED_FEATURES):
+                metrics.record_drift(
+                    feature_name=feat_name,
+                    domain=target_domain,
+                    ks_statistic=float(ks_b_list[idx]),
+                    psi_statistic=float(psi_b_list[idx]),
+                )
+        except Exception as mexc:
+            logger.warning("metrics_record_drift_failed", error=str(mexc))
 
         # Format real transformation parameters
         transformation_params = {

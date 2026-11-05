@@ -188,11 +188,18 @@ async def lifespan(app: FastAPI):
     if app_settings is None:
         app_settings = get_settings()
 
-    # 1. Enforce fail-closed production settings validation
+    # 1. Initialize OpenTelemetry (off by default, optional Grafana Cloud export)
+    try:
+        from argus.observability.otel import setup_opentelemetry
+        setup_opentelemetry()
+    except Exception as otel_err:
+        logger.warning("opentelemetry_initialization_warning", error=str(otel_err))
+
+    # 2. Enforce fail-closed production settings validation
     if app_settings.is_production:
         app_settings.validate_production_configuration()
 
-    # 2. Ensure durable database tables are initialized
+    # 3. Ensure durable database tables are initialized
     try:
         from argus.database.engine import get_engine
         from argus.database.migrations import create_all_tables
@@ -200,13 +207,13 @@ async def lifespan(app: FastAPI):
     except Exception as db_err:
         logger.warning("database_initialization_warning", error=str(db_err))
 
-    # 3. Enforce cryptographic artifact integrity
+    # 4. Enforce cryptographic artifact integrity
     verify_required_artifacts()
 
-    # 4. Load ML models safely
+    # 5. Load ML models safely
     model_registry.load_all()
 
-    # 5. Start agent framework
+    # 6. Start agent framework
     await start_agent_chain()
     yield
 
