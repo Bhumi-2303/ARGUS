@@ -272,3 +272,5 @@ class PipelineRunStore:
 
 # Global pipeline run store singleton
 pipeline_store = PipelineRunStore()
+incident_store = pipeline_store
+IncidentStore = PipelineRunStore

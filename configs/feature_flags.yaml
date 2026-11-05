@@ -1,6 +1,18 @@
 flags:
+  agent_runtime:
+    description: "Enable optional agent runtime layer (read-only MCP server & ADK analyst narrator)"
+    enabled: false
+
   adk_planning:
     description: "Enable Google ADK planning for agents"
+    enabled: false
+
+  adk_narrator:
+    description: "Enable optional LLM incident narrator (summarizes already-computed incident outputs)"
+    enabled: false
+
+  mcp_server:
+    description: "Enable read-only MCP server exposing inspection tools"
     enabled: false
   
   vector_memory:

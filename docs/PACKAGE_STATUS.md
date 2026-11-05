@@ -38,7 +38,7 @@ Each package under `src/argus/` is categorized into one of three implementation 
 | `eval` | 1 | 1 | 0 | No (0 files) | **Stub** | Empty `__init__.py` (0 bytes). Benchmark evaluation logic resides in `scripts/verify_ui_numbers.py` and `tests/`. |
 | `explain` | 3 | 2 | 23 | No (0 files) | **Thin** | `shap_helpers.py` provides a standalone helper (`compute_shap_importance`). Production TreeSHAP logic is integrated in `registry/model_registry.py` and `agents/explainability`. |
 | `features` | 3 | 2 | 71 | Yes (2 files) | **Thin** | `extractor.py` provides `FeatureExtractor` computing the 4 harmonized flow features (`pkt_mean_to_max`, `tcp_flag_density`, `log_pkt_mean`, `log_pkt_max`). Imported by DIA agent and tests. |
-| `integrations` | 2 | 2 | 21 | No (0 files) | **Stub** | Contains `adk/adapter.py`, a placeholder stub for Google ADK fallback integration with mock logging. Not integrated into production pipeline. |
+| `integrations` | 7 | 7 | 565 | Yes (3 files) | **Real (Optional)** | Optional read-only agent runtime layer: `ArgusMCPServer` exposing inspection tools (`get_incident`, `get_trace`, `explain_flow`, `lookup_mitre`) and `IncidentNarrator` (ADK/Gemini incident summarization over computed outputs with zero-dependency fallback). Off by default; never on detection path. |
 | `memory` | 3 | 3 | 85 | Yes (3 files) | **Real** | Pruned to active memory modules only (`WorkingMemory` and `SharedMemory` backed by Blackboard). Stub modules (`cache`, `persistent_memory`, `vector_memory`) removed. Wired to `PipelineContext`. |
 | `models` | 3 | 2 | 61 | No (0 files) | **Thin** | `loader.py` contains basic LightGBM/XGBoost file loading functions. Production model loading and integrity verification are managed by `registry/model_registry.py`. |
 | `monitoring` | 2 | 2 | 91 | Yes (2 files) | **Thin** | Production drift analysis module (`drift.py`) calculating Kolmogorov-Smirnov (KS) statistics between source and target batches. Imported by `api/routers/monitoring.py` and `tests/unit/test_drift.py`. |
@@ -71,6 +71,7 @@ src/argus/
 │   ├── auth/            (  604 lines | JWT, RBAC & security tokens)
 │   ├── registry/        (  560 lines | Cryptographic model registry & model loaders)
 │   ├── security/        (  491 lines | Security headers, rate limiting & audit sinks)
+│   ├── integrations/    (  565 lines | Optional read-only runtime layer: ArgusMCPServer & IncidentNarrator)
 │   ├── data/            (  352 lines | Dataset loaders & parquet stream readers)
 │   └── v2_transformer/  (  263 lines | Exploratory Group Token Embedder PyTorch models)
 │
@@ -90,8 +91,7 @@ src/argus/
 │   ├── explain/         (   23 lines | Standalone SHAP TreeExplainer helper)
 │   └── utils/           (   21 lines | Batch parquet replay iterator)
 │
-└── [STUBS - Unused or Empty Placeholders] (6 packages / 21 lines)
-    ├── integrations/    (   21 lines | adk/adapter.py placeholder for Google ADK)
+└── [STUBS - Unused or Empty Placeholders] (5 packages / 0 lines)
     ├── adapters/        (    0 lines | Empty __init__.py)
     ├── alignment/       (    0 lines | Empty __init__.py)
     ├── drift/           (    0 lines | Empty __init__.py; active logic in monitoring/drift.py)
@@ -112,5 +112,5 @@ src/argus/
    - `ModelRegistry` verifies the SHA-256 cryptographic hashes of all model artifacts against `artifacts/models/INTEGRITY_MANIFEST.json`, enforces strict feature boundaries (rejecting missing features or NaNs), and integrates exact TreeSHAP attribution generation.
 
 3. **Placeholder & Legacy Cleanup Candidates:**
-   - 6 packages are either 0-line stubs (`adapters`, `alignment`, `drift`, `eval`, `serve`) or non-functional placeholder adapters (`integrations/adk`).
+   - 5 packages are 0-line stubs (`adapters`, `alignment`, `drift`, `eval`, `serve`). The `integrations/` package provides an optional read-only runtime layer (`ArgusMCPServer` & `IncidentNarrator`) which is off by default and isolated from the core detection pipeline.
    - `blackboard/` and `memory/` are fully implemented in-memory data structures, but the live pipeline predominantly passes immutable event payloads directly through the `orchestrator` and `bus` rather than querying a shared blackboard.

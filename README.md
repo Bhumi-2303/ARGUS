@@ -105,6 +105,18 @@ ARGUS executes an autonomous, sequential 6-agent pipeline with a shared, strictl
 | **5** | **Risk Prediction Agent** | • Assesses asset criticality (`CriticalAssetAnalyzer`).<br>• Computes grid impact & operational disruption (`ImpactEstimator`).<br>• Evaluates escalation trends (`TrendAnalyzer`).<br>• Computes deterministic risk score: $R = \text{round}(\text{Criticality} \times \text{Threat} \times \text{Impact} \times 100)$. | `EnrichmentContext` + `Threat` $\to$ `RiskEvent` |
 | **6** | **Decision Support Agent** | • Matches incident profile to ICS containment playbooks (`PlaybookSelector`).<br>• Generates prioritized mitigation actions (`ActionPrioritizer`).<br>• Prepares human-in-the-loop operator approval tokens (`ApprovalGenerator`). | `RiskEvent` $\to$ `DecisionAnalysisResult` |
 
+### 🔌 Optional Agent Runtime Layer (Google ADK & MCP)
+
+The core 6-agent detection and decision pipeline is **100% deterministic, model-driven, and reproducible**. To support external orchestration and AI-assisted security analyst workflows without compromising detection fidelity, ARGUS provides an optional runtime integration layer in [`src/argus/integrations/`](src/argus/integrations/):
+
+- **Model Context Protocol (MCP) Server**: [`ArgusMCPServer`](src/argus/integrations/mcp/server.py) implements the Model Context Protocol, exposing 4 strictly read-only inspection tools over existing services:
+  - `get_incident`: Inspects security incidents, risk scores, timelines, and remediation actions.
+  - `get_trace`: Inspects multi-agent execution steps and stage latencies.
+  - `explain_flow`: Computes read-only TreeSHAP attributions and probabilities for network flow features.
+  - `lookup_mitre`: Queries local MITRE ATT&CK Enterprise technique definitions, descriptions, and mitigations.
+- **ADK / LLM Analyst Narrator**: [`IncidentNarrator`](src/argus/integrations/adk/narrator.py) optionally synthesizes already-computed pipeline outputs into structured SOC executive summaries using Google Gemini.
+- **Safety Invariant**: This layer is **OFF by default**, **never on the detection path**, and **never alters risk scores, threat assessments, or remediation decisions**. When no API key is configured or when offline, it degrades cleanly to a deterministic zero-hallucination briefing.
+
 ---
 
 ## 📊 Authoritative Empirical Results

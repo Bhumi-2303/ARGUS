@@ -92,7 +92,11 @@ class ObservabilitySettings(BaseSettings):
 
 class FeatureFlagSettings(BaseSettings):
     """Feature flag configuration settings."""
+    agent_runtime: bool = Field(default=False)
     adk_planning: bool = Field(default=False)
+    adk_narrator: bool = Field(default=False)
+    mcp_server: bool = Field(default=False)
+    gemini_api_key: Optional[str] = Field(default=None)
     vector_memory: bool = Field(default=True)
     audit_logging: bool = Field(default=True)
     rate_limiting: bool = Field(default=True)
