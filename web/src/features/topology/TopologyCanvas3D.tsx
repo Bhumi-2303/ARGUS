@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, useState, Suspense } from 'react';
+import React, { useRef, useMemo, useState, useEffect, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Html } from '@react-three/drei';
 import * as THREE from 'three';
@@ -14,10 +14,16 @@ import {
   Zap,
   Lock,
   Workflow,
-  Shield,
-  Activity,
+  CheckCircle,
+  XCircle,
+  MinusCircle,
+  Play,
+  RotateCcw,
 } from 'lucide-react';
-import { TopologyNode, TopologyEdge, FlowEventItem } from '../../api/client';
+import { TopologyNode, TopologyEdge, FlowEventItem, ShiftPCAResponse } from '../../api/client';
+
+export type SceneMode = 'TOPOLOGY' | 'DOMAIN_SHIFT' | 'SHAP' | 'DECISION_TIMELINE';
+export type NodeState = 'idle' | 'running' | 'success' | 'skipped' | 'failed';
 
 export interface TopologyCanvas3DProps {
   nodes: TopologyNode[];
@@ -26,9 +32,24 @@ export interface TopologyCanvas3DProps {
   onSelectNode: (node: TopologyNode) => void;
   activeEvents: FlowEventItem[];
   layoutMode?: 'architecture' | 'topology';
+  sceneMode?: SceneMode;
+  quality?: 'high' | 'low';
+  reducedMotion?: boolean;
+  shiftData?: ShiftPCAResponse | null;
+  shiftLoading?: boolean;
+  selectedIncident?: any;
+  flowFeatures?: Record<string, number>;
+  flowExplanation?: {
+    shap_values: Record<string, number>;
+    top_feature: string;
+    top_feature_impact: number;
+    base_value: number;
+  };
+  nodeStatusMap?: Record<string, NodeState>;
+  onApproveIncident?: (incidentId: string) => void;
 }
 
-// Color palette mapping based on role and cyber identity
+// Visual theme configurations
 function getAgentVisualConfig(nodeId: string, nodeType: string) {
   switch (nodeId.toLowerCase()) {
     case 'orchestrator':
@@ -37,7 +58,7 @@ function getAgentVisualConfig(nodeId: string, nodeType: string) {
         accent: '#818cf8',
         icon: Workflow,
         label: 'ARGUS Orchestrator',
-        subtitle: 'Central Cognitive Core & Workflow Engine',
+        subtitle: 'Central Workflow Engine',
         radius: 2.2,
       };
     case 'data_intelligence':
@@ -45,8 +66,8 @@ function getAgentVisualConfig(nodeId: string, nodeType: string) {
         color: '#06b6d4',
         accent: '#38bdf8',
         icon: Database,
-        label: 'Data Intelligence Agent',
-        subtitle: 'Telemetry Ingestion & Harmonization',
+        label: 'Data Intelligence',
+        subtitle: 'Harmonization & Loader',
         radius: 1.5,
       };
     case 'threat_analysis':
@@ -54,8 +75,8 @@ function getAgentVisualConfig(nodeId: string, nodeType: string) {
         color: '#f43f5e',
         accent: '#fb7185',
         icon: Crosshair,
-        label: 'Threat Analysis Agent',
-        subtitle: 'CORAL D1->D2 ML Inference',
+        label: 'Threat Analysis',
+        subtitle: 'CORAL Adapted ML Inference',
         radius: 1.5,
       };
     case 'explainability':
@@ -63,8 +84,8 @@ function getAgentVisualConfig(nodeId: string, nodeType: string) {
         color: '#a855f7',
         accent: '#c084fc',
         icon: BarChart3,
-        label: 'Explainability Agent',
-        subtitle: 'TreeSHAP Feature Attributions',
+        label: 'Explainability',
+        subtitle: 'TreeSHAP Attributions',
         radius: 1.5,
       };
     case 'knowledge_context':
@@ -72,8 +93,8 @@ function getAgentVisualConfig(nodeId: string, nodeType: string) {
         color: '#3b82f6',
         accent: '#60a5fa',
         icon: BookOpen,
-        label: 'Knowledge Context Agent',
-        subtitle: 'MITRE ATT&CK for ICS Matrix',
+        label: 'Knowledge Context',
+        subtitle: 'MITRE ATT&CK & CVEs',
         radius: 1.5,
       };
     case 'risk_prediction':
@@ -81,8 +102,8 @@ function getAgentVisualConfig(nodeId: string, nodeType: string) {
         color: '#f59e0b',
         accent: '#fbbf24',
         icon: AlertTriangle,
-        label: 'Risk Prediction Agent',
-        subtitle: 'Operational Grid Impact & Criticality',
+        label: 'Risk Prediction',
+        subtitle: 'Grid Criticality Assessment',
         radius: 1.5,
       };
     case 'decision_support':
@@ -90,8 +111,8 @@ function getAgentVisualConfig(nodeId: string, nodeType: string) {
         color: '#10b981',
         accent: '#34d399',
         icon: ShieldCheck,
-        label: 'Decision Support Agent',
-        subtitle: 'Automated Containment Playbooks',
+        label: 'Decision Support',
+        subtitle: 'Automated Containment',
         radius: 1.5,
       };
     case 'api_gateway':
@@ -100,17 +121,17 @@ function getAgentVisualConfig(nodeId: string, nodeType: string) {
         accent: '#7dd3fc',
         icon: Radio,
         label: 'API Gateway',
-        subtitle: 'Flow Ingress & Telemetry Termination',
-        radius: 1.35,
+        subtitle: 'Entrypoint & WebSocket Bus',
+        radius: 1.6,
       };
     case 'message_bus':
       return {
         color: '#00f0ff',
-        accent: '#67e8f9',
+        accent: '#38bdf8',
         icon: Zap,
-        label: 'Event Message Bus',
-        subtitle: 'Asynchronous Pub/Sub Telemetry Broker',
-        radius: 1.35,
+        label: 'Message Bus',
+        subtitle: 'Pub-Sub Event Broker',
+        radius: 1.6,
       };
     case 'policy_engine':
       return {
@@ -118,390 +139,72 @@ function getAgentVisualConfig(nodeId: string, nodeType: string) {
         accent: '#a5b4fc',
         icon: Lock,
         label: 'Policy Engine',
-        subtitle: 'Deterministic Mitigation Verification',
-        radius: 1.35,
+        subtitle: 'Zero Trust Guardrails',
+        radius: 1.5,
       };
     default:
       return {
-        color: nodeType === 'engine' ? '#8b5cf6' : nodeType === 'bus' ? '#06b6d4' : '#3b82f6',
-        accent: '#38bdf8',
+        color: '#38bdf8',
+        accent: '#94a3b8',
         icon: Cpu,
         label: nodeId,
-        subtitle: 'Cyber System Component',
+        subtitle: nodeType,
         radius: 1.4,
       };
   }
 }
 
-// 3D Geometry specific to each node's cyber role
-function NodeGeometry({ nodeId }: { nodeId: string }) {
-  const meshRef = useRef<THREE.Mesh>(null!);
-  const ringRef = useRef<THREE.Mesh>(null!);
-
-  useFrame(({ clock }) => {
-    const t = clock.getElapsedTime();
-    if (meshRef.current) {
-      if (nodeId === 'orchestrator') {
-        meshRef.current.rotation.y = t * 0.4;
-        meshRef.current.rotation.x = Math.sin(t * 0.3) * 0.15;
-      } else {
-        meshRef.current.rotation.y = t * 0.2;
-      }
-    }
-    if (ringRef.current) {
-      ringRef.current.rotation.z = -t * 0.6;
-    }
-  });
-
-  const id = nodeId.toLowerCase();
-
-  if (id === 'orchestrator') {
-    return (
-      <group position={[0, 0.9, 0]}>
-        {/* Outer rotating cyber-lattice cage */}
-        <mesh ref={meshRef}>
-          <dodecahedronGeometry args={[1.15, 0]} />
-          <meshStandardMaterial
-            color="#00f0ff"
-            emissive="#00f0ff"
-            emissiveIntensity={0.4}
-            wireframe
-            transparent
-            opacity={0.7}
-          />
-        </mesh>
-        {/* Inner pulsing power core */}
-        <mesh>
-          <octahedronGeometry args={[0.7, 0]} />
-          <meshStandardMaterial
-            color="#38bdf8"
-            emissive="#0284c7"
-            emissiveIntensity={0.8}
-            roughness={0.1}
-            metalness={0.9}
-          />
-        </mesh>
-        {/* Rotating horizontal orbital ring */}
-        <mesh ref={ringRef} rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[1.5, 0.03, 16, 64]} />
-          <meshBasicMaterial color="#00f0ff" transparent opacity={0.8} />
-        </mesh>
-      </group>
-    );
-  }
-
-  if (id === 'data_intelligence') {
-    return (
-      <group position={[0, 0.7, 0]}>
-        {/* Stacked data disks */}
-        <mesh position={[0, -0.3, 0]}>
-          <cylinderGeometry args={[0.65, 0.65, 0.2, 24]} />
-          <meshStandardMaterial color="#0e7490" emissive="#06b6d4" emissiveIntensity={0.5} metalness={0.8} />
-        </mesh>
-        <mesh position={[0, 0, 0]}>
-          <cylinderGeometry args={[0.65, 0.65, 0.2, 24]} />
-          <meshStandardMaterial color="#0e7490" emissive="#06b6d4" emissiveIntensity={0.6} metalness={0.8} />
-        </mesh>
-        <mesh position={[0, 0.3, 0]}>
-          <cylinderGeometry args={[0.65, 0.65, 0.2, 24]} />
-          <meshStandardMaterial color="#0e7490" emissive="#06b6d4" emissiveIntensity={0.7} metalness={0.8} />
-        </mesh>
-      </group>
-    );
-  }
-
-  if (id === 'threat_analysis') {
-    return (
-      <group position={[0, 0.8, 0]}>
-        {/* Threat Detection Crystal Octahedron */}
-        <mesh ref={meshRef}>
-          <octahedronGeometry args={[0.8, 0]} />
-          <meshStandardMaterial
-            color="#f43f5e"
-            emissive="#e11d48"
-            emissiveIntensity={0.7}
-            roughness={0.15}
-            metalness={0.85}
-          />
-        </mesh>
-      </group>
-    );
-  }
-
-  if (id === 'explainability') {
-    return (
-      <group position={[0, 0.8, 0]}>
-        {/* SHAP Prism Icosahedron */}
-        <mesh ref={meshRef}>
-          <icosahedronGeometry args={[0.75, 0]} />
-          <meshStandardMaterial
-            color="#a855f7"
-            emissive="#9333ea"
-            emissiveIntensity={0.6}
-            roughness={0.2}
-            metalness={0.8}
-          />
-        </mesh>
-      </group>
-    );
-  }
-
-  if (id === 'knowledge_context') {
-    return (
-      <group position={[0, 0.8, 0]}>
-        {/* MITRE Knowledge Cube */}
-        <mesh ref={meshRef}>
-          <boxGeometry args={[0.9, 0.9, 0.9]} />
-          <meshStandardMaterial
-            color="#2563eb"
-            emissive="#1d4ed8"
-            emissiveIntensity={0.6}
-            roughness={0.2}
-            metalness={0.85}
-          />
-        </mesh>
-      </group>
-    );
-  }
-
-  if (id === 'risk_prediction') {
-    return (
-      <group position={[0, 0.8, 0]}>
-        {/* Risk Assessment Conical Beacon */}
-        <mesh ref={meshRef}>
-          <coneGeometry args={[0.7, 1.2, 16]} />
-          <meshStandardMaterial
-            color="#f59e0b"
-            emissive="#d97706"
-            emissiveIntensity={0.65}
-            roughness={0.2}
-            metalness={0.8}
-          />
-        </mesh>
-      </group>
-    );
-  }
-
-  if (id === 'decision_support') {
-    return (
-      <group position={[0, 0.8, 0]}>
-        {/* Mitigation Shield Prism */}
-        <mesh ref={meshRef}>
-          <cylinderGeometry args={[0.7, 0.7, 0.8, 6]} />
-          <meshStandardMaterial
-            color="#10b981"
-            emissive="#059669"
-            emissiveIntensity={0.6}
-            roughness={0.2}
-            metalness={0.8}
-          />
-        </mesh>
-      </group>
-    );
-  }
-
-  if (id === 'api_gateway') {
-    return (
-      <group position={[0, 0.7, 0]}>
-        {/* Ingress Gateway Sensor Sphere & Ring */}
-        <mesh>
-          <sphereGeometry args={[0.65, 24, 24]} />
-          <meshStandardMaterial color="#38bdf8" emissive="#0284c7" emissiveIntensity={0.5} />
-        </mesh>
-        <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[0.9, 0.03, 16, 32]} />
-          <meshBasicMaterial color="#38bdf8" />
-        </mesh>
-      </group>
-    );
-  }
-
-  if (id === 'message_bus') {
-    return (
-      <group position={[0, 0.7, 0]}>
-        {/* Dual Bus Conduits */}
-        <mesh position={[-0.25, 0, 0]}>
-          <cylinderGeometry args={[0.25, 0.25, 0.9, 16]} />
-          <meshStandardMaterial color="#00f0ff" emissive="#0891b2" emissiveIntensity={0.7} />
-        </mesh>
-        <mesh position={[0.25, 0, 0]}>
-          <cylinderGeometry args={[0.25, 0.25, 0.9, 16]} />
-          <meshStandardMaterial color="#00f0ff" emissive="#0891b2" emissiveIntensity={0.7} />
-        </mesh>
-      </group>
-    );
-  }
-
-  // Fallback for policy_engine / other nodes
-  return (
-    <group position={[0, 0.75, 0]}>
-      <mesh ref={meshRef}>
-        <octahedronGeometry args={[0.7, 0]} />
-        <meshStandardMaterial color="#6366f1" emissive="#4f46e5" emissiveIntensity={0.6} />
-      </mesh>
-    </group>
-  );
-}
-
-interface CyberPlatformProps {
-  node: TopologyNode;
-  position: [number, number, number];
-  isSelected: boolean;
-  onSelect: (node: TopologyNode) => void;
-}
-
-function CyberPlatform({ node, position, isSelected, onSelect }: CyberPlatformProps) {
-  const [hovered, setHovered] = useState(false);
-  const platformRef = useRef<THREE.Group>(null!);
-  const config = getAgentVisualConfig(node.id, node.type);
-  const IconComponent = config.icon;
-
-  // Pulse effect if active / busy
-  useFrame(({ clock }) => {
-    if (platformRef.current && (node.status === 'busy' || hovered)) {
-      const scale = 1 + Math.sin(clock.getElapsedTime() * 4) * 0.04;
-      platformRef.current.scale.set(scale, scale, scale);
-    }
-  });
-
-  const statusBorderColor =
-    node.status === 'busy'
-      ? 'border-emerald-400 text-emerald-300'
-      : node.status === 'failed'
-      ? 'border-rose-500 text-rose-300'
-      : node.status === 'blocked'
-      ? 'border-amber-400 text-amber-300'
-      : 'border-cyan-500/50 text-cyan-200';
-
-  return (
-    <group
-      ref={platformRef}
-      position={position}
-      onClick={(e) => {
-        e.stopPropagation();
-        onSelect(node);
-      }}
-      onPointerOver={(e) => {
-        e.stopPropagation();
-        setHovered(true);
-      }}
-      onPointerOut={() => setHovered(false)}
-    >
-      {/* Selection Holographic Beacon */}
-      {isSelected && (
-        <group>
-          <mesh position={[0, 1.2, 0]}>
-            <cylinderGeometry args={[config.radius * 1.25, config.radius * 1.25, 3.0, 32, 1, true]} />
-            <meshBasicMaterial color="#00f0ff" transparent opacity={0.15} side={THREE.DoubleSide} />
-          </mesh>
-          <mesh position={[0, 2.7, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <ringGeometry args={[config.radius * 1.15, config.radius * 1.25, 32]} />
-            <meshBasicMaterial color="#00f0ff" />
-          </mesh>
-        </group>
-      )}
-
-      {/* Cyber Platform Base Cylinder */}
-      <mesh position={[0, -0.15, 0]}>
-        <cylinderGeometry args={[config.radius, config.radius * 1.1, 0.35, 32]} />
-        <meshStandardMaterial
-          color="#060b17"
-          roughness={0.25}
-          metalness={0.92}
-        />
-      </mesh>
-
-      {/* Glowing Outer Edge Ring */}
-      <mesh position={[0, 0.02, 0]}>
-        <torusGeometry args={[config.radius, 0.035, 16, 48]} />
-        <meshBasicMaterial color={config.color} />
-      </mesh>
-
-      {/* Floor Projection Hologram Ring */}
-      <mesh position={[0, -0.32, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[config.radius * 1.15, config.radius * 1.35, 48]} />
-        <meshBasicMaterial color={config.color} transparent opacity={hovered || isSelected ? 0.6 : 0.25} />
-      </mesh>
-
-      {/* The Central Role-Specific 3D Geometry */}
-      <NodeGeometry nodeId={node.id} />
-
-      {/* Crisp HTML Label and Cyber Badge */}
-      <Html position={[0, 1.8, 0]} center distanceFactor={22} zIndexRange={[100, 0]}>
-        <div
-          className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-950/90 border ${statusBorderColor} shadow-xl backdrop-blur-md cursor-pointer transition-all duration-200 select-none whitespace-nowrap hover:scale-105`}
-        >
-          <div
-            className="p-1 rounded-md"
-            style={{ backgroundColor: `${config.color}20`, color: config.color }}
-          >
-            <IconComponent className="w-3.5 h-3.5" />
-          </div>
-
-          <div className="text-left font-mono">
-            <div className="text-[11px] font-bold text-slate-100 flex items-center gap-1.5">
-              <span>{config.label}</span>
-              {node.implementation_type === 'stub' && (
-                <span className="px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 text-[8px] border border-amber-500/40">
-                  STUB
-                </span>
-              )}
-            </div>
-            {(hovered || isSelected) && (
-              <div className="text-[9px] text-slate-400 font-sans max-w-[200px] truncate">
-                {config.subtitle}
-              </div>
-            )}
-          </div>
-        </div>
-      </Html>
-    </group>
-  );
-}
-
-// Particle traveling along active connection paths
-function FlowParticle({ startPos, endPos, speed = 1.8 }: { startPos: [number, number, number]; endPos: [number, number, number]; speed?: number }) {
-  const meshRef = useRef<THREE.Mesh>(null!);
-
-  useFrame(({ clock }) => {
-    if (meshRef.current) {
-      const progress = (clock.getElapsedTime() * speed) % 1;
-      meshRef.current.position.set(
-        THREE.MathUtils.lerp(startPos[0], endPos[0], progress),
-        THREE.MathUtils.lerp(startPos[1] + 0.3, endPos[1] + 0.3, progress),
-        THREE.MathUtils.lerp(startPos[2], endPos[2], progress)
-      );
-    }
-  });
-
-  return (
-    <mesh ref={meshRef}>
-      <sphereGeometry args={[0.22, 16, 16]} />
-      <meshBasicMaterial color="#00f0ff" />
-    </mesh>
-  );
-}
-
-interface CyberConnectionProps {
+// -------------------------------------------------------------
+// 1. Instanced Particle Edge Conduits
+// -------------------------------------------------------------
+interface ParticleEdgeProps {
   sourcePos: [number, number, number];
   targetPos: [number, number, number];
+  color: string;
   isActive: boolean;
-  color?: string;
+  particleCount?: number;
+  reducedMotion?: boolean;
 }
 
-function CyberConnection({ sourcePos, targetPos, isActive, color = '#00f0ff' }: CyberConnectionProps) {
-  const points = useMemo(() => {
+function InstancedParticleEdge({
+  sourcePos,
+  targetPos,
+  color,
+  isActive,
+  particleCount = 12,
+  reducedMotion = false,
+}: ParticleEdgeProps) {
+  const meshRef = useRef<THREE.InstancedMesh>(null!);
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+
+  const curve = useMemo(() => {
     const p1 = new THREE.Vector3(...sourcePos);
     const p2 = new THREE.Vector3(...targetPos);
-    // Slight upward arc for cyber conduit feel
     const mid = new THREE.Vector3()
       .addVectors(p1, p2)
       .multiplyScalar(0.5)
-      .add(new THREE.Vector3(0, 0.4, 0));
-    return new THREE.QuadraticBezierCurve3(p1, mid, p2).getPoints(30);
+      .add(new THREE.Vector3(0, 0.45, 0));
+    return new THREE.QuadraticBezierCurve3(p1, mid, p2);
   }, [sourcePos, targetPos]);
 
-  const lineGeometry = useMemo(() => new THREE.BufferGeometry().setFromPoints(points), [points]);
+  const lineGeometry = useMemo(() => {
+    return new THREE.BufferGeometry().setFromPoints(curve.getPoints(24));
+  }, [curve]);
+
+  useFrame(({ clock }) => {
+    if (!meshRef.current || !isActive || reducedMotion) return;
+    const t = clock.getElapsedTime() * 0.75;
+    for (let i = 0; i < particleCount; i++) {
+      const phase = (t + i / particleCount) % 1;
+      const pt = curve.getPoint(phase);
+      dummy.position.copy(pt);
+      const scale = Math.sin(phase * Math.PI) * 0.16 + 0.05;
+      dummy.scale.set(scale, scale, scale);
+      dummy.updateMatrix();
+      meshRef.current.setMatrixAt(i, dummy.matrix);
+    }
+    meshRef.current.instanceMatrix.needsUpdate = true;
+  });
 
   return (
     <group>
@@ -511,51 +214,536 @@ function CyberConnection({ sourcePos, targetPos, isActive, color = '#00f0ff' }: 
             lineGeometry,
             new THREE.LineBasicMaterial({
               color: isActive ? color : '#1e293b',
-              linewidth: isActive ? 2.5 : 1,
               transparent: true,
-              opacity: isActive ? 0.95 : 0.35,
+              opacity: isActive ? 0.95 : 0.25,
             })
           )
         }
       />
       {isActive && (
-        <>
-          <FlowParticle startPos={sourcePos} endPos={targetPos} speed={1.6} />
-          <FlowParticle startPos={sourcePos} endPos={targetPos} speed={2.4} />
-        </>
+        <instancedMesh ref={meshRef} args={[undefined, undefined, particleCount]}>
+          <sphereGeometry args={[1, 8, 8]} />
+          <meshBasicMaterial color={color} />
+        </instancedMesh>
       )}
     </group>
   );
 }
 
-// Floor technical grid and orbital radar rings
-function CyberEnvironment() {
+// -------------------------------------------------------------
+// 2. Cyber Node with Dynamic Shading (idle/running/success/skipped/failed)
+// -------------------------------------------------------------
+function CyberNode3D({
+  node,
+  position,
+  isSelected,
+  nodeState = 'idle',
+  onSelect,
+  reducedMotion = false,
+}: {
+  node: TopologyNode;
+  position: [number, number, number];
+  isSelected: boolean;
+  nodeState: NodeState;
+  onSelect: () => void;
+  reducedMotion?: boolean;
+}) {
+  const groupRef = useRef<THREE.Group>(null!);
+  const [hovered, setHovered] = useState(false);
+  const config = getAgentVisualConfig(node.id, node.type);
+
+  // Dynamic shading by node state
+  const stateColor = useMemo(() => {
+    switch (nodeState) {
+      case 'running':
+        return '#00f0ff'; // Cyan pulsing
+      case 'success':
+        return '#10b981'; // Emerald success
+      case 'skipped':
+        return '#64748b'; // Slate skipped
+      case 'failed':
+        return '#ef4444'; // Red failure
+      case 'idle':
+      default:
+        return config.color;
+    }
+  }, [nodeState, config.color]);
+
+  useFrame(({ clock }) => {
+    if (!groupRef.current || reducedMotion) return;
+    if (nodeState === 'running') {
+      const pulse = 1 + Math.sin(clock.getElapsedTime() * 7) * 0.08;
+      groupRef.current.scale.set(pulse, pulse, pulse);
+    } else if (hovered || isSelected) {
+      groupRef.current.scale.set(1.05, 1.05, 1.05);
+    } else {
+      groupRef.current.scale.set(1, 1, 1);
+    }
+  });
+
+  const IconComponent = config.icon;
+
   return (
-    <group position={[0, -0.38, 0]}>
-      {/* Dark Technical Cyber Grid */}
-      <gridHelper args={[40, 40, '#0ea5e9', '#091e3a']} />
-
-      {/* Orbital Ring 1: Specialized Agents Ring */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[8.45, 8.55, 64]} />
-        <meshBasicMaterial color="#00f0ff" transparent opacity={0.28} />
+    <group
+      ref={groupRef}
+      position={position}
+      onClick={(e) => {
+        e.stopPropagation();
+        onSelect();
+      }}
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        setHovered(true);
+      }}
+      onPointerOut={() => setHovered(false)}
+    >
+      {/* Base Platform */}
+      <mesh position={[0, -0.15, 0]}>
+        <cylinderGeometry args={[config.radius, config.radius * 1.1, 0.35, 24]} />
+        <meshStandardMaterial color="#060b17" roughness={0.3} metalness={0.9} />
       </mesh>
 
-      {/* Orbital Ring 2: Outer Infrastructure Ring */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[13.9, 14.05, 64]} />
-        <meshBasicMaterial color="#3b82f6" transparent opacity={0.18} />
+      {/* State Glow Ring */}
+      <mesh position={[0, 0.05, 0]}>
+        <torusGeometry args={[config.radius, 0.05, 12, 36]} />
+        <meshBasicMaterial color={stateColor} />
       </mesh>
 
-      {/* Concentric Center Radar Rings */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[3.2, 3.25, 48]} />
-        <meshBasicMaterial color="#38bdf8" transparent opacity={0.2} />
+      {/* Central Cyber Core */}
+      <mesh position={[0, 0.8, 0]}>
+        <octahedronGeometry args={[0.75, 0]} />
+        <meshStandardMaterial
+          color={stateColor}
+          emissive={stateColor}
+          emissiveIntensity={nodeState === 'running' ? 0.9 : 0.5}
+          roughness={0.2}
+          metalness={0.8}
+        />
       </mesh>
+
+      {/* HTML Overlay Label (CSP Compliant: No Troika Text) */}
+      <Html position={[0, 1.85, 0]} center distanceFactor={24} zIndexRange={[100, 0]}>
+        <div
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') onSelect();
+          }}
+          className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-950/95 border ${
+            nodeState === 'failed'
+              ? 'border-rose-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]'
+              : nodeState === 'running'
+              ? 'border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.5)]'
+              : nodeState === 'success'
+              ? 'border-emerald-500'
+              : isSelected
+              ? 'border-cyan-400 ring-2 ring-cyan-400/50'
+              : 'border-slate-800'
+          } shadow-xl backdrop-blur-md cursor-pointer select-none whitespace-nowrap transition-all`}
+        >
+          <div
+            className="p-1 rounded-md"
+            style={{ backgroundColor: `${stateColor}25`, color: stateColor }}
+          >
+            <IconComponent className="w-3.5 h-3.5" />
+          </div>
+          <div className="text-left font-mono">
+            <div className="text-[11px] font-bold text-slate-100 flex items-center gap-1.5">
+              <span>{config.label}</span>
+              <span
+                className={`px-1 py-0.2 rounded text-[8px] uppercase font-bold ${
+                  nodeState === 'running'
+                    ? 'bg-cyan-500/20 text-cyan-300'
+                    : nodeState === 'success'
+                    ? 'bg-emerald-500/20 text-emerald-300'
+                    : nodeState === 'skipped'
+                    ? 'bg-slate-700/50 text-slate-400'
+                    : nodeState === 'failed'
+                    ? 'bg-rose-500/20 text-rose-300'
+                    : 'bg-slate-800 text-slate-400'
+                }`}
+              >
+                {nodeState}
+              </span>
+            </div>
+            {(hovered || isSelected) && (
+              <div className="text-[9px] text-slate-400 font-sans">{config.subtitle}</div>
+            )}
+          </div>
+        </div>
+      </Html>
     </group>
   );
 }
 
+// -------------------------------------------------------------
+// 3. Domain Shift Scene: 3D PCA Point Clouds with Real CORAL Animation
+// -------------------------------------------------------------
+function DomainShiftScene({
+  shiftData,
+  reducedMotion = false,
+}: {
+  shiftData: ShiftPCAResponse | null;
+  reducedMotion?: boolean;
+}) {
+  const [alignmentAlpha, setAlignmentAlpha] = useState<number>(0.0);
+  const [isPlaying, setIsPlaying] = useState<boolean>(true);
+  const meshSourceRef = useRef<THREE.InstancedMesh>(null!);
+  const meshTargetRef = useRef<THREE.InstancedMesh>(null!);
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+
+  useEffect(() => {
+    if (!isPlaying || reducedMotion) return;
+    const interval = setInterval(() => {
+      setAlignmentAlpha((prev) => {
+        const next = prev + 0.015;
+        return next > 1.0 ? 0.0 : next;
+      });
+    }, 30);
+    return () => clearInterval(interval);
+  }, [isPlaying, reducedMotion]);
+
+  const sourcePoints = shiftData?.source_points || [];
+  const targetPoints = shiftData?.target_points || [];
+  const alignedPoints = shiftData?.aligned_points || [];
+
+  useFrame(() => {
+    if (!meshSourceRef.current || sourcePoints.length === 0) return;
+
+    for (let i = 0; i < sourcePoints.length; i++) {
+      const src = sourcePoints[i];
+      const aln = alignedPoints[i] || src;
+
+      // Real Class-Aware CORAL interpolation between original and aligned coordinates
+      const x = THREE.MathUtils.lerp(src.x, aln.x, alignmentAlpha);
+      const y = THREE.MathUtils.lerp(src.y, aln.y, alignmentAlpha);
+      const z = THREE.MathUtils.lerp(src.z, aln.z, alignmentAlpha);
+
+      dummy.position.set(x, y, z);
+      dummy.scale.set(0.18, 0.18, 0.18);
+      dummy.updateMatrix();
+      meshSourceRef.current.setMatrixAt(i, dummy.matrix);
+    }
+    meshSourceRef.current.instanceMatrix.needsUpdate = true;
+  });
+
+  useEffect(() => {
+    if (!meshTargetRef.current || targetPoints.length === 0) return;
+    for (let i = 0; i < targetPoints.length; i++) {
+      const tgt = targetPoints[i];
+      dummy.position.set(tgt.x, tgt.y, tgt.z);
+      dummy.scale.set(0.18, 0.18, 0.18);
+      dummy.updateMatrix();
+      meshTargetRef.current.setMatrixAt(i, dummy.matrix);
+    }
+    meshTargetRef.current.instanceMatrix.needsUpdate = true;
+  }, [targetPoints, dummy]);
+
+  return (
+    <group>
+      {/* 3D Coordinate Reference Axes & Floor */}
+      <gridHelper args={[20, 20, '#0284c7', '#0f172a']} position={[0, -2, 0]} />
+
+      {/* Source Point Cloud (CICIoT) */}
+      {sourcePoints.length > 0 && (
+        <instancedMesh
+          ref={meshSourceRef}
+          args={[undefined, undefined, sourcePoints.length]}
+        >
+          <sphereGeometry args={[1, 12, 12]} />
+          <meshStandardMaterial
+            color="#38bdf8"
+            emissive="#0284c7"
+            emissiveIntensity={0.6}
+            metalness={0.7}
+          />
+        </instancedMesh>
+      )}
+
+      {/* Target Point Cloud (NF-ToN) */}
+      {targetPoints.length > 0 && (
+        <instancedMesh
+          ref={meshTargetRef}
+          args={[undefined, undefined, targetPoints.length]}
+        >
+          <sphereGeometry args={[1, 12, 12]} />
+          <meshStandardMaterial
+            color="#f43f5e"
+            emissive="#be123c"
+            emissiveIntensity={0.6}
+            metalness={0.7}
+          />
+        </instancedMesh>
+      )}
+
+      {/* 3D Scene Controls & Metrics Overlay */}
+      <Html position={[0, 4.2, 0]} center distanceFactor={20} zIndexRange={[100, 0]}>
+        <div className="bg-slate-950/95 border border-slate-800 rounded-xl p-4 shadow-2xl backdrop-blur-md min-w-[340px] text-left font-mono">
+          <div className="flex items-center justify-between gap-4 mb-3">
+            <div>
+              <div className="text-xs font-bold text-slate-100 uppercase tracking-wider">
+                Class-Aware CORAL 3D PCA
+              </div>
+              <div className="text-[10px] text-slate-400">
+                Source: CICIoT (Cyan) vs Target: NF-ToN (Rose)
+              </div>
+            </div>
+            <button
+              onClick={() => setIsPlaying(!isPlaying)}
+              className="px-2 py-1 rounded bg-slate-900 border border-slate-700 text-cyan-400 text-xs hover:bg-slate-800 flex items-center gap-1"
+            >
+              {isPlaying ? <RotateCcw className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+              <span>{isPlaying ? 'Pause' : 'Play'}</span>
+            </button>
+          </div>
+
+          <div className="space-y-2 mb-3">
+            <div className="flex justify-between text-[11px] text-slate-300">
+              <span>Alignment Progress:</span>
+              <span className="text-cyan-400 font-bold">{Math.round(alignmentAlpha * 100)}%</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={alignmentAlpha}
+              onChange={(e) => {
+                setIsPlaying(false);
+                setAlignmentAlpha(parseFloat(e.target.value));
+              }}
+              className="w-full accent-cyan-400 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+
+          {shiftData && (
+            <div className="grid grid-cols-2 gap-2 text-[10px] border-t border-slate-800 pt-2">
+              <div className="bg-slate-900/60 p-2 rounded">
+                <div className="text-slate-400">Mean KS Before:</div>
+                <div className="text-rose-400 font-bold text-sm">
+                  {shiftData.metrics.mean_ks_before}
+                </div>
+                <div className="text-slate-500 text-[9px]">Mean PSI: {shiftData.metrics.mean_psi_before}</div>
+              </div>
+              <div className="bg-slate-900/60 p-2 rounded">
+                <div className="text-slate-400">Mean KS After:</div>
+                <div className="text-emerald-400 font-bold text-sm">
+                  {shiftData.metrics.mean_ks_after}
+                </div>
+                <div className="text-slate-500 text-[9px]">Mean PSI: {shiftData.metrics.mean_psi_after}</div>
+              </div>
+            </div>
+          )}
+        </div>
+      </Html>
+    </group>
+  );
+}
+
+// -------------------------------------------------------------
+// 4. SHAP Scene: 3D Bars for Flow Attributions
+// -------------------------------------------------------------
+function ShapBarsScene({
+  shapValues,
+  topFeature,
+}: {
+  shapValues: Record<string, number>;
+  topFeature?: string;
+}) {
+  const features = [
+    { key: 'pkt_mean_to_max', label: 'Pkt Mean/Max' },
+    { key: 'tcp_flag_density', label: 'TCP Flag Density' },
+    { key: 'log_pkt_mean', label: 'Log Pkt Mean' },
+    { key: 'log_pkt_max', label: 'Log Pkt Max' },
+  ];
+
+  const totalAbs = useMemo(() => {
+    return Object.values(shapValues).reduce((acc, v) => acc + Math.abs(v), 0) || 1.0;
+  }, [shapValues]);
+
+  return (
+    <group position={[0, -1, 0]}>
+      <gridHelper args={[16, 16, '#38bdf8', '#0f172a']} position={[0, 0, 0]} />
+
+      {features.map((feat, idx) => {
+        const val = shapValues[feat.key] ?? 0.0;
+        const isTop = topFeature === feat.key;
+        const isPositive = val >= 0;
+        const height = Math.max(0.3, Math.abs(val) * 4.0);
+        const xPos = (idx - 1.5) * 3.0;
+        const barColor = isPositive ? '#f43f5e' : '#10b981';
+        const impactPct = Math.round((Math.abs(val) / totalAbs) * 100);
+
+        return (
+          <group key={feat.key} position={[xPos, 0, 0]}>
+            {/* Pedestal */}
+            <mesh position={[0, 0.1, 0]}>
+              <cylinderGeometry args={[1.0, 1.1, 0.2, 24]} />
+              <meshStandardMaterial color="#0b1329" metalness={0.8} roughness={0.3} />
+            </mesh>
+
+            {/* 3D Attrib Bar */}
+            <mesh position={[0, height / 2 + 0.2, 0]}>
+              <boxGeometry args={[1.2, height, 1.2]} />
+              <meshStandardMaterial
+                color={barColor}
+                emissive={barColor}
+                emissiveIntensity={isTop ? 0.7 : 0.4}
+                metalness={0.6}
+                roughness={0.25}
+              />
+            </mesh>
+
+            {/* Top impact halo */}
+            {isTop && (
+              <mesh position={[0, height + 0.6, 0]}>
+                <torusGeometry args={[0.8, 0.05, 12, 32]} />
+                <meshBasicMaterial color="#fbbf24" />
+              </mesh>
+            )}
+
+            {/* Feature Label & Attribution Html Overlay */}
+            <Html position={[0, height + 0.9, 0]} center distanceFactor={22} zIndexRange={[100, 0]}>
+              <div
+                className={`bg-slate-950/95 border ${
+                  isTop ? 'border-amber-400 ring-2 ring-amber-400/30' : 'border-slate-800'
+                } rounded-lg p-2 text-center font-mono shadow-xl backdrop-blur-md min-w-[130px]`}
+              >
+                <div className="text-[10px] font-bold text-slate-200">{feat.label}</div>
+                <div
+                  className={`text-xs font-extrabold ${isPositive ? 'text-rose-400' : 'text-emerald-400'}`}
+                >
+                  {val >= 0 ? `+${val.toFixed(4)}` : val.toFixed(4)}
+                </div>
+                <div className="text-[9px] text-slate-400">{impactPct}% impact</div>
+              </div>
+            </Html>
+          </group>
+        );
+      })}
+    </group>
+  );
+}
+
+// -------------------------------------------------------------
+// 5. Decision Timeline Scene: 3D Arc with Stage Cards & Approval
+// -------------------------------------------------------------
+function DecisionTimelineScene({
+  incident,
+  onApprove,
+}: {
+  incident: any;
+  onApprove?: (id: string) => void;
+}) {
+  const stages = [
+    { name: 'Data Intelligence', status: 'SUCCESS', icon: Database, color: '#06b6d4', desc: 'Harmonized 4 features' },
+    { name: 'Threat Analysis', status: 'SUCCESS', icon: Crosshair, color: '#f43f5e', desc: 'CORAL Adapted Inference' },
+    { name: 'Explainability', status: 'SUCCESS', icon: BarChart3, color: '#a855f7', desc: 'TreeSHAP Computed' },
+    { name: 'Knowledge Context', status: 'SUCCESS', icon: BookOpen, color: '#3b82f6', desc: 'MITRE ATT&CK Linked' },
+    { name: 'Risk Prediction', status: 'SUCCESS', icon: AlertTriangle, color: '#f59e0b', desc: `Risk: ${incident?.risk_score ?? 68}/100` },
+    { name: 'Decision Support', status: 'SUCCESS', icon: ShieldCheck, color: '#10b981', desc: 'Playbook Formulated' },
+  ];
+
+  const approvalReq = incident?.approval_required ?? false;
+  const approvalStatus = incident?.approval_status ?? 'PENDING';
+
+  return (
+    <group position={[0, -0.5, 0]}>
+      <gridHelper args={[24, 24, '#0ea5e9', '#091e3a']} position={[0, -0.2, 0]} />
+
+      {stages.map((stage, idx) => {
+        const angle = (idx / (stages.length - 1)) * Math.PI - Math.PI / 2;
+        const radius = 8.5;
+        const x = Math.sin(angle) * radius;
+        const z = -Math.cos(angle) * radius * 0.45;
+        const Icon = stage.icon;
+
+        return (
+          <group key={stage.name} position={[x, 0.4, z]}>
+            {/* Pedestal */}
+            <mesh position={[0, -0.2, 0]}>
+              <cylinderGeometry args={[0.9, 1.0, 0.3, 24]} />
+              <meshStandardMaterial color="#0b1329" metalness={0.8} roughness={0.3} />
+            </mesh>
+
+            {/* Glowing Pillar */}
+            <mesh position={[0, 0.6, 0]}>
+              <cylinderGeometry args={[0.3, 0.3, 1.2, 16]} />
+              <meshStandardMaterial
+                color={stage.color}
+                emissive={stage.color}
+                emissiveIntensity={0.6}
+              />
+            </mesh>
+
+            {/* HTML Stage Card */}
+            <Html position={[0, 1.8, 0]} center distanceFactor={22} zIndexRange={[100, 0]}>
+              <div className="bg-slate-950/95 border border-slate-800 rounded-lg p-2.5 font-mono text-left shadow-2xl backdrop-blur-md min-w-[150px]">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-100 mb-0.5">
+                  <Icon className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>{stage.name}</span>
+                </div>
+                <div className="text-[10px] text-slate-400">{stage.desc}</div>
+                <div className="text-[9px] text-emerald-400 mt-1 font-semibold flex items-center gap-1">
+                  <CheckCircle className="w-2.5 h-2.5" />
+                  <span>{stage.status}</span>
+                </div>
+              </div>
+            </Html>
+          </group>
+        );
+      })}
+
+      {/* Central Approval Pedestal */}
+      <group position={[0, 0.5, 0]}>
+        <mesh position={[0, 0, 0]}>
+          <cylinderGeometry args={[2.0, 2.2, 0.4, 32]} />
+          <meshStandardMaterial color="#0f172a" metalness={0.9} roughness={0.2} />
+        </mesh>
+        <mesh position={[0, 0.22, 0]}>
+          <torusGeometry args={[2.0, 0.05, 16, 48]} />
+          <meshBasicMaterial color={approvalReq ? '#f59e0b' : '#10b981'} />
+        </mesh>
+
+        <Html position={[0, 1.5, 0]} center distanceFactor={22} zIndexRange={[100, 0]}>
+          <div className="bg-slate-950/95 border border-amber-500/60 rounded-xl p-4 font-mono text-left shadow-2xl backdrop-blur-md min-w-[280px]">
+            <div className="text-xs font-bold text-slate-100 mb-1 flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-amber-400" />
+              <span>Incident Response Approval State</span>
+            </div>
+            <div className="text-[11px] text-slate-300 mb-2">
+              Status:{' '}
+              <span
+                className={`font-bold ${
+                  approvalStatus === 'APPROVED' ? 'text-emerald-400' : 'text-amber-400'
+                }`}
+              >
+                {approvalStatus}
+              </span>
+            </div>
+            {approvalReq && approvalStatus === 'PENDING' && (
+              <div className="flex gap-2 mt-3">
+                <button
+                  onClick={() => onApprove && onApprove(incident?.incident_id || 'test-inc')}
+                  className="px-3 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs"
+                >
+                  Approve Mitigation
+                </button>
+                <button className="px-3 py-1.5 rounded bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs">
+                  Reject
+                </button>
+              </div>
+            )}
+          </div>
+        </Html>
+      </group>
+    </group>
+  );
+}
+
+// -------------------------------------------------------------
+// Main Topology Canvas 3D Export
+// -------------------------------------------------------------
 export function TopologyCanvas3D({
   nodes,
   edges,
@@ -563,70 +751,35 @@ export function TopologyCanvas3D({
   onSelectNode,
   activeEvents,
   layoutMode = 'architecture',
+  sceneMode = 'TOPOLOGY',
+  quality = 'high',
+  reducedMotion = false,
+  shiftData,
+  selectedIncident,
+  flowExplanation,
+  nodeStatusMap = {},
+  onApproveIncident,
 }: TopologyCanvas3DProps) {
-  // Compute positions based on selected mode
+  // Circular layout for nodes
   const nodePositions = useMemo(() => {
-    const posMap: Record<string, [number, number, number]> = {};
+    const map = new Map<string, [number, number, number]>();
+    const radius = 8.5;
+    const specialized = nodes.filter((n) => n.id !== 'orchestrator' && n.id !== 'message_bus' && n.id !== 'api_gateway');
 
-    if (layoutMode === 'architecture') {
-      // 1. ARGUS Orchestrator in center
-      posMap['orchestrator'] = [0, 0.4, 0];
+    // Central core
+    map.set('orchestrator', [0, 0.4, 0]);
+    map.set('message_bus', [0, 0.4, 3.2]);
+    map.set('api_gateway', [0, 0.4, -3.2]);
 
-      // 2. The 6 specialized agents in an orbital ring (Radius 8.5)
-      const agentIds = [
-        'data_intelligence',
-        'threat_analysis',
-        'explainability',
-        'knowledge_context',
-        'risk_prediction',
-        'decision_support',
-      ];
-      const R_agents = 8.5;
-      agentIds.forEach((id, idx) => {
-        // Arrange sequentially starting at angle 0
-        const angle = (idx / agentIds.length) * Math.PI * 2;
-        posMap[id] = [Math.cos(angle) * R_agents, 0.1, Math.sin(angle) * R_agents];
-      });
+    specialized.forEach((n, idx) => {
+      const angle = (idx / specialized.length) * Math.PI * 2;
+      map.set(n.id, [Math.cos(angle) * radius, 0.4, Math.sin(angle) * radius]);
+    });
 
-      // 3. Infrastructure components on outer perimeter
-      posMap['api_gateway'] = [-13.5, 0.0, 3.5];
-      posMap['message_bus'] = [-6.8, 0.1, 1.8];
-      posMap['policy_engine'] = [13.5, 0.0, -3.5];
+    return map;
+  }, [nodes]);
 
-      // Any remaining nodes
-      nodes.forEach((n) => {
-        if (!posMap[n.id]) {
-          posMap[n.id] = [12, 0, 10];
-        }
-      });
-    } else {
-      // System Topology Flow Mode: Left-to-Right Pipeline
-      posMap['api_gateway'] = [-14.5, 0.0, 0];
-      posMap['message_bus'] = [-9.5, 0.1, 0];
-      posMap['orchestrator'] = [-4.0, 0.4, 0];
-
-      // Specialized Agents staged column
-      posMap['data_intelligence'] = [1.5, 0.1, -4.5];
-      posMap['threat_analysis'] = [2.5, 0.1, 3.5];
-      posMap['explainability'] = [6.0, 0.1, 3.5];
-      posMap['knowledge_context'] = [5.5, 0.1, -4.5];
-      posMap['risk_prediction'] = [9.5, 0.1, -2.5];
-      posMap['decision_support'] = [10.5, 0.1, 2.5];
-
-      // Monitoring / Policy Engine
-      posMap['policy_engine'] = [15.0, 0.0, 0];
-
-      nodes.forEach((n) => {
-        if (!posMap[n.id]) {
-          posMap[n.id] = [12, 0, 8];
-        }
-      });
-    }
-
-    return posMap;
-  }, [nodes, layoutMode]);
-
-  // Set of active edges from recent flow events
+  // Active edges tracking
   const activeEdgeKeys = useMemo(() => {
     const set = new Set<string>();
     activeEvents.forEach((evt) => {
@@ -635,101 +788,103 @@ export function TopologyCanvas3D({
     return set;
   }, [activeEvents]);
 
-  // Radial orchestrator-to-agent communication links (for Architecture mode)
-  const orchestratorAgentLinks = useMemo(() => {
-    if (layoutMode !== 'architecture') return [];
-    return [
-      'data_intelligence',
-      'threat_analysis',
-      'explainability',
-      'knowledge_context',
-      'risk_prediction',
-      'decision_support',
-    ];
-  }, [layoutMode]);
+  const defaultShap = useMemo(() => {
+    return flowExplanation?.shap_values || {
+      pkt_mean_to_max: -0.1942,
+      tcp_flag_density: 0.4281,
+      log_pkt_mean: -0.0815,
+      log_pkt_max: 0.3129,
+    };
+  }, [flowExplanation]);
 
   return (
-    <Canvas
-      camera={{ position: [0, 16, 22], fov: 46 }}
-      style={{ background: '#020617' }}
-      onPointerDown={() => onSelectNode(null as any)}
-    >
-      {/* Cyber Lighting Environment */}
-      <ambientLight intensity={0.8} color="#38bdf8" />
-      <directionalLight position={[15, 25, 15]} intensity={1.5} color="#e0f2fe" />
-      <pointLight position={[-15, -10, -15]} intensity={0.6} color="#818cf8" />
-      <pointLight position={[0, 5, 0]} intensity={1.8} distance={16} color="#00f0ff" />
+    <div className="w-full h-full relative bg-slate-950">
+      <Canvas
+        camera={{ position: [0, 16, 22], fov: 48 }}
+        dpr={quality === 'high' ? [1, 2] : 1}
+        gl={{ antialias: quality === 'high', powerPreference: 'high-performance' }}
+      >
+        <color attach="background" args={['#030712']} />
+        <ambientLight intensity={0.65} />
+        <directionalLight position={[10, 20, 15]} intensity={1.2} />
+        <pointLight position={[-10, 10, -10]} intensity={0.5} color="#00f0ff" />
 
-      {/* OrbitControls with smooth damping */}
-      <OrbitControls
-        enablePan
-        enableZoom
-        enableRotate
-        enableDamping
-        dampingFactor={0.05}
-        maxPolarAngle={Math.PI / 2.05}
-        minDistance={8}
-        maxDistance={42}
-      />
+        <Suspense fallback={null}>
+          {sceneMode === 'TOPOLOGY' && (
+            <group>
+              <gridHelper args={[36, 36, '#0ea5e9', '#091e3a']} position={[0, -0.3, 0]} />
 
-      <Suspense fallback={null}>
-        {/* Floor Cyber Grid & Radar Rings */}
-        <CyberEnvironment />
+              {/* Edge Connections with Instanced Flow Particles */}
+              {edges.map((edge) => {
+                const sPos = nodePositions.get(edge.source);
+                const tPos = nodePositions.get(edge.target);
+                if (!sPos || !tPos) return null;
+                const isActive = activeEdgeKeys.has(`${edge.source}->${edge.target}`);
 
-        {/* Orchestrator Radial Control Beams (in Architecture mode) */}
-        {orchestratorAgentLinks.map((agentId) => {
-          const orchPos = nodePositions['orchestrator'] || [0, 0, 0];
-          const agentPos = nodePositions[agentId];
-          if (!agentPos) return null;
-          const isActive = activeEvents.some(
-            (e) => e.target_node === agentId || e.source_node === agentId
-          );
+                return (
+                  <InstancedParticleEdge
+                    key={`${edge.source}-${edge.target}`}
+                    sourcePos={sPos}
+                    targetPos={tPos}
+                    color="#00f0ff"
+                    isActive={isActive}
+                    particleCount={quality === 'high' ? 14 : 6}
+                    reducedMotion={reducedMotion}
+                  />
+                );
+              })}
 
-          return (
-            <CyberConnection
-              key={`orch->${agentId}`}
-              sourcePos={orchPos}
-              targetPos={agentPos}
-              isActive={isActive}
-              color="#00f0ff"
+              {/* Agent Nodes with Real State Shading */}
+              {nodes.map((node) => {
+                const pos = nodePositions.get(node.id) || [0, 0, 0];
+                const state = nodeStatusMap[node.id.toUpperCase()] || nodeStatusMap[node.id.toLowerCase()] || 'idle';
+
+                return (
+                  <CyberNode3D
+                    key={node.id}
+                    node={node}
+                    position={pos}
+                    isSelected={selectedNode?.id === node.id}
+                    nodeState={state}
+                    onSelect={() => onSelectNode(node)}
+                    reducedMotion={reducedMotion}
+                  />
+                );
+              })}
+            </group>
+          )}
+
+          {sceneMode === 'DOMAIN_SHIFT' && (
+            <DomainShiftScene shiftData={shiftData || null} reducedMotion={reducedMotion} />
+          )}
+
+          {sceneMode === 'SHAP' && (
+            <ShapBarsScene
+              shapValues={defaultShap}
+              topFeature={flowExplanation?.top_feature || 'tcp_flag_density'}
             />
-          );
-        })}
+          )}
 
-        {/* Sequential Telemetry & Pipeline Edges */}
-        {edges.map((edge) => {
-          const srcPos = nodePositions[edge.source];
-          const tgtPos = nodePositions[edge.target];
-          if (!srcPos || !tgtPos) return null;
-          const isActive = activeEdgeKeys.has(`${edge.source}->${edge.target}`);
-
-          return (
-            <CyberConnection
-              key={`${edge.source}->${edge.target}`}
-              sourcePos={srcPos}
-              targetPos={tgtPos}
-              isActive={isActive}
-              color={isActive ? '#10b981' : '#00f0ff'}
+          {sceneMode === 'DECISION_TIMELINE' && (
+            <DecisionTimelineScene
+              incident={selectedIncident}
+              onApprove={onApproveIncident}
             />
-          );
-        })}
+          )}
+        </Suspense>
 
-        {/* Elevated Cyber Platforms & Agent Visuals */}
-        {nodes.map((node) => {
-          const pos = nodePositions[node.id] || [0, 0, 0];
-          const isSelected = selectedNode?.id === node.id;
-
-          return (
-            <CyberPlatform
-              key={node.id}
-              node={node}
-              position={pos}
-              isSelected={isSelected}
-              onSelect={onSelectNode}
-            />
-          );
-        })}
-      </Suspense>
-    </Canvas>
+        <OrbitControls
+          enableDamping
+          dampingFactor={0.08}
+          minDistance={6}
+          maxDistance={50}
+          maxPolarAngle={Math.PI / 2.05}
+          autoRotate={!reducedMotion && sceneMode === 'TOPOLOGY'}
+          autoRotateSpeed={0.35}
+        />
+      </Canvas>
+    </div>
   );
 }
+
+export default TopologyCanvas3D;
