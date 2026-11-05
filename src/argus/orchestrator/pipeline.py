@@ -1,4 +1,6 @@
 """Real end-to-end agent execution pipeline for ARGUS."""
+import asyncio
+import inspect
 import uuid
 from datetime import datetime, timezone
 from dataclasses import dataclass, field
@@ -56,6 +58,7 @@ class PipelineContext:
     flow: Dict[str, Any]
     features: Dict[str, float]
     model_name: str
+    source_domain: str = "nfton"
     
     threat: Optional[Any] = None
     explanation: Optional[Any] = None
@@ -129,7 +132,7 @@ async def _step_data_intelligence(ctx: PipelineContext) -> None:
         flow_input = FlowInput(
             correlation_id=ctx.correlation_id,
             event_id=ctx.event_id,
-            source_domain="nfton",
+            source_domain=getattr(ctx, "source_domain", "nfton"),
             fields=ctx.flow,
         )
         result = await agent.process_flow(flow_input)
@@ -503,6 +506,7 @@ async def execute_pipeline(
     model_name: str = "xgb_adapted",
     correlation_id: Optional[str] = None,
     source_domain: str = "nfton",
+    stage_callback: Optional[Any] = None,
 ) -> PipelineContext:
     if correlation_id is None:
         correlation_id = f"flow-{uuid.uuid4().hex[:12]}"
@@ -515,19 +519,68 @@ async def execute_pipeline(
         flow=features,
         features={},
         model_name=model_name,
+        source_domain=source_domain,
     )
 
+    async def _emit_stage_start(stage_name: str):
+        if stage_callback:
+            start_evt = {
+                "stage": stage_name,
+                "status": "RUNNING",
+                "event_type": "stage_start",
+                "started_at": datetime.now(timezone.utc).isoformat(),
+                "correlation_id": ctx.correlation_id,
+                "event_id": ctx.event_id,
+                "model_version": ctx.model_name,
+            }
+            if inspect.iscoroutinefunction(stage_callback):
+                await stage_callback(start_evt)
+            elif callable(stage_callback):
+                stage_callback(start_evt)
+
+    async def _emit_stage_end(trace_evt: TraceEvent):
+        if stage_callback:
+            end_evt = {
+                "stage": trace_evt.agent,
+                "status": trace_evt.status,
+                "event_type": "stage_end",
+                "started_at": trace_evt.started_at.isoformat() if trace_evt.started_at else None,
+                "completed_at": trace_evt.completed_at.isoformat() if trace_evt.completed_at else None,
+                "duration_ms": trace_evt.duration,
+                "summary": trace_evt.output_summary or trace_evt.input_summary or f"{trace_evt.agent}: {trace_evt.status}",
+                "input_summary": trace_evt.input_summary,
+                "output_summary": trace_evt.output_summary,
+                "error": trace_evt.error,
+                "model_version": trace_evt.model_version or ctx.model_name,
+                "correlation_id": ctx.correlation_id,
+                "event_id": ctx.event_id,
+            }
+            if inspect.iscoroutinefunction(stage_callback):
+                await stage_callback(end_evt)
+            elif callable(stage_callback):
+                stage_callback(end_evt)
+
+    step_pipeline = [
+        ("DATA_INTELLIGENCE", _step_data_intelligence),
+        ("THREAT_ANALYSIS", _step_threat_analysis),
+        ("EXPLAINABILITY", _step_explainability),
+        ("KNOWLEDGE_CONTEXT", _step_knowledge_context),
+        ("RISK_PREDICTION", _step_risk_prediction),
+        ("DECISION_SUPPORT", _step_decision_support),
+    ]
+
     try:
-        await _step_data_intelligence(ctx)
-        await _step_threat_analysis(ctx)
-        await _step_explainability(ctx)
-        await _step_knowledge_context(ctx)
-        await _step_risk_prediction(ctx)
-        await _step_decision_support(ctx)
+        for stage_name, step_fn in step_pipeline:
+            await _emit_stage_start(stage_name)
+            await step_fn(ctx)
+            if ctx.trace:
+                await _emit_stage_end(ctx.trace[-1])
         ctx.status = "completed"
     except Exception as e:
         ctx.status = "failed"
         ctx.error = str(e)
+        if ctx.trace and ctx.trace[-1].status == "FAILED":
+            await _emit_stage_end(ctx.trace[-1])
         
         # Add skipped traces for remaining steps
         steps = [
@@ -544,11 +597,13 @@ async def execute_pipeline(
                 # Check if it was already marked as FAILED in trace
                 already_failed = any(t.agent == agent_name and t.status == "FAILED" for t in ctx.trace)
                 if not already_failed:
-                    ctx.add_trace(TraceEvent(
+                    skipped_trace = TraceEvent(
                         agent=agent_name,
                         status="SKIPPED",
                         error=f"Dependency failed: {e}"
-                    ))
+                    )
+                    ctx.add_trace(skipped_trace)
+                    await _emit_stage_end(skipped_trace)
         
     ctx.completed_at = datetime.now(timezone.utc)
     try:
