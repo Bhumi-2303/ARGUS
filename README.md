@@ -7,7 +7,7 @@
 [![Security](https://img.shields.io/badge/Security-Hardened%20(OIDC%20%7C%20RBAC%20%7C%20CSP)-brightgreen.svg)](docs/SECURITY.md)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**ARGUS** is an autonomous cyber-physical defense platform engineered for **Industrial Control Systems (ICS)**, **SCADA networks**, and **Smart Grid Infrastructure**. It investigates and provides **partial mitigation for cross-domain transfer failure and representation collapse** in network intrusion detection under strict zero-leakage protocols (achieving Clean CORAL MCC +0.3855 and ROC-AUC 0.5970 on held-out target data).
+**ARGUS** is an autonomous cyber-physical defense platform engineered for **Industrial Control Systems (ICS)**, **SCADA networks**, and **Smart Grid Infrastructure**. It investigates and provides **partial mitigation for cross-domain transfer failure and representation collapse** in network intrusion detection under target-label-leakage-controlled protocols (achieving Clean CORAL MCC +0.3855 on a random-row split and coordinate-disjoint MCC of 0.0504 at 0.50 / 0.0795 at 0.99, with ROC-AUC 0.5970 on held-out target data).
 
 ARGUS combines a **leakage-controlled domain adaptation model** (Class-Aware CORAL + XGBoost) with a **real-time 6-agent autonomous execution pipeline**, offering end-to-end telemetry ingestion, threat classification, TreeSHAP explainability, MITRE ATT&CK ICS context retrieval, operational risk scoring, and automated decision playbooks.
 
@@ -16,12 +16,12 @@ ARGUS combines a **leakage-controlled domain adaptation model** (Class-Aware COR
 ## 📌 Executive Summary & Key Research Findings
 
 1. **Cross-Domain Generalization Collapse**: Models trained on enterprise IoT traffic (**CICIoT2023 / D1**) achieve $>97\%$ in-domain F1, but catastrophically collapse to near-chance or majority-class predictions when evaluated across domains on smart home IoT (**NF-ToN-IoT-v2 / D2**) and industrial SCADA (**IEC 60870-5-104 / D3**).
-2. **Clean Class-Aware CORAL is the Leakage-Controlled Winner**:
-   - Aligning class-conditional second-order statistics on target adaptation splits (without touching test labels) and calibrating decision thresholds ($\tau^* = 0.99$) on disjoint calibration splits achieves:
-     - **Balanced Accuracy**: $71.09\%$
-     - **Matthews Correlation Coefficient (MCC)**: $+0.3855$
-     - **Precision**: $94.00\%$
-     - **Specificity**: $91.43\%$
+2. **Clean Class-Aware CORAL is the Target-Label-Leakage-Controlled Adaptation Baseline**:
+   - Aligning class-conditional second-order statistics on target adaptation splits (without touching test labels) and calibrating decision thresholds ($\tau^* = 0.99$) on disjoint calibration splits achieves $\text{MCC} = +0.3855$ on a random-row split, whereas coordinate-disjoint MCC is $0.0504$ at $0.50$ and $0.0795$ at $0.99$:
+     - **Balanced Accuracy**: $71.09\%$ (random-row split)
+     - **Matthews Correlation Coefficient (MCC)**: $+0.3855$ (random-row split) vs. $0.0504$ at $0.50$ / $0.0795$ at $0.99$ (coordinate-disjoint split)
+     - **Precision**: $94.00\%$ (random-row split)
+     - **Specificity**: $91.43\%$ (random-row split)
 3. **Domain-Adversarial Neural Network (DANN) Degeneracy**:
    - Evaluated against raw prediction exports ($N = 2,627,177$), DANN achieves $\text{ROC-AUC} = 0.3321$ and $\text{Specificity} = 0.06\%$, demonstrating complete collapse into majority-class prediction rather than domain invariance.
 4. **Representation Resolution Drives Transfer Feasibility**:
@@ -116,7 +116,7 @@ All experimental numbers backing the research are frozen and cryptographically v
 
 | Model | Decision $\tau$ | Accuracy | Precision | Recall | F1 | Balanced Acc. | Specificity | MCC | ROC-AUC | Status |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| **Clean Class-Aware CORAL + XGBoost** | **0.99** | **0.6191** | **0.9400** | 0.5076 | 0.6592 | **0.7109** | **0.9143** | **+0.3855** | 0.5970 | **Verified Winner** |
+| **Clean Class-Aware CORAL + XGBoost** | **0.99** | **0.6191** | **0.9400** | 0.5076 | 0.6592 | **0.7109** | **0.9143** | **+0.3855** | 0.5970 | Highest MCC / balanced accuracy (random-row split) |
 | Source-Only XGBoost | 0.50 | 0.7207 | 0.7247 | 0.9919 | 0.8375 | 0.4972 | 0.0025 | -0.0311 | 0.3230 | Unadapted Baseline |
 | Global CORAL + XGBoost | 0.50 | 0.6347 | 0.7013 | 0.8652 | 0.7747 | 0.4448 | 0.0244 | -0.1610 | 0.2852 | Marginal Alignment Only |
 | DANN (Domain Adversarial NN) | 0.60 | 0.7259 | 0.7259 | 0.9998 | 0.8412 | 0.5002 | 0.0006 | +0.0129 | 0.3321 | Majority-Class Collapse |
