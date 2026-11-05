@@ -2,7 +2,7 @@
 
 import math
 from typing import Dict, List, Any, Optional, Generic, TypeVar
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 T = TypeVar('T')
 
@@ -59,6 +59,8 @@ class ResultTableResponse(BaseModel):
 
 class FeatureInput(BaseModel):
     """Input feature vector with strict finite number and range bounds."""
+    model_config = ConfigDict(extra="allow")
+
     pkt_mean_to_max: float = Field(
         ...,
         ge=0.0,

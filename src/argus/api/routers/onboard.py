@@ -45,10 +45,10 @@ async def onboard_domain(
             metrics=res["metrics"],
             evaluated_test_size=res["evaluated_test_size"]
         )
-    except KeyError:
+    except (KeyError, ValueError) as ke:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unsupported target domain: '{request.target_domain}'."
+            detail=str(ke)
         )
     except FileNotFoundError:
         raise HTTPException(

@@ -3,11 +3,11 @@
 [![Python Version](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.14-blue.svg)](https://python.org)
 [![Backend Framework](https://img.shields.io/badge/Framework-FastAPI-009688.svg)](https://fastapi.tiangolo.com)
 [![Frontend Stack](https://img.shields.io/badge/Frontend-React%2019%20%7C%20Vite%20%7C%20Three.js%20%7C%20TailwindCSS-61DAFB.svg)](https://react.dev)
-[![Test Suite](https://img.shields.io/badge/Tests-100%25%20Passing-success.svg)](tests/)
+[![ARGUS CI/CD Pipeline](https://github.com/Bhumi-2303/ARGUS/actions/workflows/ci.yml/badge.svg)](https://github.com/Bhumi-2303/ARGUS/actions/workflows/ci.yml)
 [![Security](https://img.shields.io/badge/Security-Hardened%20(OIDC%20%7C%20RBAC%20%7C%20CSP)-brightgreen.svg)](docs/SECURITY.md)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**ARGUS** is an autonomous cyber-physical defense platform engineered for **Industrial Control Systems (ICS)**, **SCADA networks**, and **Smart Grid Infrastructure**. It investigates and resolves **cross-domain transfer failure and representation collapse** in network intrusion detection under strict zero-leakage protocols.
+**ARGUS** is an autonomous cyber-physical defense platform engineered for **Industrial Control Systems (ICS)**, **SCADA networks**, and **Smart Grid Infrastructure**. It investigates and provides **partial mitigation for cross-domain transfer failure and representation collapse** in network intrusion detection under target-label-leakage-controlled protocols (achieving Clean CORAL MCC +0.3855 vs. Source-Only -0.0311, with random-row ROC-AUC 0.5970 on held-out target data; on a coordinate-disjoint split, Clean CORAL achieves MCC 0.0504 at 0.50 / 0.0795 at 0.99 vs. Source-Only MCC +0.0060 at 0.50).
 
 ARGUS combines a **leakage-controlled domain adaptation model** (Class-Aware CORAL + XGBoost) with a **real-time 6-agent autonomous execution pipeline**, offering end-to-end telemetry ingestion, threat classification, TreeSHAP explainability, MITRE ATT&CK ICS context retrieval, operational risk scoring, and automated decision playbooks.
 
@@ -16,17 +16,28 @@ ARGUS combines a **leakage-controlled domain adaptation model** (Class-Aware COR
 ## 📌 Executive Summary & Key Research Findings
 
 1. **Cross-Domain Generalization Collapse**: Models trained on enterprise IoT traffic (**CICIoT2023 / D1**) achieve $>97\%$ in-domain F1, but catastrophically collapse to near-chance or majority-class predictions when evaluated across domains on smart home IoT (**NF-ToN-IoT-v2 / D2**) and industrial SCADA (**IEC 60870-5-104 / D3**).
-2. **Clean Class-Aware CORAL is the Leakage-Controlled Winner**:
-   - Aligning class-conditional second-order statistics on target adaptation splits (without touching test labels) and calibrating decision thresholds ($\tau^* = 0.99$) on disjoint calibration splits achieves:
-     - **Balanced Accuracy**: $71.09\%$
-     - **Matthews Correlation Coefficient (MCC)**: $+0.3855$
-     - **Precision**: $94.00\%$
-     - **Specificity**: $91.43\%$
+2. **Clean Class-Aware CORAL is the Target-Label-Leakage-Controlled Adaptation Baseline**:
+   - Aligning class-conditional second-order statistics on target adaptation splits (without touching test labels) and calibrating decision thresholds ($\tau^* = 0.99$) on disjoint calibration splits achieves $\text{MCC} = +0.3855$ on a random-row split (improving over unadapted Source-Only $\text{MCC} = -0.0311$), whereas coordinate-disjoint MCC is $0.0504$ at $0.50$ and $0.0795$ at $0.99$ (improving over unadapted Source-Only $\text{MCC} = +0.0060$ at $0.50$, where Source-Only collapses to $0.007\%$ specificity):
+     - **Balanced Accuracy**: $71.09\%$ (random-row split)
+     - **Matthews Correlation Coefficient (MCC)**: $+0.3855$ (random-row split, vs. Source-Only $-0.0311$) vs. $0.0504$ at $0.50$ / $0.0795$ at $0.99$ (coordinate-disjoint split, vs. Source-Only $+0.0060$)
+     - **Precision**: $94.00\%$ (random-row split)
+     - **Specificity**: $91.43\%$ (random-row split)
 3. **Domain-Adversarial Neural Network (DANN) Degeneracy**:
    - Evaluated against raw prediction exports ($N = 2,627,177$), DANN achieves $\text{ROC-AUC} = 0.3321$ and $\text{Specificity} = 0.06\%$, demonstrating complete collapse into majority-class prediction rather than domain invariance.
 4. **Representation Resolution Drives Transfer Feasibility**:
    - Extending compact 4-feature representations to SCADA traffic (D3) fails non-monotonically (an 8-feature representation collapses to $\text{ROC-AUC} = 0.445$).
-   - Only D3's native 70-feature flow representation restores non-trivial discriminability ($\text{ROC-AUC} = 0.6744$).
+   - Only D3's native 73-feature flow representation restores non-trivial discriminability ($\text{ROC-AUC} = 0.6744$, $\text{MCC} = +0.2486$; 62 standard network flow features + 11 derived statistical features, historically referenced as 70 in early informal shorthand).
+
+---
+
+## 🏛️ Platform Architecture: Production System vs. Scientific Research Layer
+
+ARGUS strictly separates its **production autonomous software system** from its **scientific research and publication artifacts**:
+
+| System Layer | Primary Components | Purpose & Scope |
+| :--- | :--- | :--- |
+| **Production Defense Platform** | `src/argus/`, `web/`, `artifacts/models/`, `configs/` | Real-time FastAPI & WebSocket engine executing the 6-agent autonomous response pipeline, 3D/2D React Three.js visualizer, model registry, and SOC operator workflows. |
+| **Scientific Research & Publication** | `paper/`, `results/`, `experiments/`, `audit/` | Academic manuscript, verified publication tables (`paper/tables/`), publication figures (`paper/figures/`), master research workbook (`results/ARGUS_ALL_RESEARCH_RESULTS.xlsx`), and experiment reproducibility tooling. |
 
 ---
 
@@ -94,21 +105,61 @@ ARGUS executes an autonomous, sequential 6-agent pipeline with a shared, strictl
 | **5** | **Risk Prediction Agent** | • Assesses asset criticality (`CriticalAssetAnalyzer`).<br>• Computes grid impact & operational disruption (`ImpactEstimator`).<br>• Evaluates escalation trends (`TrendAnalyzer`).<br>• Computes deterministic risk score: $R = \text{round}(\text{Criticality} \times \text{Threat} \times \text{Impact} \times 100)$. | `EnrichmentContext` + `Threat` $\to$ `RiskEvent` |
 | **6** | **Decision Support Agent** | • Matches incident profile to ICS containment playbooks (`PlaybookSelector`).<br>• Generates prioritized mitigation actions (`ActionPrioritizer`).<br>• Prepares human-in-the-loop operator approval tokens (`ApprovalGenerator`). | `RiskEvent` $\to$ `DecisionAnalysisResult` |
 
+### 🔌 Optional Agent Runtime Layer (Google ADK & MCP)
+
+The core 6-agent detection and decision pipeline is **100% deterministic, model-driven, and reproducible**. To support external orchestration and AI-assisted security analyst workflows without compromising detection fidelity, ARGUS provides an optional runtime integration layer in [`src/argus/integrations/`](src/argus/integrations/):
+
+- **Model Context Protocol (MCP) Server**: [`ArgusMCPServer`](src/argus/integrations/mcp/server.py) implements the Model Context Protocol, exposing 4 strictly read-only inspection tools over existing services:
+  - `get_incident`: Inspects security incidents, risk scores, timelines, and remediation actions.
+  - `get_trace`: Inspects multi-agent execution steps and stage latencies.
+  - `explain_flow`: Computes read-only TreeSHAP attributions and probabilities for network flow features.
+  - `lookup_mitre`: Queries local MITRE ATT&CK Enterprise technique definitions, descriptions, and mitigations.
+- **ADK / LLM Analyst Narrator**: [`IncidentNarrator`](src/argus/integrations/adk/narrator.py) optionally synthesizes already-computed pipeline outputs into structured SOC executive summaries using Google Gemini.
+- **Safety Invariant**: This layer is **OFF by default**, **never on the detection path**, and **never alters risk scores, threat assessments, or remediation decisions**. When no API key is configured or when offline, it degrades cleanly to a deterministic zero-hallucination briefing.
+
 ---
 
 ## 📊 Authoritative Empirical Results
 
-All experimental numbers backing the research are frozen and cryptographically verifiable in [`results/verified/`](results/verified/):
+All experimental numbers backing the research are frozen and cryptographically verifiable in [`results/verified/`](results/verified/) and [`results/ARGUS_ALL_RESEARCH_RESULTS.xlsx`](results/ARGUS_ALL_RESEARCH_RESULTS.xlsx) (SHA-256 `f4ddc451a0c0d97f1eeea0a57668562b1bf9bb13437e2f30c5ac95d8bdb678f1`):
 
-### D1 (CICIoT2023) $\to$ D2 (NF-ToN-IoT-v2) Cross-Domain Benchmark ($N = 2,627,177$)
+### Table IV: D1→D2 Domain Adaptation Benchmark (Random-Row Held-Out Partition, N=2,627,177)
+*Canonical File*: [`paper/tables/Table_IV_Random_Row_Domain_Adaptation.csv`](paper/tables/Table_IV_Random_Row_Domain_Adaptation.csv) (legacy alias: [`paper/tables/Table_IV_Leakage_Controlled_Domain_Adaptation.csv`](paper/tables/Table_IV_Leakage_Controlled_Domain_Adaptation.csv))
 
 | Model | Decision $\tau$ | Accuracy | Precision | Recall | F1 | Balanced Acc. | Specificity | MCC | ROC-AUC | Status |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| **Clean Class-Aware CORAL + XGBoost** | **0.99** | **0.6191** | **0.9400** | 0.5076 | 0.6592 | **0.7109** | **0.9143** | **+0.3855** | 0.5970 | **Verified Winner** |
+| **Clean Class-Aware CORAL + XGBoost** | **0.99** | **0.6191** | **0.9400** | 0.5076 | 0.6592 | **0.7109** | **0.9143** | **+0.3855** | 0.5970 | Highest MCC / balanced accuracy (random-row split) |
 | Source-Only XGBoost | 0.50 | 0.7207 | 0.7247 | 0.9919 | 0.8375 | 0.4972 | 0.0025 | -0.0311 | 0.3230 | Unadapted Baseline |
 | Global CORAL + XGBoost | 0.50 | 0.6347 | 0.7013 | 0.8652 | 0.7747 | 0.4448 | 0.0244 | -0.1610 | 0.2852 | Marginal Alignment Only |
-| DANN | 0.60 | 0.7259 | 0.7259 | 0.9998 | 0.8412 | 0.5002 | 0.0006 | +0.0129 | 0.3321 | Majority-Class Collapse |
+| DANN (Domain Adversarial NN) | 0.60 | 0.7259 | 0.7259 | 0.9998 | 0.8412 | 0.5002 | 0.0006 | +0.0129 | 0.3321 | Majority-Class Collapse |
 | *Diagnostic Class-Aware CORAL* | *0.50* | *0.5506* | *0.7262* | *0.6113* | *0.6638* | *0.5006* | *0.3899* | *+0.0011* | *0.6361* | *Diagnostic (Used Target Test Labels)* |
+
+#### Key Scientific Disclosures & Verification Protocols:
+1. **Headline Metric Reconciliation & Single Source of Truth (`results/verified/`)**:
+   - **Clean Class-Aware CORAL MCC (0.3855 vs 0.3904 vs 0.390624)**:
+     - The authoritative primary benchmark is $\text{MCC} = +0.3855$ ($\text{ROC-AUC} = 0.5970$, $\text{Precision} = 94.00\%$, $\text{Specificity} = 91.43\%$, $\tau^* = 0.99$), frozen in `results/verified/five_model_complete_comparison.csv` and `data/raw/legacy_package/argus_coral_data/final_clean_classaware_results/final_metrics.csv` (SHA-256 `68f06fc7...`).
+     - The secondary figure $\text{MCC} = 0.3904$ arose in post-hoc audit scripts (`scratch/v3_v4.py`) where retraining XGBoost with `n_jobs=-1` introduced multithreaded tree-building stochasticity when reconstructing missing raw test prediction arrays (`Clean_Class_Aware_CORAL_preds.npz`).
+     - The figure $\text{MCC} = 0.390624$ reflects direct scoring of the serialized booster checkpoint (`artifacts/models/xgb_adapted.json`) at $\tau = 0.99$ (commit `375a587`).
+     - Per the authoritative reconciliation audit ([`results/experiments/p2_1_validation/P2_1_CORAL_MCC_RECONCILIATION.json`](results/experiments/p2_1_validation/P2_1_CORAL_MCC_RECONCILIATION.json)), all official tables and UI elements strictly cite the original frozen benchmark **$\text{MCC} = +0.3855$**. Flattering post-hoc reproduction artifacts must not supersede the primary benchmark.
+   - **DANN ROC-AUC & Specificity (0.3321 / 0.0006 vs 0.5226 / 0.0108)**:
+     - Recomputation from the raw per-sample probability predictions (`data/raw/legacy_package/argus_coral_data/dann_results/dann_final_test_predictions.csv`, $N = 2,627,177$) bit-for-bit confirms $\text{ROC-AUC} = 0.33209554$, $\text{Specificity} = 0.00064560$ ($0.06\%$), and $\text{MCC} = 0.01285487$ ($\tau = 0.60$), identical to `results/verified/dann_final_test_metrics.csv`.
+     - An early narrative draft (`data/raw/legacy_package/ARGUS_RESULTS_README.txt`) reported an uncalibrated preliminary estimate ($\text{ROC-AUC} = 0.5226$, $\text{Specificity} = 0.0108$, $\text{MCC} = 0.0885$). In accordance with strict audit rules, the more flattering preliminary number is rejected in favor of the frozen raw predictions.
+   - **Sample Population Accounting ($N = 2,627,177$ vs $2,627,178$)**:
+     - The held-out target test split comprises exactly **$2,627,177$ observations** ($1,906,920$ attack, $720,257$ benign). The physical line count of `nfton_test_features.csv` is $2,627,178$, which contains 1 CSV header line plus $2,627,177$ observation rows.
+   - **Domain Classifier Discriminability (Finding F-05)**:
+     - A domain discriminator was hypothesized in preliminary research notes to distinguish Source vs Target features. However, because no reproducible serialized discriminator artifact or frozen evaluation log was archived in `results/verified/`, the dashboard strictly flags this metric as `REQUIRES VERIFICATION` (`UNVERIFIED DISCRIMINATOR`) rather than rendering unverified mock accuracy estimates.
+2. **Separation of Evaluation Protocols**:
+   - **Random-Row Held-Out Benchmark ($N = 2,627,177$)**: The primary Table IV benchmark evaluates observations held out from training under random row splitting, achieving $\text{MCC} = +0.3855$ at $\tau^* = 0.99$. Note: The metric $\text{MCC} = 0.3896$ referenced in earlier audit drafts was an editorial transcription error / threshold misattribution. Because this benchmark operates at the row level without coordinate deduplication, $2,592,203$ out of $2,627,177$ test observations ($98.67\%$) map to identical 4D feature-coordinate tuples present in the adaptation training set. The available data does not contain IP addresses or subnets.
+   - **4D Feature-Coordinate Disjoint Benchmark ($N = 1,970,428$)**: When enforcing that NO identical four-dimensional feature tuple `(pkt_mean_to_max, tcp_flag_density, log_pkt_mean, log_pkt_max)` appears in more than one partition (Phase 2.3), Class-Aware CORAL achieves $\text{MCC} = 0.0504$ ($\theta = 0.50$) and $\text{MCC} = 0.0795$ ($\tau^* = 0.99$), compared to unadapted Source-Only XGBoost at $\text{MCC} = +0.0060$ ($\theta = 0.50$, balanced accuracy $50.00\%$, specificity $0.007\%$). This protocol strictly separates 4D feature coordinates in representation space, not IP addresses, subnets, or network sessions.
+3. **DANN Reproducibility vs. Production Availability**:
+   - DANN reproducibility is documented across four rigorous tiers:
+     - **Level A (Stored metric recomputation)**: **Verified** from stored predictions (`dann_final_test_predictions.csv`), matching Table IV metrics down to 16 decimal places ($\text{ROC-AUC} = 0.3321$, $\text{MCC} = 0.0129$, $\text{Accuracy} = 0.7259$).
+     - **Level B (Checkpoint loading & forward pass)**: **Verified** using `DANNNetwork` loaded with `dann_best_model.pt`.
+     - **Level C (Full test-set regeneration)**: **Executed** over all $2,627,177$ observations.
+     - **Level D (Exact tensor equality with stored probabilities)**: **Divergent** due to PyTorch BatchNorm running statistics and evaluation dynamics in legacy code.
+   - DANN is deliberately marked `status="unavailable"` in the production `ModelRegistry` due to majority-class collapse ($\text{Specificity} = 0.06\%$).
+4. **Observation Pool Accounting**:
+   - Target domain D2 comprises $8,406,962$ (adaptation) + $2,101,742$ (calibration) + $2,627,177$ (frozen test) = **$13,135,881$ total rows**. The historical line-count of $11,034,141$ was an arithmetic artifact that omitted the calibration split.
 
 All model weights are verified against [`artifacts/models/INTEGRITY_MANIFEST.json`](artifacts/models/INTEGRITY_MANIFEST.json).
 
@@ -246,34 +297,47 @@ curl -X POST "http://localhost:8000/api/v1/agents/trace" \
 
 ```text
 ARGUS/
-├── README.md                      # Master project architecture & guide
+├── README.md                      # Master project architecture & executive summary
+├── CONTRIBUTING.md                 # Development quality gates, testing protocols, PR guide
 ├── Makefile                       # Single-command setup, demo, test, and build targets
-├── pyproject.toml                 # Unified package configuration & dependencies
-├── dataset/                       # Centralized datasets (sample CSVs, parquets, raw links)
-│   ├── sample_attack_flow.csv     # Demo attack flow CSV
-│   ├── sample_benign_flow.csv     # Demo benign flow CSV
-│   ├── ciciot.parquet             # 10k verified source samples
-│   ├── nfton.parquet              # 10k verified target samples
-│   └── README.md                  # Dataset usage guide
+├── pyproject.toml                 # Package dependencies (core, dev, test, dann, research)
 ├── artifacts/
 │   └── models/                    # Verified model weights & INTEGRITY_MANIFEST.json
-├── configs/                       # Configuration YAMLs and settings definitions
+├── audit/                         # Staged restructuring reports, forensics, and readiness review
+├── configs/                       # Runtime settings, paths, and model thresholds
+├── dataset/                       # Centralized datasets (sample attack/benign CSVs, parquets)
+├── docs/                          # Architecture, research manual, project structure, setup
+│   ├── ARCHITECTURE.md            # Multi-agent system architecture & sequence specs
+│   ├── DEVELOPMENT_SETUP.md       # Local developer guide & testing workflows
+│   ├── EXPERIMENT_REPRODUCIBILITY.md # Research reproduction guide & master workbook checks
+│   ├── PROJECT_STRUCTURE.md       # Exhaustive file and directory catalog
+│   └── RESEARCH_OVERVIEW.md       # RQ1-RQ6 overview, findings, and domain adaptation theory
+├── experiments/                   # Research experiment configs, execution outputs, and sweeps
+├── paper/                         # Academic publication layer
+│   ├── manuscripts/               # Manuscript texts & transcripts
+│   ├── tables/                    # Publication CSV tables (Table I - VI) & TABLE_INDEX.md
+│   ├── figures/                   # 137 publication figures, vector plots & FIGURE_INDEX.md
+│   ├── PUBLICATION_TRACEABILITY.md# 7-link end-to-end evidence lineage matrix
+│   └── RESEARCH_SUPERVISOR_HANDOFF.md # Advisor review guide
 ├── results/
-│   ├── verified/                  # Authoritative CSV benchmarks & publication tables
-│   └── diagnostic/                # Exploratory ablation studies
+│   ├── ARGUS_ALL_RESEARCH_RESULTS.xlsx # Authoritative master research workbook (17 sheets)
+│   ├── verified/                  # Benchmark CSVs backing publication tables
+│   └── diagnostic/                # Exploratory ablations & distribution metrics
 ├── scripts/
-│   ├── start_demo.py              # Unified single-port demo server
+│   ├── start_demo.py              # Unified single-port demo server (FastAPI + React)
 │   ├── startup_check.py           # Pre-flight asset and model integrity verification
-│   └── verify_ui_numbers.py       # Ground-truth API-to-CSV verification
+│   ├── verify_ui_numbers.py       # Ground-truth API-to-CSV verification
+│   └── generate_publication_figures.py # Composite publication figure generator
 ├── src/argus/
-│   ├── agents/                    # The 6 autonomous agents (DIA, TAA, EA, KCA, RPA, DSA)
-│   ├── orchestrator/              # Real execution pipeline and shared context engine
+│   ├── agents/                    # 6 autonomous agents (DIA, TAA, EA, KCA, RPA, DSA)
+│   ├── orchestrator/              # Sequential execution pipeline & shared context engine
 │   ├── api/                       # FastAPI v1 REST & WebSocket routers
 │   ├── auth/                      # RBAC, JWT validation, and security audit loggers
 │   ├── security/                  # HTTP security headers, CSP, and defensive middleware
-│   ├── registry/                  # Model registry and metadata catalog
+│   ├── registry/                  # Model registry (ARGUS-4 & 73-feature D3 schema)
 │   └── shift/                     # Distribution shift analytics (KS-test, PSI)
 ├── tests/
+│   ├── unit/                      # Model registry, schemas, and agent unit tests
 │   ├── e2e/                       # End-to-end multi-agent execution pipeline tests
 │   ├── security/                  # CSP, CORS, RBAC, and adversarial verification tests
 │   └── agents/                    # Dedicated test suites for each individual agent

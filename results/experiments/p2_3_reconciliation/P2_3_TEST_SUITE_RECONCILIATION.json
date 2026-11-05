@@ -1,0 +1,28 @@
+{
+  "audit_phase": "ARGUS P2.3 \u2014 Test Suite Reconciliation",
+  "full_project_discovery_count": 283,
+  "tests_directory_only_count": 271,
+  "difference_count": 12,
+  "explanation": "The difference between 283 tests and 271 tests is entirely due to pytest discovery scope. Running `pytest` from the repository root discovers both the `tests/` directory (271 tests) and internal agent tests in `src/` (12 tests), totaling 283 tests. Running `pytest tests/` targets only the `tests/` directory, omitting the 12 internal `src/` agent tests. Zero tests were removed, deleted, skipped, or renamed between P2.1 and P2.2.",
+  "tests_located_in_src_directory": [
+    "src/argus/agents/decision_support/tests/test_agent.py::test_agent_pipeline",
+    "src/argus/agents/decision_support/tests/test_decision_rules.py::test_playbook_selection",
+    "src/argus/agents/decision_support/tests/test_decision_rules.py::test_recommendation_and_priority",
+    "src/argus/agents/risk_prediction/tests/test_agent.py::test_agent_pipeline",
+    "src/argus/agents/risk_prediction/tests/test_agent_integration.py::test_agent_full_pipeline",
+    "src/argus/agents/risk_prediction/tests/test_agent_integration.py::test_agent_missing_data_pipeline",
+    "src/argus/agents/risk_prediction/tests/test_risk_rules.py::test_critical_asset_analyzer",
+    "src/argus/agents/risk_prediction/tests/test_risk_rules.py::test_risk_scorer",
+    "src/argus/agents/threat_analysis/tests/test_agent.py::test_agent_initialization",
+    "src/argus/agents/threat_analysis/tests/test_agent.py::test_agent_validate",
+    "src/argus/orchestrator/tests/test_pipeline_integration.py::test_full_argus_agent_pipeline",
+    "src/argus/orchestrator/tests/test_pipeline_integration.py::test_full_argus_agent_pipeline_failure"
+  ],
+  "test_execution_verification": {
+    "root_pytest_command": ".venv/bin/python3 -m pytest -q",
+    "passed_tests": 283,
+    "failed_tests": 0,
+    "skipped_tests": 0,
+    "exit_code": 0
+  }
+}

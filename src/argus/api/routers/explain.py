@@ -32,11 +32,11 @@ async def explain_flow(
             top_feature=top_feat,
             top_feature_impact=round(top_impact, 6)
         )
-    except KeyError:
-        logger.warning("explain_unknown_model", model=model_name)
+    except (KeyError, ValueError) as ke:
+        logger.warning("explain_unknown_model_or_feature", model=model_name, error=str(ke))
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Model '{model_name}' is not configured for SHAP feature attribution."
+            detail=str(ke)
         )
     except Exception as ex:
         logger.error("explain_calculation_failed", model=model_name, error=str(ex), exc_info=True)

@@ -1,0 +1,112 @@
+{
+  "manifest_version": "1.0.0",
+  "audit_phase": "ARGUS P2.1 \u2014 Final Scientific Validation and Cross-Domain Benchmark Correction",
+  "auditor": "Independent ML Research Auditor",
+  "timestamp": "2026-11-01T17:17:31Z",
+  "base_directory": "/home/bhumi/GitHub/ARGUS",
+  "execution_environment": {
+    "python_version": "3.14.9",
+    "os": "Linux x86_64"
+  },
+  "scripts": {
+    "scripts/p2_1_same_test_comparison.py": {
+      "sha256": "d83be42d29be5af50735e02113120f5dafc562d9d17697717b60f38a51dcd8c9",
+      "size_bytes": 17727,
+      "lines": 427
+    },
+    "scripts/p2_1_coral_mcc_reconciliation.py": {
+      "sha256": "cbe8c043096d69bf4058a55b56d0a7b2a1fe501ba72c29fa3b1ceba77eca0c95",
+      "size_bytes": 11198,
+      "lines": 236
+    },
+    "scripts/p2_1_coordinate_lookup_validation.py": {
+      "sha256": "23db71710f057551888dc4e12cd5ce36a4708e98bb8aee01cca2a89a7d16116d",
+      "size_bytes": 14801,
+      "lines": 309
+    },
+    "scripts/p2_1_statistical_validation.py": {
+      "sha256": "dea763724d99e80d5ab59209a55768acd13c2f668fe80709cb5fd2d2a140b4b6",
+      "size_bytes": 16765,
+      "lines": 384
+    },
+    "scripts/p2_1_d1_d2_shift_analysis.py": {
+      "sha256": "2e39eafef997080460a55fdb7aea5759bd3dabf9e1e8d856f83c679afd73872e",
+      "size_bytes": 10539,
+      "lines": 246
+    }
+  },
+  "artifacts": {
+    "P2_1_SAME_TEST_CROSS_DOMAIN_COMPARISON.csv": {
+      "path": "results/experiments/p2_1_validation/P2_1_SAME_TEST_CROSS_DOMAIN_COMPARISON.csv",
+      "type": "CSV",
+      "sha256": "146778a32da98521b27e168f942fa984187ed643b0322e5cb8d550643d52e636",
+      "size_bytes": 4202,
+      "lines": 11,
+      "description": "Cross-domain and in-domain models evaluated on the identical 1,970,428 coordinate-disjoint test partition.",
+      "reproduction_command": "python3 scripts/p2_1_same_test_comparison.py"
+    },
+    "P2_1_CORAL_MCC_RECONCILIATION.json": {
+      "path": "results/experiments/p2_1_validation/P2_1_CORAL_MCC_RECONCILIATION.json",
+      "type": "JSON",
+      "sha256": "84e250465b110ae41fdae1a500ce7c3f152a079b8d47e2cd9537e2c998f2dcba",
+      "size_bytes": 4485,
+      "lines": 86,
+      "description": "Root-cause reconciliation of the MCC 0.3855 vs 0.3904 discrepancy with authoritative baseline identified.",
+      "reproduction_command": "python3 scripts/p2_1_coral_mcc_reconciliation.py"
+    },
+    "P2_1_COORDINATE_LOOKUP_VALIDATION.csv": {
+      "path": "results/experiments/p2_1_validation/P2_1_COORDINATE_LOOKUP_VALIDATION.csv",
+      "type": "CSV",
+      "sha256": "1c040447fbd330338cae35e8c5b13c25a5881493f3b6b05717c8235280dfb77e",
+      "size_bytes": 2751,
+      "lines": 6,
+      "description": "Validation separating in-sample purity (94.61%), train-derived lookup, and novel coordinate performance.",
+      "reproduction_command": "python3 scripts/p2_1_coordinate_lookup_validation.py"
+    },
+    "P2_1_STATISTICAL_VALIDATION.json": {
+      "path": "results/experiments/p2_1_validation/P2_1_STATISTICAL_VALIDATION.json",
+      "type": "JSON",
+      "sha256": "519827b52d70243c970a95bfcecf6634b2aa2a6fdf1394622808482c717641bf",
+      "size_bytes": 12964,
+      "lines": 290,
+      "description": "Cluster-robust coordinate-group bootstrap CIs, proof of XGBoost seed invariance, and paired group tests.",
+      "reproduction_command": "python3 scripts/p2_1_statistical_validation.py"
+    },
+    "P2_1_D1_D2_SHIFT_ANALYSIS.csv": {
+      "path": "results/experiments/p2_1_validation/P2_1_D1_D2_SHIFT_ANALYSIS.csv",
+      "type": "CSV",
+      "sha256": "f11eaff97926353ba2f8922cb80c5ef24c3125165183ed0110bbe07d42b41a67",
+      "size_bytes": 6597,
+      "lines": 28,
+      "description": "Audit of all 27 shared coordinates between CIC-IoT-2023 and NF-ToN-IoT-v2 with Wilson CIs and z-tests.",
+      "reproduction_command": "python3 scripts/p2_1_d1_d2_shift_analysis.py"
+    },
+    "P2_1_D1_D2_SHIFT_SUMMARY.json": {
+      "path": "results/experiments/p2_1_validation/P2_1_D1_D2_SHIFT_SUMMARY.json",
+      "type": "JSON",
+      "sha256": "fd0ec88d369b3d9f2f93fad927f8dbced47420e8486f7b5750f030444a0cc929",
+      "size_bytes": 2304,
+      "lines": 52,
+      "description": "Summary metadata and rounding tolerance sensitivity for D1-D2 overlap.",
+      "reproduction_command": "python3 scripts/p2_1_d1_d2_shift_analysis.py"
+    },
+    "P2_1_CORRECTED_SCIENTIFIC_CLAIMS.md": {
+      "path": "audit/research/P2_1_CORRECTED_SCIENTIFIC_CLAIMS.md",
+      "type": "Markdown",
+      "sha256": "646cd07ea09bd7108e44c7e46c97d23bfa1c6c6a3b23624b71f48a41ffc387f2",
+      "size_bytes": 13378,
+      "lines": 127,
+      "description": "Critical reassessment and correction of 5 previous scientific claims with defensible replacement text.",
+      "reproduction_command": "Manual scientific synthesis and review."
+    },
+    "P2_1_FINAL_VALIDATION_REPORT.md": {
+      "path": "audit/research/P2_1_FINAL_VALIDATION_REPORT.md",
+      "type": "Markdown",
+      "sha256": "c71cd0cbe602873624b8840501237028d52f33c23ff1c143085ed0c063d3e26b",
+      "size_bytes": 27117,
+      "lines": 275,
+      "description": "Final independent research auditor report and verdict for ARGUS P2.1.",
+      "reproduction_command": "Manual scientific synthesis and review."
+    }
+  }
+}

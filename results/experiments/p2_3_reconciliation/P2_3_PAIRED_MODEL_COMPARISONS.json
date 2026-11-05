@@ -1,0 +1,113 @@
+{
+  "audit_phase": "ARGUS P2.3 \u2014 Paired Model Comparison Audit",
+  "methodology": "Paired cluster bootstrap on identical coordinate groups (K = 35,131 groups, B = 1,000 resamples)",
+  "comparisons": {
+    "clean_coral_vs_lightgbm_mcc": {
+      "comparison": "Clean Class-Aware CORAL (th=0.50) vs In-Domain LightGBM (th=0.50)",
+      "model_A": "Clean Class-Aware CORAL (th=0.50)",
+      "model_B": "In-Domain Disjoint LightGBM (th=0.50)",
+      "point_mcc_model_A": 0.050395814324766655,
+      "point_mcc_model_B": 0.32975522388984807,
+      "point_difference_A_minus_B": -0.27935940956508143,
+      "bootstrap_mean_difference": -0.27727639230562284,
+      "bootstrap_std_err": 0.1886474971919847,
+      "ci_95_lower": -0.6505524784953893,
+      "ci_95_upper": 0.07845478316238445,
+      "p_value_two_tailed": 0.154,
+      "statistically_significant_at_05": false,
+      "number_of_groups": 35131,
+      "number_of_observations": 1970428,
+      "resampling_procedure": "Paired multinomial cluster bootstrap over identical coordinate groups (B=1,000)"
+    },
+    "clean_coral_vs_xgboost_mcc": {
+      "comparison": "Clean Class-Aware CORAL (th=0.50) vs In-Domain XGBoost (th=0.50)",
+      "model_A": "Clean Class-Aware CORAL (th=0.50)",
+      "model_B": "In-Domain Disjoint XGBoost (th=0.50)",
+      "point_mcc_model_A": 0.050395814324766655,
+      "point_mcc_model_B": 0.25394065523068493,
+      "point_difference_A_minus_B": -0.2035448409059183,
+      "bootstrap_mean_difference": -0.19669652391266557,
+      "bootstrap_std_err": 0.1915877933801198,
+      "ci_95_lower": -0.5854874565086426,
+      "ci_95_upper": 0.1511212596035827,
+      "p_value_two_tailed": 0.324,
+      "statistically_significant_at_05": false,
+      "number_of_groups": 35131,
+      "number_of_observations": 1970428,
+      "resampling_procedure": "Paired multinomial cluster bootstrap over identical coordinate groups (B=1,000)"
+    },
+    "lightgbm_vs_xgboost_mcc": {
+      "comparison": "In-Domain LightGBM (th=0.50) vs In-Domain XGBoost (th=0.50)",
+      "model_A": "In-Domain Disjoint LightGBM (th=0.50)",
+      "model_B": "In-Domain Disjoint XGBoost (th=0.50)",
+      "point_mcc_model_A": 0.32975522388984807,
+      "point_mcc_model_B": 0.25394065523068493,
+      "point_difference_A_minus_B": 0.07581456865916314,
+      "bootstrap_mean_difference": 0.08057986839295725,
+      "bootstrap_std_err": 0.0609548780020547,
+      "ci_95_lower": -0.0161515890132935,
+      "ci_95_upper": 0.22511325763679751,
+      "p_value_two_tailed": 0.14,
+      "statistically_significant_at_05": false,
+      "number_of_groups": 35131,
+      "number_of_observations": 1970428,
+      "resampling_procedure": "Paired multinomial cluster bootstrap over identical coordinate groups (B=1,000)"
+    },
+    "clean_coral_th99_vs_lightgbm_mcc": {
+      "comparison": "Clean Class-Aware CORAL (th=0.99) vs In-Domain LightGBM (th=0.50)",
+      "model_A": "Clean Class-Aware CORAL (th=0.99)",
+      "model_B": "In-Domain Disjoint LightGBM (th=0.50)",
+      "point_mcc_model_A": 0.07950734007547441,
+      "point_mcc_model_B": 0.32975522388984807,
+      "point_difference_A_minus_B": -0.2502478838143737,
+      "bootstrap_mean_difference": -0.2521663910007704,
+      "bootstrap_std_err": 0.1856780121639374,
+      "ci_95_lower": -0.6358978573072703,
+      "ci_95_upper": 0.09371144469744544,
+      "p_value_two_tailed": 0.18,
+      "statistically_significant_at_05": false,
+      "number_of_groups": 35131,
+      "number_of_observations": 1970428,
+      "resampling_procedure": "Paired multinomial cluster bootstrap over identical coordinate groups (B=1,000)"
+    },
+    "clean_coral_th99_vs_xgboost_mcc": {
+      "comparison": "Clean Class-Aware CORAL (th=0.99) vs In-Domain XGBoost (th=0.50)",
+      "model_A": "Clean Class-Aware CORAL (th=0.99)",
+      "model_B": "In-Domain Disjoint XGBoost (th=0.50)",
+      "point_mcc_model_A": 0.07950734007547441,
+      "point_mcc_model_B": 0.25394065523068493,
+      "point_difference_A_minus_B": -0.17443331515521052,
+      "bootstrap_mean_difference": -0.1715865226078131,
+      "bootstrap_std_err": 0.19190837921621443,
+      "ci_95_lower": -0.5572394572221366,
+      "ci_95_upper": 0.18165184816493812,
+      "p_value_two_tailed": 0.384,
+      "statistically_significant_at_05": false,
+      "number_of_groups": 35131,
+      "number_of_observations": 1970428,
+      "resampling_procedure": "Paired multinomial cluster bootstrap over identical coordinate groups (B=1,000)"
+    }
+  },
+  "observation_likelihood_comparison": {
+    "description": "Observation-level loss comparison with cluster-robust sandwich variance (clustered by coordinate group)",
+    "log_loss": {
+      "mean_loss_xgb": 0.544434,
+      "mean_loss_lgb": 0.674477,
+      "mean_difference_xgb_minus_lgb": -0.130042,
+      "cluster_robust_se": 0.084523,
+      "z_statistic": -1.538551,
+      "p_value": 0.123914,
+      "lower_loss_model": "XGBoost"
+    },
+    "brier_score": {
+      "mean_brier_xgb": 0.181883,
+      "mean_brier_lgb": 0.226495,
+      "mean_difference_xgb_minus_lgb": -0.044612,
+      "cluster_robust_se": 0.028391,
+      "z_statistic": -1.571344,
+      "p_value": 0.116103,
+      "lower_brier_model": "XGBoost"
+    },
+    "methodological_caveat": "A group-level accuracy t-test must NOT be used as evidence of an MCC difference. Accuracy evaluates unweighted 0/1 correctness, whereas MCC evaluates correlation across all four contingency matrix quadrants. The paired cluster-bootstrap on MCC directly tests the metric of interest."
+  }
+}

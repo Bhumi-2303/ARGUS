@@ -1,0 +1,31 @@
+{
+  "audit_phase": "ARGUS P2.3 \u2014 Adversarial Reconciliation",
+  "benchmark_partition_identity_verdict": "IDENTICAL_BIT_FOR_BIT",
+  "evaluation_dataset": "NF-ToN-IoT-v2",
+  "total_pool_rows": 13135881,
+  "total_pool_coordinate_groups": 257870,
+  "partition_split_strategy": "Greedy Multi-Objective Bin-Packing (Coordinate-Disjoint)",
+  "train_rows": 9195024,
+  "train_groups": 187526,
+  "cal_rows": 1970429,
+  "cal_groups": 35213,
+  "test_rows": 1970428,
+  "test_groups": 35131,
+  "test_attack_prevalence": 0.725843826823411,
+  "test_row_indices_count": 1970428,
+  "test_row_indices_sha256": "3d704050854460426b3cf14d4d7575b17594fd19a39da42f4e110a2942fe4d6d",
+  "test_labels_sha256": "2be847b2334cc27ba4e062e76f622dac9ece769e5f797391547e84b48214b01f",
+  "test_features_sha256": "616177a0b9df628d82838ec65892cb0ef7347aa0c5227a8edcee753ba81893bd",
+  "test_group_ids_sha256": "2a89a4518bdea9dd7cfc680bca757d1d6fdc167a89a42234bf447b4686561969",
+  "p2_1_vs_p2_2_test_partition_comparison": {
+    "p2_1_test_file": "results/experiments/p2_coordinate_generalization/coordinate_disjoint_predictions.parquet",
+    "p2_2_test_file": "results/experiments/p2_coordinate_generalization/coordinate_disjoint_predictions.parquet",
+    "row_count_match": true,
+    "row_order_match": true,
+    "label_match": true,
+    "features_match": true,
+    "coordinate_groups_match": true,
+    "same_test_set_confirmed": true,
+    "clarification_on_multisplit": "P2.2 multi-split evaluation (P2_2_INDEPENDENT_SPLIT_METRICS.csv) evaluated 5 distinct random seed partitions (seeds 42, 101, 202, 303, 404) solely to quantify partition sensitivity. The primary benchmark evaluation in P2.2 (P2_2_CLUSTER_BOOTSTRAP_RESULTS.json and Table 1 of P2_2_FINAL_STATISTICAL_ROBUSTNESS_REPORT.md) used the EXACT SAME partition as P2.1 (N = 1,970,428; 35,131 groups)."
+  }
+}

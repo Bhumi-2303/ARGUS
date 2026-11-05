@@ -1,0 +1,42 @@
+{
+  "experiment": "ARGUS P2 Experiment A: Seen vs Unseen Coordinate Analysis",
+  "timestamp": "2026-11-01T21:34:34+0530",
+  "partition_sizes": {
+    "seen_in_adaptation": 2592203,
+    "seen_in_calibration_only": 3831,
+    "unseen_in_both": 31143,
+    "overall_test": 2627177
+  },
+  "subset_attack_prevalences": {
+    "seen_in_adaptation": 0.725509923412634,
+    "seen_in_calibration_only": 0.7695118767945706,
+    "unseen_in_both": 0.7482580355135986,
+    "overall_test": 0.7258437478708134
+  },
+  "statistical_tests": {
+    "XGBoost": {
+      "ks_statistic": 0.28753936290740967,
+      "ks_pvalue": 0.0,
+      "acc_seen": 0.9352157219168407,
+      "acc_unseen": 0.7771248755739653,
+      "acc_difference": 0.1580908463428754,
+      "two_prop_z_statistic": 111.18287323768926,
+      "two_prop_pvalue": 0.0,
+      "statistically_significant": true
+    },
+    "LightGBM": {
+      "ks_statistic": 0.28350746631622314,
+      "ks_pvalue": 0.0,
+      "acc_seen": 0.934883957776455,
+      "acc_unseen": 0.7794046816299007,
+      "acc_difference": 0.15547927614655432,
+      "two_prop_z_statistic": 109.11793629943584,
+      "two_prop_pvalue": 0.0,
+      "statistically_significant": true
+    }
+  },
+  "key_findings": {
+    "xgboost_mcc_drop": 0.47993500267460915,
+    "lightgbm_mcc_drop": 0.4756897625466771
+  }
+}

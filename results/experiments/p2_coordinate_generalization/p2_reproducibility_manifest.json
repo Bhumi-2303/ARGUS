@@ -1,0 +1,115 @@
+{
+  "manifest_version": "1.0.0",
+  "experiment": "ARGUS P2: Feature-Coordinate Generalization and Duplicate Leakage Sensitivity Study",
+  "timestamp": "2026-11-01T16:15:05Z",
+  "auditor": "Independent Machine Learning Research Auditor",
+  "environment": {
+    "platform": "Linux 6.6.137+rpt-rpi-2712",
+    "python_version": "3.14.9",
+    "libraries": {
+      "xgboost": "3.1.0",
+      "lightgbm": "4.6.0",
+      "pandas": "2.3.3",
+      "numpy": "2.2.6",
+      "scikit-learn": "1.7.2"
+    }
+  },
+  "artifacts": {
+    "bayes_ceiling_summary.json": {
+      "size_bytes": 11168,
+      "sha256": "467622cb43583dc540bc5fa48c3df44adbd6e31ac144fbd110224b9a0956f8a4"
+    },
+    "coordinate_disjoint_metrics.csv": {
+      "size_bytes": 6098,
+      "sha256": "fdc9eee2dc5c6089b00dd6e4cdf825141fd8c125efcd52859dd7f4b618ae0baa"
+    },
+    "coordinate_disjoint_predictions.parquet": {
+      "size_bytes": 19060155,
+      "sha256": "a449fb6ced16f95c9fa13bda9e4a5b607ef66514ae4c8266368f77bf10827246"
+    },
+    "coordinate_label_ambiguity.csv": {
+      "size_bytes": 21546171,
+      "sha256": "f4a3739ffd87b1a2898f0a501c851a092d0c269b54ef2f8b83a80793e82e4fde"
+    },
+    "coordinate_overlap_summary.json": {
+      "size_bytes": 1306,
+      "sha256": "a1b7c27b681566166d478afd7653fc7ebd9420d0acb61a28abf643e685e5c94c"
+    },
+    "figures/fig01_seen_unseen_performance.png": {
+      "size_bytes": 283147,
+      "sha256": "d7679f186eb8cd78ef4f3e08034185690730bc328e5faac6b8865a26966be3b0"
+    },
+    "figures/fig02_coordinate_frequency_distribution.png": {
+      "size_bytes": 336001,
+      "sha256": "4192535b9524cbe6e48659e0231241e1c619b355564049acfe282f0ab73d5fd1"
+    },
+    "figures/fig03_label_ambiguity_distribution.png": {
+      "size_bytes": 283230,
+      "sha256": "2f0c5b5b7e41b2264d1240e44c9def80808236b95698849b36cf58569f724e6c"
+    },
+    "figures/fig04_majority_label_accuracy.png": {
+      "size_bytes": 219518,
+      "sha256": "2b383a5542683c3da2ce4f72810e0179a9c28f3a51281b79ae230643769d62dc"
+    },
+    "figures/fig05_disjoint_roc_curves.png": {
+      "size_bytes": 283196,
+      "sha256": "034b904d5bb743f45b6ad3f51a2bbb30e52441377ce58a38f3c295fe652daa17"
+    },
+    "figures/fig06_disjoint_pr_curves.png": {
+      "size_bytes": 303755,
+      "sha256": "bd43a90205f1a6e8e3c76c6644fc1a281d5b1123bc1d2798588dda757337dde2"
+    },
+    "figures/fig07_random_vs_disjoint_comparison.png": {
+      "size_bytes": 236404,
+      "sha256": "e68e956ca1d8281348fa7fc447089496db5df35f5e18ea7d36285494979bb774"
+    },
+    "figures/fig08_cross_domain_subset_comparison.png": {
+      "size_bytes": 231344,
+      "sha256": "5a844d6e911160b5955f3e0b5394c2074c2be50beeabf86047c8a7a47123b557"
+    },
+    "group_split_manifest.json": {
+      "size_bytes": 1262,
+      "sha256": "998778eb56f13fa596792a0d80c3c9c62a1630c57d1c5b5599e71ee263632d2b"
+    },
+    "historical_comparison_subset_metrics.csv": {
+      "size_bytes": 9257,
+      "sha256": "c5569281b1a73a6ee350ddd764530a8e1b23cdf0dcf9eff5cee4ac01817e83ba"
+    },
+    "historical_subset_gap_summary.json": {
+      "size_bytes": 638,
+      "sha256": "5a7fd317197f4314787b64d78fa7fadf93a335ae2f0e149102a7366205550067"
+    },
+    "lightgbm_disjoint_seed123.txt": {
+      "size_bytes": 696500,
+      "sha256": "aeab526a1ecc542d5295787f50683473c6ca62bdba9502bd03835cdbba6596f6"
+    },
+    "lightgbm_disjoint_seed42.txt": {
+      "size_bytes": 695917,
+      "sha256": "1a7ebb93ac7bc8e92614c94252f611a5a922599d634f9618a74ed8eb73eea826"
+    },
+    "lightgbm_disjoint_seed456.txt": {
+      "size_bytes": 696170,
+      "sha256": "877b89aa2b10005f85043302706ece19ff523f421f09c08abc5a6d9ac9aec859"
+    },
+    "seen_unseen_metrics.csv": {
+      "size_bytes": 8109,
+      "sha256": "8249d666569fddeb1a4cb8a30d5bff1766c0b3ed55844da7007af2edb20990fe"
+    },
+    "test_coordinate_masks.npz": {
+      "size_bytes": 140010,
+      "sha256": "a36cb39857877e2a37bf495e41caab250bc5862bbc160959d60d237fbb71315e"
+    },
+    "xgboost_disjoint_seed123.json": {
+      "size_bytes": 1186826,
+      "sha256": "22f6343c4e362dc264c04c0db76366ce01d2b3a0ed0db145eb72ae25401b0571"
+    },
+    "xgboost_disjoint_seed42.json": {
+      "size_bytes": 1186826,
+      "sha256": "22f6343c4e362dc264c04c0db76366ce01d2b3a0ed0db145eb72ae25401b0571"
+    },
+    "xgboost_disjoint_seed456.json": {
+      "size_bytes": 1186826,
+      "sha256": "22f6343c4e362dc264c04c0db76366ce01d2b3a0ed0db145eb72ae25401b0571"
+    }
+  }
+}

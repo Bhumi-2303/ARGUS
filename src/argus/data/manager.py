@@ -237,17 +237,23 @@ class DataManager:
         model_name = "model_d2_coral" if target_domain == "nfton" else "model_d3_native"
         threshold = 0.99 if target_domain == "nfton" else 0.50
 
-        # Run inference across evaluation slice
+        # Enforce model-specific schema verification
+        expected_features = model_registry.get_expected_features(model_name)
+        missing_cols = [col for col in expected_features if col not in eval_df.columns]
+        if missing_cols:
+            raise ValueError(
+                f"Evaluation dataset for domain '{target_domain}' and model '{model_name}' "
+                f"is missing {len(missing_cols)} required feature(s): {missing_cols[:5]}..."
+            )
+
+        # Run inference across evaluation slice without swallowing exceptions
         y_true = eval_df["label"].to_numpy() if "label" in eval_df.columns else np.zeros(len(eval_df), dtype=int)
         y_pred = []
 
         for _, row in eval_df.iterrows():
-            feat_dict = {col: float(row[col]) for col in HARMONIZED_FEATURES}
-            try:
-                prob, label, _ = model_registry.predict(model_name, feat_dict)
-                y_pred.append(label)
-            except Exception:
-                y_pred.append(0)
+            feat_dict = {col: float(row[col]) for col in expected_features}
+            prob, label, _ = model_registry.predict(model_name, feat_dict)
+            y_pred.append(label)
 
         y_pred = np.array(y_pred, dtype=int)
 

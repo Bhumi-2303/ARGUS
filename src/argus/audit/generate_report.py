@@ -1,7 +1,8 @@
 import json
 import os
 
-with open("audit_metrics.json") as f:
+metrics_file = "audit/historical/audit_metrics.json" if os.path.exists("audit/historical/audit_metrics.json") else "audit_metrics.json"
+with open(metrics_file) as f:
     metrics = json.load(f)
 
 earlier_manifest_rows = {

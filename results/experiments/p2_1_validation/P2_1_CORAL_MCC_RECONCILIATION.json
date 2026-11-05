@@ -1,0 +1,86 @@
+{
+  "audit_metadata": {
+    "title": "ARGUS Clean Class-Aware CORAL MCC Reconciliation Audit",
+    "auditor": "Independent ML Research Auditor",
+    "timestamp": "2026-11-01T22:25:00Z",
+    "status": "RESOLVED_AUTHORITATIVE"
+  },
+  "investigation_summary": {
+    "problem": "P1-1 reported Clean Class-Aware CORAL MCC = 0.3855, whereas P2 reported MCC = 0.3904.",
+    "root_cause": "The original August 13 package included summary metric tables (final_metrics.csv) but lacked the per-sample prediction CSV. The September audit reproduction script (scratch/v3_v4.py) retrained an XGBoost model on ciciot_train_clean_class_aware_coral.csv to regenerate sample-level probabilities (Clean_Class_Aware_CORAL_preds.npz). Due to multithreaded tree-building non-determinism (n_jobs=-1) during retraining, the retrained model produced slightly different probability calibration, shifting 4,409 benign predictions from False Positive to True Negative (+4,409 TN) and 2,358 attack predictions from True Positive to False Negative (-2,358 TP) at tau=0.99. This altered the confusion matrix slightly and raised the recomputed MCC by +0.004925 (from 0.385503 to 0.390428). Both evaluations used identical test labels, identical positive-class conventions (1=attack), identical thresholds (0.99), and identical MCC formulas.",
+    "authoritative_benchmark": {
+      "source": "data/raw/legacy_package/argus_coral_data/final_clean_classaware_results/final_metrics.csv",
+      "sha256": "68f06fc772a7a86267829ace26c508eb7c8e762e84ffc436f352389d4bda99f3",
+      "mcc": 0.3855026742774566,
+      "mcc_recomputed_from_cm": 0.38550267427745655,
+      "confusion_matrix": {
+        "TN": 658515,
+        "FP": 61742,
+        "FN": 938961,
+        "TP": 967959
+      },
+      "accuracy": 0.6190957061515079,
+      "precision": 0.9400389044975191,
+      "recall": 0.5076033603926751,
+      "f1_score": 0.6592331799030245,
+      "specificity": 0.9142778202780396,
+      "decision": "AUTHORITATIVE_PRIMARY_REFERENCE"
+    },
+    "reproduction_model_npz": {
+      "source": "results/verification/predictions/Clean_Class_Aware_CORAL_preds.npz",
+      "sha256": "b83b57fd1d678f7bf9ce0a70d6aa6da6dbfabb7c05bd3ea1fec644ebe028999a",
+      "script": "scratch/v3_v4.py",
+      "threshold": 0.99,
+      "mcc": 0.3904280111973454,
+      "confusion_matrix": {
+        "TN": 662924,
+        "FP": 57333,
+        "FN": 941319,
+        "TP": 965601
+      },
+      "accuracy": 0.6198763920360143,
+      "precision": 0.9439523957557379,
+      "recall": 0.5063668114026808,
+      "f1_score": 0.659146155405696,
+      "specificity": 0.9203992463801115,
+      "decision": "SECONDARY_POST_HOC_REPRODUCTION_ARTIFACT"
+    },
+    "booster_json_model": {
+      "source": "artifacts/models/xgb_adapted.json",
+      "sha256": "6697c214a3c83fb1422f15fee34a89f2d320a95d28f8036768f01fb513e78a3d",
+      "threshold": 0.99,
+      "mcc": 0.3906241380275601,
+      "confusion_matrix": {
+        "TN": 663121,
+        "FP": 57136,
+        "FN": 941484,
+        "TP": 965436
+      },
+      "accuracy": 0.6198885724106141,
+      "precision": 0.9441252058534754,
+      "recall": 0.5062802844377321,
+      "f1_score": 0.6591149591806361,
+      "specificity": 0.9206727598621047,
+      "decision": "TERTIARY_SERIALIZED_BOOSTER_CHECKPOINT"
+    },
+    "confusion_matrix_deltas_reproduction_minus_authoritative": {
+      "delta_TN": 4409,
+      "delta_FP": -4409,
+      "delta_FN": 2358,
+      "delta_TP": -2358,
+      "delta_MCC": 0.004925336919888779,
+      "delta_accuracy": 0.0007806858845064157,
+      "delta_precision": 0.003913491258218715,
+      "delta_recall": -0.0012365489899942572,
+      "delta_f1": -8.702449732855833e-05
+    },
+    "methodological_conclusions": [
+      "1. Positive-label convention: Verified identical (1=attack, 0=benign).",
+      "2. Test row ordering & ground truth: Verified bit-for-bit identical (N=2,627,177 rows, 72.584% attack).",
+      "3. Historical threshold: Verified identical (tau = 0.99).",
+      "4. Metric implementation: Verified identical standard Matthews Correlation Coefficient formula.",
+      "5. Discrepancy etiology: The 0.0049 discrepancy arose exclusively from retraining stochasticity when reconstructing missing raw test prediction arrays.",
+      "6. Journal paper policy: All published tables must cite the authoritative original benchmark MCC = 0.3855 (final_metrics.csv). The secondary 0.3904 must be disclosed in reproducibility footnotes as a retrained replication artifact."
+    ]
+  }
+}

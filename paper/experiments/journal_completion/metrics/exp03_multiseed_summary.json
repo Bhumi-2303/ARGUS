@@ -1,0 +1,90 @@
+{
+  "experiment_id": "EXP-03",
+  "seeds": [
+    42,
+    123,
+    456,
+    789,
+    1011
+  ],
+  "summary": [
+    {
+      "model": "Clean Class-Aware CORAL",
+      "roc_auc_mean": 0.6613,
+      "roc_auc_std": 0.0603,
+      "roc_auc_formatted": "0.6613 \u00b1 0.0603",
+      "balanced_acc_mean": 0.7138,
+      "balanced_acc_std": 0.0005,
+      "balanced_acc_formatted": "0.7138 \u00b1 0.0005",
+      "mcc_mean": 0.3913,
+      "mcc_std": 0.0011,
+      "mcc_formatted": "0.3913 \u00b1 0.0011",
+      "f1_mean": 0.6593,
+      "f1_std": 0.0001,
+      "f1_formatted": "0.6593 \u00b1 0.0001",
+      "specificity_mean": 0.9213,
+      "specificity_std": 0.0012,
+      "specificity_formatted": "0.9213 \u00b1 0.0012",
+      "recall_mean": 0.5064,
+      "recall_std": 0.0002,
+      "recall_formatted": "0.5064 \u00b1 0.0002",
+      "fpr_mean": 0.0787,
+      "fpr_std": 0.0012,
+      "fpr_formatted": "0.0787 \u00b1 0.0012"
+    },
+    {
+      "model": "Source-Only LightGBM",
+      "roc_auc_mean": 0.302,
+      "roc_auc_std": 0.0153,
+      "roc_auc_formatted": "0.3020 \u00b1 0.0153",
+      "balanced_acc_mean": 0.4802,
+      "balanced_acc_std": 0.0154,
+      "balanced_acc_formatted": "0.4802 \u00b1 0.0154",
+      "mcc_mean": -0.0763,
+      "mcc_std": 0.052,
+      "mcc_formatted": "-0.0763 \u00b1 0.0520",
+      "f1_mean": 0.817,
+      "f1_std": 0.0192,
+      "f1_formatted": "0.8170 \u00b1 0.0192",
+      "specificity_mean": 0.0112,
+      "specificity_std": 0.0093,
+      "specificity_formatted": "0.0112 \u00b1 0.0093",
+      "recall_mean": 0.9493,
+      "recall_std": 0.0396,
+      "recall_formatted": "0.9493 \u00b1 0.0396",
+      "fpr_mean": 0.9888,
+      "fpr_std": 0.0093,
+      "fpr_formatted": "0.9888 \u00b1 0.0093"
+    }
+  ],
+  "statistical_tests": {
+    "mcc_paired_ttest": {
+      "t_stat": 17.75206949653302,
+      "p_value": 5.915933174991039e-05,
+      "cohens_d": 8.876034579772142
+    },
+    "balanced_acc_paired_ttest": {
+      "t_stat": 29.349609101373762,
+      "p_value": 8.023950983146954e-06,
+      "cohens_d": 14.674803628826007
+    }
+  },
+  "bootstrap_ci": [
+    {
+      "model": "Source-Only LightGBM",
+      "roc_auc_ci": "[0.3129, 0.3231]",
+      "mcc_ci": "[-0.0977, -0.0890]",
+      "f1_ci": "[0.8198, 0.8254]",
+      "balanced_acc_ci": "[0.4815, 0.4837]",
+      "specificity_ci": "[0.0024, 0.0043]"
+    },
+    {
+      "model": "Clean Class-Aware CORAL",
+      "roc_auc_ci": "[0.7331, 0.7409]",
+      "mcc_ci": "[0.3844, 0.3968]",
+      "f1_ci": "[0.6548, 0.6637]",
+      "balanced_acc_ci": "[0.7100, 0.7169]",
+      "specificity_ci": "[0.9159, 0.9248]"
+    }
+  ]
+}

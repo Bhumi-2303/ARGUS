@@ -1,6 +1,6 @@
 # Group-Token Transformer Specification (V2 Exploratory)
 
-This specification defines the input architecture for a group-token transformer, mapping raw dataset variables from `SCHEMA_AUDIT.md` into distinct, semantically cohesive feature tokens.
+This specification defines the input architecture for a group-token transformer, mapping raw dataset variables from `audit/historical/SCHEMA_AUDIT.md` into distinct, semantically cohesive feature tokens.
 
 ## 1. Token Group Definitions
 Based on the universal canonical mapping, we split the raw network features into 5 distinct tokens per flow. This groups highly correlated features together and segregates known leaky/fragile features (like timing) into their own tokens, allowing the transformer's attention heads to dynamically weight or drop them.
@@ -22,7 +22,7 @@ Based on the universal canonical mapping, we split the raw network features into
     *   *Status:* Derivable-but-not-direct (Requires derivation via IAT/Rate in CICIoT, natively present in others).
 
 ## 2. Per-Domain Presence Table
-Tokens are constructed strictly based on `SCHEMA_AUDIT.md` field availability. No missing features are silently imputed.
+Tokens are constructed strictly based on `audit/historical/SCHEMA_AUDIT.md` field availability. No missing features are silently imputed.
 
 | Dataset | Token 1 (Size) | Token 2 (Volumetric) | Token 3 (Protocol) | Token 4 (Directional) | Token 5 (Timing) |
 | :--- | :--- | :--- | :--- | :--- | :--- |

@@ -1,0 +1,7 @@
+Domain_ID,Dataset_Name,Split,Total_Flows,Benign_Flows,Attack_Flows,Attack_Ratio_Pct,Environment_Type
+D1,CICIoT2023,Train,5491971,129538,5362433,97.64,"Enterprise IoT (33 devices, 16 topologies)"
+D1,CICIoT2023,Test,1176851,27709,1149142,97.64,Enterprise IoT (Frozen test partition)
+D2,NF-ToN-IoT-v2,Train,10508704,2881519,7627185,72.58,Smart Home IoT (NetFlow-v9 standardized)
+D2,NF-ToN-IoT-v2,Test,2627177,720257,1906920,72.58,Smart Home IoT (Frozen test partition)
+D3,IEC 60870-5-104,Train/Calib,2857812,2215958,641854,22.46,Industrial SCADA (Power grid substation)
+D3,IEC 60870-5-104,Test,714453,553944,160509,22.46,Industrial SCADA (Coordinate-disjoint test partition)

@@ -14,8 +14,23 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class DatabaseSettings(BaseSettings):
     """Database configuration settings."""
     sqlite_path: str = Field(default="data/argus.db")
+    database_url: Optional[str] = Field(default=None)
     chromadb_path: str = Field(default="data/chromadb")
     pool_size: int = Field(default=5)
+
+    @property
+    def async_url(self) -> str:
+        """Async database connection URL (Postgres or SQLite)."""
+        if self.database_url:
+            return self.database_url
+        return f"sqlite+aiosqlite:///{self.sqlite_path}"
+
+    @property
+    def sync_url(self) -> str:
+        """Synchronous database connection URL (Postgres or SQLite)."""
+        if self.database_url:
+            return self.database_url.replace("+aiosqlite", "").replace("+asyncpg", "")
+        return f"sqlite:///{self.sqlite_path}"
 
 
 class SecuritySettings(BaseSettings):
@@ -77,7 +92,11 @@ class ObservabilitySettings(BaseSettings):
 
 class FeatureFlagSettings(BaseSettings):
     """Feature flag configuration settings."""
+    agent_runtime: bool = Field(default=False)
     adk_planning: bool = Field(default=False)
+    adk_narrator: bool = Field(default=False)
+    mcp_server: bool = Field(default=False)
+    gemini_api_key: Optional[str] = Field(default=None)
     vector_memory: bool = Field(default=True)
     audit_logging: bool = Field(default=True)
     rate_limiting: bool = Field(default=True)
@@ -107,8 +126,8 @@ class ArgusSettings(BaseSettings):
 
     def model_post_init(self, __context) -> None:
         """Post-initialization hook to override settings from standard environment variables."""
-        # Support standard ENVIRONMENT variable alongside ARGUS_ENV / ARGUS_MODE
-        env_override = os.getenv("ENVIRONMENT") or os.getenv("ARGUS_MODE")
+        # Support standard ENVIRONMENT variable alongside ARGUS_ENV
+        env_override = os.getenv("ENVIRONMENT") or os.getenv("ARGUS_ENV")
         if env_override:
             self.env = env_override.strip()
 

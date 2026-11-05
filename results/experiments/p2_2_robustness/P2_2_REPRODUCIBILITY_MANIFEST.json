@@ -1,0 +1,94 @@
+{
+  "manifest_version": "1.0.0",
+  "audit_phase": "ARGUS P2.2 \u2014 Final Statistical Robustness and Publication Readiness Audit",
+  "auditor": "Independent ML Research Auditor",
+  "timestamp": "2026-11-02T11:22:27.195636+00:00",
+  "base_directory": "/home/bhumi/GitHub/ARGUS",
+  "execution_environment": {
+    "python_executable": ".venv/bin/python3",
+    "python_version": "3.14.9",
+    "os": "Linux x86_64"
+  },
+  "scripts": {
+    "scripts/p2_2_multisplit_evaluation.py": {
+      "sha256": "8c91cea909bb3344306adea26c305a89fe393488e4acd8a5e3bd64302f785bc9",
+      "size_bytes": 19744,
+      "lines": 454
+    },
+    "scripts/p2_2_statistical_audit.py": {
+      "sha256": "12c6a466170b75fffe652f5d5f00e23b0f150bbf2b3ccf724d548cd73b853456",
+      "size_bytes": 19481,
+      "lines": 457
+    },
+    "scripts/p2_2_d1_d2_shift_robustness.py": {
+      "sha256": "3c868515d75ada4a86d5d4750fc4d6ee144f7302612fa03d83dbf439daa0c81a",
+      "size_bytes": 9675,
+      "lines": 237
+    }
+  },
+  "artifacts": {
+    "P2_2_INDEPENDENT_SPLIT_METRICS.csv": {
+      "path": "results/experiments/p2_2_robustness/P2_2_INDEPENDENT_SPLIT_METRICS.csv",
+      "type": "CSV",
+      "sha256": "bb8dcf7a4a3ce4a693f995056d44c4fc907b327ba11ec5297d9eead0490f32a4",
+      "size_bytes": 8101,
+      "lines": 21,
+      "description": "Full performance metrics for XGBoost and LightGBM across 5 independently seeded coordinate-disjoint partitions, evaluated at default 0.50 threshold and calibration-selected threshold.",
+      "reproduction_command": ".venv/bin/python3 scripts/p2_2_multisplit_evaluation.py"
+    },
+    "P2_2_THRESHOLD_TRANSFER_ANALYSIS.csv": {
+      "path": "results/experiments/p2_2_robustness/P2_2_THRESHOLD_TRANSFER_ANALYSIS.csv",
+      "type": "CSV",
+      "sha256": "9599cc26c7e5f9dc184117d401707966dcd4be1158d48e586932655953772c1a",
+      "size_bytes": 3665,
+      "lines": 11,
+      "description": "Decision threshold transfer evaluation comparing calibration-selected optimal threshold against default 0.50 threshold on novel coordinate test sets, documenting threshold drift.",
+      "reproduction_command": ".venv/bin/python3 scripts/p2_2_multisplit_evaluation.py"
+    },
+    "P2_2_CLUSTER_BOOTSTRAP_RESULTS.json": {
+      "path": "results/experiments/p2_2_robustness/P2_2_CLUSTER_BOOTSTRAP_RESULTS.json",
+      "type": "JSON",
+      "sha256": "d3677abc35a0f70a3925783fde214cf8f92c1211f5d62b026e3d355577c2adc1",
+      "size_bytes": 10798,
+      "lines": 307,
+      "description": "Cluster-bootstrap statistical audit results for LightGBM, XGBoost, and Clean Class-Aware CORAL on benchmark coordinate-disjoint test partition, including 95% cluster-robust CIs and degenerate resample audit.",
+      "reproduction_command": ".venv/bin/python3 scripts/p2_2_statistical_audit.py"
+    },
+    "P2_2_PAIRED_MODEL_COMPARISONS.json": {
+      "path": "results/experiments/p2_2_robustness/P2_2_PAIRED_MODEL_COMPARISONS.json",
+      "type": "JSON",
+      "sha256": "334e39fbd6628cccc0fe57aa0204adab5c9128ab2b67359e37e0ddfab85c6aa0",
+      "size_bytes": 1606,
+      "lines": 33,
+      "description": "Paired cluster-bootstrap difference in MCC between LightGBM and XGBoost, McNemar's test, paired group t-test, and Wilcoxon signed-rank test.",
+      "reproduction_command": ".venv/bin/python3 scripts/p2_2_statistical_audit.py"
+    },
+    "P2_2_D1_D2_SHIFT_ROBUSTNESS.csv": {
+      "path": "results/experiments/p2_2_robustness/P2_2_D1_D2_SHIFT_ROBUSTNESS.csv",
+      "type": "CSV",
+      "sha256": "e350ab312841dd3076204f68b87195a78d9ad8f7eb9e418b36aedfd37666e986",
+      "size_bytes": 9123,
+      "lines": 28,
+      "description": "Detailed statistical reassessment of all 27 shared coordinates between D1 and D2, flow independence analysis, Wilson score CIs, z-tests, Fisher's exact tests, and traffic archetype classifications.",
+      "reproduction_command": ".venv/bin/python3 scripts/p2_2_d1_d2_shift_robustness.py"
+    },
+    "P2_2_CORRECTED_SCIENTIFIC_CLAIMS.md": {
+      "path": "audit/research/P2_2_CORRECTED_SCIENTIFIC_CLAIMS.md",
+      "type": "Markdown",
+      "sha256": "6887a1ee3fb4e30d83407db2d97b8682bed592a4bb4a3462c4e7c960782d28e1",
+      "size_bytes": 11728,
+      "lines": 86,
+      "description": "Formal publication audit classifying claims into Supported, Partially Supported, and Unsupported with mandatory replacement texts.",
+      "reproduction_command": "Manual scientific synthesis and peer audit."
+    },
+    "P2_2_FINAL_STATISTICAL_ROBUSTNESS_REPORT.md": {
+      "path": "audit/research/P2_2_FINAL_STATISTICAL_ROBUSTNESS_REPORT.md",
+      "type": "Markdown",
+      "sha256": "a52638a6131d82edcfa798bb29ec6e332a84fe5c43e817fe1109cb1986bb4113",
+      "size_bytes": 24697,
+      "lines": 238,
+      "description": "Comprehensive independent research audit report and verdict for ARGUS P2.2 covering statistical robustness and publication readiness.",
+      "reproduction_command": "Manual scientific synthesis and peer audit."
+    }
+  }
+}
