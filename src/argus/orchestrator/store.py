@@ -14,7 +14,6 @@ from argus.database.models import (
     DecisionApprovalTokenModel,
     IncidentModel,
 )
-from argus.schemas.incident import Incident, IncidentStatus, ApprovalStatus
 
 logger = structlog.get_logger("argus.orchestrator.store")
 
@@ -53,7 +52,9 @@ class PipelineRunStore:
             # 2. If approval is required or high threat detected, ensure an Incident is created
             threat = getattr(ctx, "threat", None)
             threat_level = getattr(threat, "threat_level", None)
-            threat_str = threat_level.value if hasattr(threat_level, "value") else str(threat_level or "low")
+            threat_str = (
+                threat_level.value if hasattr(threat_level, "value") else str(threat_level or "low")
+            )
 
             if approval_required or threat_str in ("high", "critical"):
                 linked_incident_id = f"inc-{ctx.correlation_id}"
@@ -73,7 +74,9 @@ class PipelineRunStore:
                         incident_id=linked_incident_id,
                         title=f"Security Alert: {threat_str.upper()} Threat Detected ({ctx.model_name})",
                         description=action_summary,
-                        severity=threat_str if threat_str in ("low", "medium", "high", "critical") else "high",
+                        severity=threat_str
+                        if threat_str in ("low", "medium", "high", "critical")
+                        else "high",
                         status="detected",
                         source="argus_pipeline",
                         source_event_id=ctx.event_id,
@@ -131,7 +134,9 @@ class PipelineRunStore:
 
             # 4. Upsert PipelineRunModel
             existing_run = session.execute(
-                select(PipelineRunModel).where(PipelineRunModel.correlation_id == ctx.correlation_id)
+                select(PipelineRunModel).where(
+                    PipelineRunModel.correlation_id == ctx.correlation_id
+                )
             ).scalar_one_or_none()
 
             if existing_run is None:
@@ -155,7 +160,9 @@ class PipelineRunStore:
                 session.add(run_record)
             else:
                 existing_run.status = getattr(ctx, "status", "completed")
-                existing_run.extracted_features_json = json.dumps(getattr(ctx, "features", {}), default=str)
+                existing_run.extracted_features_json = json.dumps(
+                    getattr(ctx, "features", {}), default=str
+                )
                 existing_run.threat_result_json = threat_json
                 existing_run.explainability_result_json = explain_json
                 existing_run.knowledge_result_json = knowledge_json
@@ -190,7 +197,9 @@ class PipelineRunStore:
 
         except Exception as e:
             session.rollback()
-            logger.error("pipeline_run_persist_failed", correlation_id=ctx.correlation_id, error=str(e))
+            logger.error(
+                "pipeline_run_persist_failed", correlation_id=ctx.correlation_id, error=str(e)
+            )
         finally:
             session.close()
 
@@ -207,15 +216,20 @@ class PipelineRunStore:
             if not run:
                 return None
 
-            traces = session.execute(
-                select(PipelineStageTraceModel)
-                .where(PipelineStageTraceModel.correlation_id == correlation_id)
-                .order_by(PipelineStageTraceModel.id.asc())
-            ).scalars().all()
+            traces = (
+                session.execute(
+                    select(PipelineStageTraceModel)
+                    .where(PipelineStageTraceModel.correlation_id == correlation_id)
+                    .order_by(PipelineStageTraceModel.id.asc())
+                )
+                .scalars()
+                .all()
+            )
 
             token = session.execute(
-                select(DecisionApprovalTokenModel)
-                .where(DecisionApprovalTokenModel.correlation_id == correlation_id)
+                select(DecisionApprovalTokenModel).where(
+                    DecisionApprovalTokenModel.correlation_id == correlation_id
+                )
             ).scalar_one_or_none()
 
             return {
@@ -248,11 +262,15 @@ class PipelineRunStore:
         """List recent pipeline executions."""
         session = get_session(self._db_url)
         try:
-            records = session.execute(
-                select(PipelineRunModel)
-                .order_by(desc(PipelineRunModel.started_at))
-                .limit(limit)
-            ).scalars().all()
+            records = (
+                session.execute(
+                    select(PipelineRunModel)
+                    .order_by(desc(PipelineRunModel.started_at))
+                    .limit(limit)
+                )
+                .scalars()
+                .all()
+            )
 
             return [
                 {

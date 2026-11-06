@@ -21,23 +21,79 @@ logger = structlog.get_logger("argus.registry")
 HARMONIZED_FEATURES = ["pkt_mean_to_max", "tcp_flag_density", "log_pkt_mean", "log_pkt_max"]
 
 D3_NATIVE_FEATURES = [
-    "Flow_Duration", "Tot_Fwd_Pkts", "Tot_Bwd_Pkts", "TotLen_Fwd_Pkts", "TotLen_Bwd_Pkts",
-    "Fwd_Pkt_Len_Max", "Fwd_Pkt_Len_Min", "Fwd_Pkt_Len_Mean", "Fwd_Pkt_Len_Std",
-    "Bwd_Pkt_Len_Max", "Bwd_Pkt_Len_Min", "Bwd_Pkt_Len_Mean", "Bwd_Pkt_Len_Std",
-    "Flow_Byts/s", "Flow_Pkts/s", "Flow_IAT_Mean", "Flow_IAT_Std", "Flow_IAT_Max", "Flow_IAT_Min",
-    "Fwd_IAT_Tot", "Fwd_IAT_Mean", "Fwd_IAT_Std", "Fwd_IAT_Max", "Fwd_IAT_Min",
-    "Bwd_IAT_Tot", "Bwd_IAT_Mean", "Bwd_IAT_Std", "Bwd_IAT_Max", "Bwd_IAT_Min",
-    "Bwd_PSH_Flags", "Fwd_Header_Len", "Bwd_Header_Len", "Fwd_Pkts/s", "Bwd_Pkts/s",
-    "Pkt_Len_Min", "Pkt_Len_Max", "Pkt_Len_Mean", "Pkt_Len_Std", "Pkt_Len_Var",
-    "FIN_Flag_Cnt", "SYN_Flag_Cnt", "RST_Flag_Cnt", "PSH_Flag_Cnt", "ACK_Flag_Cnt",
-    "Down/Up_Ratio", "Pkt_Size_Avg", "Fwd_Seg_Size_Avg", "Bwd_Seg_Size_Avg",
-    "Subflow_Fwd_Pkts", "Subflow_Fwd_Byts", "Subflow_Bwd_Pkts", "Subflow_Bwd_Byts",
-    "Init_Bwd_Win_Byts", "Fwd_Act_Data_Pkts",
-    "Active_Mean", "Active_Std", "Active_Max", "Active_Min",
-    "Idle_Mean", "Idle_Std", "Idle_Max", "Idle_Min",
-    "pkt_mean_to_max", "log_pkt_mean", "log_pkt_max", "tcp_flag_density",
-    "pkt_min_to_max", "pkt_range_ratio", "log_flow_activity", "log_flow_bytes",
-    "fwd_pkt_ratio", "log_flow_duration", "iat_cv"
+    "Flow_Duration",
+    "Tot_Fwd_Pkts",
+    "Tot_Bwd_Pkts",
+    "TotLen_Fwd_Pkts",
+    "TotLen_Bwd_Pkts",
+    "Fwd_Pkt_Len_Max",
+    "Fwd_Pkt_Len_Min",
+    "Fwd_Pkt_Len_Mean",
+    "Fwd_Pkt_Len_Std",
+    "Bwd_Pkt_Len_Max",
+    "Bwd_Pkt_Len_Min",
+    "Bwd_Pkt_Len_Mean",
+    "Bwd_Pkt_Len_Std",
+    "Flow_Byts/s",
+    "Flow_Pkts/s",
+    "Flow_IAT_Mean",
+    "Flow_IAT_Std",
+    "Flow_IAT_Max",
+    "Flow_IAT_Min",
+    "Fwd_IAT_Tot",
+    "Fwd_IAT_Mean",
+    "Fwd_IAT_Std",
+    "Fwd_IAT_Max",
+    "Fwd_IAT_Min",
+    "Bwd_IAT_Tot",
+    "Bwd_IAT_Mean",
+    "Bwd_IAT_Std",
+    "Bwd_IAT_Max",
+    "Bwd_IAT_Min",
+    "Bwd_PSH_Flags",
+    "Fwd_Header_Len",
+    "Bwd_Header_Len",
+    "Fwd_Pkts/s",
+    "Bwd_Pkts/s",
+    "Pkt_Len_Min",
+    "Pkt_Len_Max",
+    "Pkt_Len_Mean",
+    "Pkt_Len_Std",
+    "Pkt_Len_Var",
+    "FIN_Flag_Cnt",
+    "SYN_Flag_Cnt",
+    "RST_Flag_Cnt",
+    "PSH_Flag_Cnt",
+    "ACK_Flag_Cnt",
+    "Down/Up_Ratio",
+    "Pkt_Size_Avg",
+    "Fwd_Seg_Size_Avg",
+    "Bwd_Seg_Size_Avg",
+    "Subflow_Fwd_Pkts",
+    "Subflow_Fwd_Byts",
+    "Subflow_Bwd_Pkts",
+    "Subflow_Bwd_Byts",
+    "Init_Bwd_Win_Byts",
+    "Fwd_Act_Data_Pkts",
+    "Active_Mean",
+    "Active_Std",
+    "Active_Max",
+    "Active_Min",
+    "Idle_Mean",
+    "Idle_Std",
+    "Idle_Max",
+    "Idle_Min",
+    "pkt_mean_to_max",
+    "log_pkt_mean",
+    "log_pkt_max",
+    "tcp_flag_density",
+    "pkt_min_to_max",
+    "pkt_range_ratio",
+    "log_flow_activity",
+    "log_flow_bytes",
+    "fwd_pkt_ratio",
+    "log_flow_duration",
+    "iat_cv",
 ]
 
 MODEL_METADATA = {
@@ -56,7 +112,7 @@ MODEL_METADATA = {
             "adaptation_method": "NONE",
             "features": HARMONIZED_FEATURES,
             "training_date": "2026-08-19",
-        }
+        },
     },
     "model_d2_coral": {
         "model_id": "mod-d2-coral-001",
@@ -74,7 +130,7 @@ MODEL_METADATA = {
             "features": HARMONIZED_FEATURES,
             "threshold_selection": "NF-ToN Calibration (2.10M, max MCC)",
             "training_date": "2026-08-19",
-        }
+        },
     },
     "model_d3_native": {
         "model_id": "mod-d3-native-001",
@@ -91,7 +147,7 @@ MODEL_METADATA = {
             "adaptation_method": "NONE",
             "features": D3_NATIVE_FEATURES,
             "training_date": "2026-08-20",
-        }
+        },
     },
     "xgb_source": {
         "model_id": "mod-xgb-src-001",
@@ -108,7 +164,7 @@ MODEL_METADATA = {
             "adaptation_method": "NONE",
             "features": HARMONIZED_FEATURES,
             "training_date": "2026-08-20",
-        }
+        },
     },
     "xgb_adapted": {
         "model_id": "mod-xgb-adapt-001",
@@ -125,7 +181,7 @@ MODEL_METADATA = {
             "adaptation_method": "CORAL Aligned XGBoost",
             "features": HARMONIZED_FEATURES,
             "training_date": "2026-08-20",
-        }
+        },
     },
     "dann": {
         "model_id": "mod-dann-001",
@@ -143,8 +199,8 @@ MODEL_METADATA = {
             "features": HARMONIZED_FEATURES,
             "training_date": "2026-08-22",
             "note": "No verified checkpoint — unavailable for live inference",
-        }
-    }
+        },
+    },
 }
 
 
@@ -160,7 +216,9 @@ class ModelRegistry:
 
     def _load_integrity_manifest(self) -> Dict[str, Any]:
         """Load the trusted SHA-256 integrity manifest from disk."""
-        manifest_path = os.path.join(self.base_dir, "artifacts", "models", "INTEGRITY_MANIFEST.json")
+        manifest_path = os.path.join(
+            self.base_dir, "artifacts", "models", "INTEGRITY_MANIFEST.json"
+        )
         if not os.path.exists(manifest_path):
             logger.warning("integrity_manifest_not_found", path=manifest_path)
             return {}
@@ -211,7 +269,7 @@ class ModelRegistry:
 
     def load_all(self) -> None:
         """Load all configured model artifacts into memory.
-        
+
         Verifies SHA-256 integrity BEFORE deserialization.
         Fails loudly if any required model artifact is missing or tampered.
         """
@@ -224,7 +282,7 @@ class ModelRegistry:
         for model_name, meta in MODEL_METADATA.items():
             rel_path = meta["artifact_path"]
             full_path = os.path.join(self.base_dir, rel_path)
-            
+
             if not os.path.exists(full_path):
                 missing_artifacts.append((model_name, full_path))
                 continue
@@ -248,8 +306,10 @@ class ModelRegistry:
                     try:
                         self.explainers[model_name] = shap.TreeExplainer(model)
                     except Exception as ex:
-                        logger.warning("shap_explainer_init_failed", model_name=model_name, error=str(ex))
-                        
+                        logger.warning(
+                            "shap_explainer_init_failed", model_name=model_name, error=str(ex)
+                        )
+
                 elif model_type == "xgboost":
                     model = xgb.Booster()
                     model.load_model(full_path)
@@ -257,19 +317,23 @@ class ModelRegistry:
                     try:
                         self.explainers[model_name] = shap.TreeExplainer(model)
                     except Exception as ex:
-                        logger.warning("shap_explainer_init_failed", model_name=model_name, error=str(ex))
-                        
+                        logger.warning(
+                            "shap_explainer_init_failed", model_name=model_name, error=str(ex)
+                        )
+
                 elif model_type == "dann_simulated":
                     # DANN has no verified weights artifact for live inference
                     pass
-                    
+
                 logger.info("model_loaded_successfully", model_name=model_name, path=full_path)
             except RuntimeError as e:
                 # Integrity failures are fatal — do not silently continue
                 logger.error("model_integrity_check_failed", model_name=model_name, error=str(e))
                 raise
             except Exception as e:
-                logger.error("model_load_failed", model_name=model_name, path=full_path, error=str(e))
+                logger.error(
+                    "model_load_failed", model_name=model_name, path=full_path, error=str(e)
+                )
                 missing_artifacts.append((model_name, full_path))
 
         if missing_artifacts:
@@ -286,30 +350,36 @@ class ModelRegistry:
         if not self.is_loaded:
             self.load_all()
         return {
-            name: (name in self.loaded_models and MODEL_METADATA[name].get("status") != "unavailable")
+            name: (
+                name in self.loaded_models and MODEL_METADATA[name].get("status") != "unavailable"
+            )
             for name in MODEL_METADATA.keys()
         }
 
     def get_model_info_list(self) -> List[ModelInfo]:
         """Get structured list of ModelInfo for GET /api/v1/models."""
         res = []
-        for name, meta in MODEL_METADATA.items():
-            res.append(ModelInfo(
-                model_id=meta["model_id"],
-                name=meta["name"],
-                protocol_status=meta["protocol_status"],
-                threshold=meta["threshold"],
-                source_domain=meta["source_domain"],
-                target_domain=meta["target_domain"],
-                status=meta["status"],
-                provenance=meta["provenance"]
-            ))
+        for _name, meta in MODEL_METADATA.items():
+            res.append(
+                ModelInfo(
+                    model_id=meta["model_id"],
+                    name=meta["name"],
+                    protocol_status=meta["protocol_status"],
+                    threshold=meta["threshold"],
+                    source_domain=meta["source_domain"],
+                    target_domain=meta["target_domain"],
+                    status=meta["status"],
+                    provenance=meta["provenance"],
+                )
+            )
         return res
 
     def get_expected_features(self, model_name: str) -> List[str]:
         """Return the expected list of feature names for a given model."""
         if model_name not in MODEL_METADATA:
-            raise KeyError(f"Unknown model name '{model_name}'. Available: {list(MODEL_METADATA.keys())}")
+            raise KeyError(
+                f"Unknown model name '{model_name}'. Available: {list(MODEL_METADATA.keys())}"
+            )
         meta = MODEL_METADATA[model_name]
         return list(meta.get("provenance", {}).get("features", HARMONIZED_FEATURES))
 
@@ -330,9 +400,7 @@ class ModelRegistry:
         expected_features = self.get_expected_features(model_name)
 
         # Normalize keys (handle spaces vs underscores from training artifacts)
-        norm_features: Dict[str, Any] = {
-            k.replace(" ", "_"): v for k, v in features.items()
-        }
+        norm_features: Dict[str, Any] = {k.replace(" ", "_"): v for k, v in features.items()}
 
         # Check for missing features
         missing = [col for col in expected_features if col not in norm_features]
@@ -355,14 +423,18 @@ class ModelRegistry:
         # Check for non-finite values (NaN, Inf)
         for col in expected_features:
             val = norm_features[col]
-            if val is None or not isinstance(val, (int, float, np.number)) or np.isnan(val) or np.isinf(val):
+            if (
+                val is None
+                or not isinstance(val, (int, float, np.number))
+                or np.isnan(val)
+                or np.isinf(val)
+            ):
                 raise ValueError(
                     f"Feature '{col}' contains invalid non-finite value: {val!r} (type {type(val).__name__})."
                 )
 
         x_vec = np.array(
-            [[float(norm_features[col]) for col in expected_features]],
-            dtype=np.float32
+            [[float(norm_features[col]) for col in expected_features]], dtype=np.float32
         )
         return x_vec, expected_features
 
@@ -371,11 +443,15 @@ class ModelRegistry:
         if not self.is_loaded:
             self.load_all()
         if model_name not in MODEL_METADATA:
-            raise KeyError(f"Unknown model name '{model_name}'. Available: {list(MODEL_METADATA.keys())}")
+            raise KeyError(
+                f"Unknown model name '{model_name}'. Available: {list(MODEL_METADATA.keys())}"
+            )
 
         meta = MODEL_METADATA[model_name]
         if model_name == "dann" or meta.get("status") == "unavailable":
-            raise NotImplementedError("Model 'dann' is unavailable for live inference: no verified checkpoint found.")
+            raise NotImplementedError(
+                "Model 'dann' is unavailable for live inference: no verified checkpoint found."
+            )
 
         threshold = meta["threshold"]
         if threshold is None:
@@ -406,10 +482,14 @@ class ModelRegistry:
             self.load_all()
         meta = MODEL_METADATA.get(model_name)
         if not meta:
-            raise KeyError(f"Unknown model '{model_name}'. Available: {list(MODEL_METADATA.keys())}")
+            raise KeyError(
+                f"Unknown model '{model_name}'. Available: {list(MODEL_METADATA.keys())}"
+            )
 
         if model_name == "dann" or meta.get("status") == "unavailable":
-            raise NotImplementedError("Model 'dann' is unavailable for live inference: no verified checkpoint found.")
+            raise NotImplementedError(
+                "Model 'dann' is unavailable for live inference: no verified checkpoint found."
+            )
 
         expected_features = self.get_expected_features(model_name)
         expected_dim = len(expected_features)
@@ -440,16 +520,22 @@ class ModelRegistry:
             return model.predict(dmat)
         raise ValueError(f"Unsupported model type '{meta['type']}' for live inference.")
 
-    def explain(self, model_name: str, features: Dict[str, float]) -> Tuple[float, Dict[str, float], str, float]:
+    def explain(
+        self, model_name: str, features: Dict[str, float]
+    ) -> Tuple[float, Dict[str, float], str, float]:
         """Compute real SHAP feature attributions for a single flow using TreeExplainer."""
         if not self.is_loaded:
             self.load_all()
         if model_name not in MODEL_METADATA:
-            raise KeyError(f"Unknown model '{model_name}'. Available: {list(MODEL_METADATA.keys())}")
+            raise KeyError(
+                f"Unknown model '{model_name}'. Available: {list(MODEL_METADATA.keys())}"
+            )
 
         meta = MODEL_METADATA[model_name]
         if model_name == "dann" or meta.get("status") == "unavailable":
-            raise NotImplementedError("Model 'dann' is unavailable for live inference: no verified checkpoint found.")
+            raise NotImplementedError(
+                "Model 'dann' is unavailable for live inference: no verified checkpoint found."
+            )
 
         x_vec, expected_features = self._validate_and_prepare_features(model_name, features)
 
@@ -462,7 +548,9 @@ class ModelRegistry:
             sv = sv[1] if len(sv) > 1 else sv[0]
 
         sv_flat = sv[0] if len(sv.shape) > 1 else sv
-        shap_dict = {feat: float(val) for feat, val in zip(expected_features, sv_flat)}
+        shap_dict = {
+            feat: float(val) for feat, val in zip(expected_features, sv_flat, strict=False)
+        }
 
         # Base value
         bv = getattr(explainer, "expected_value", 0.50)
@@ -475,6 +563,7 @@ class ModelRegistry:
         top_impact = shap_dict[top_feat]
 
         return base_val, shap_dict, top_feat, top_impact
+
 
 # Singleton instance
 model_registry = ModelRegistry()

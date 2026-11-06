@@ -13,7 +13,7 @@ Verifies:
 import copy
 import pytest
 from httpx import AsyncClient, ASGITransport
-from configs.settings import get_settings, ArgusSettings
+from configs.settings import get_settings
 from argus.api.main import app as module_app, create_app
 
 
@@ -27,6 +27,22 @@ def base_settings():
 # 1. FACTORY CREATION TESTS
 # ===========================================================================
 
+
+def _extract_routes(app):
+    paths = []
+    for r in app.routes:
+        if hasattr(r, "path"):
+            paths.append(r.path)
+        elif hasattr(r, "original_router"):
+            prefix = getattr(r.original_router, "prefix", "") or getattr(
+                getattr(r, "include_context", None), "prefix", ""
+            )
+            for sub in r.original_router.routes:
+                sub_path = getattr(sub, "path", "")
+                paths.append(f"{prefix}{sub_path}")
+    return paths
+
+
 def test_default_app_creation():
     """Default app creation via create_app() returns a fully functional FastAPI app."""
     fresh_app = create_app()
@@ -34,7 +50,7 @@ def test_default_app_creation():
     assert fresh_app.title == "ARGUS Cybersecurity Platform API"
     assert hasattr(fresh_app.state, "settings")
     # Verify routers are mounted
-    route_paths = [r.path for r in fresh_app.routes]
+    route_paths = _extract_routes(fresh_app)
     assert "/health" in route_paths
     assert "/api/v1/predict" in route_paths
     assert "/api/v1/models" in route_paths
@@ -44,13 +60,14 @@ def test_module_level_app_backward_compatibility():
     """Existing module-level 'app' import remains fully functional."""
     assert module_app is not None
     assert module_app.title == "ARGUS Cybersecurity Platform API"
-    route_paths = [r.path for r in module_app.routes]
+    route_paths = _extract_routes(module_app)
     assert "/health" in route_paths
 
 
 # ===========================================================================
 # 2. ISOLATION BETWEEN MULTIPLE APPS
 # ===========================================================================
+
 
 def test_two_apps_with_different_settings_isolated(base_settings):
     """Two app instances constructed with different settings maintain strict isolation."""
@@ -76,6 +93,7 @@ def test_two_apps_with_different_settings_isolated(base_settings):
 # 3. PRODUCTION CORS TESTS
 # ===========================================================================
 
+
 @pytest.mark.asyncio
 async def test_production_cors_rejects_unauthorized_origin(base_settings):
     """Production CORS rejects origins not explicitly in cors_origins."""
@@ -87,17 +105,20 @@ async def test_production_cors_rejects_unauthorized_origin(base_settings):
 
     async with AsyncClient(transport=ASGITransport(app=prod_app), base_url="http://test") as client:
         # Attack origin
-        res = await client.options("/health", headers={
-            "Origin": "https://malicious-attacker.com",
-            "Access-Control-Request-Method": "GET"
-        })
+        res = await client.options(
+            "/health",
+            headers={
+                "Origin": "https://malicious-attacker.com",
+                "Access-Control-Request-Method": "GET",
+            },
+        )
         assert res.headers.get("access-control-allow-origin") is None
 
         # Localhost rejected in production when not in cors_origins
-        res_local = await client.options("/health", headers={
-            "Origin": "http://localhost:3000",
-            "Access-Control-Request-Method": "GET"
-        })
+        res_local = await client.options(
+            "/health",
+            headers={"Origin": "http://localhost:3000", "Access-Control-Request-Method": "GET"},
+        )
         assert res_local.headers.get("access-control-allow-origin") is None
 
 
@@ -112,10 +133,9 @@ async def test_production_cors_permits_allowed_origin(base_settings):
     prod_app = create_app(prod_settings)
 
     async with AsyncClient(transport=ASGITransport(app=prod_app), base_url="http://test") as client:
-        res = await client.options("/health", headers={
-            "Origin": trusted_origin,
-            "Access-Control-Request-Method": "GET"
-        })
+        res = await client.options(
+            "/health", headers={"Origin": trusted_origin, "Access-Control-Request-Method": "GET"}
+        )
         assert res.headers.get("access-control-allow-origin") == trusted_origin
         assert res.headers.get("access-control-allow-credentials") == "true"
 
@@ -124,14 +144,18 @@ async def test_production_cors_permits_allowed_origin(base_settings):
 # 4. DEVELOPMENT CORS TESTS
 # ===========================================================================
 
+
 @pytest.mark.asyncio
-@pytest.mark.parametrize("dev_origin", [
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "http://localhost:8080",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:5173",
-])
+@pytest.mark.parametrize(
+    "dev_origin",
+    [
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://localhost:8080",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5173",
+    ],
+)
 async def test_development_cors_permits_local_origins(base_settings, dev_origin):
     """Development CORS allows localhost and 127.0.0.1 origins on various ports."""
     dev_settings = copy.deepcopy(base_settings)
@@ -140,10 +164,9 @@ async def test_development_cors_permits_local_origins(base_settings, dev_origin)
     dev_app = create_app(dev_settings)
 
     async with AsyncClient(transport=ASGITransport(app=dev_app), base_url="http://test") as client:
-        res = await client.options("/health", headers={
-            "Origin": dev_origin,
-            "Access-Control-Request-Method": "GET"
-        })
+        res = await client.options(
+            "/health", headers={"Origin": dev_origin, "Access-Control-Request-Method": "GET"}
+        )
         assert res.headers.get("access-control-allow-origin") == dev_origin
 
 
@@ -161,25 +184,25 @@ async def test_cross_app_settings_do_not_bleed(base_settings):
     # 1. Instantiate prod app and verify localhost is rejected
     prod_app = create_app(prod_settings)
     async with AsyncClient(transport=ASGITransport(app=prod_app), base_url="http://test") as client:
-        res = await client.options("/health", headers={
-            "Origin": "http://localhost:3000",
-            "Access-Control-Request-Method": "GET"
-        })
+        res = await client.options(
+            "/health",
+            headers={"Origin": "http://localhost:3000", "Access-Control-Request-Method": "GET"},
+        )
         assert res.headers.get("access-control-allow-origin") is None
 
     # 2. Instantiate dev app and verify localhost is allowed
     dev_app = create_app(dev_settings)
     async with AsyncClient(transport=ASGITransport(app=dev_app), base_url="http://test") as client:
-        res = await client.options("/health", headers={
-            "Origin": "http://localhost:3000",
-            "Access-Control-Request-Method": "GET"
-        })
+        res = await client.options(
+            "/health",
+            headers={"Origin": "http://localhost:3000", "Access-Control-Request-Method": "GET"},
+        )
         assert res.headers.get("access-control-allow-origin") == "http://localhost:3000"
 
     # 3. Query prod app AGAIN to ensure dev app creation did not alter prod app
     async with AsyncClient(transport=ASGITransport(app=prod_app), base_url="http://test") as client:
-        res = await client.options("/health", headers={
-            "Origin": "http://localhost:3000",
-            "Access-Control-Request-Method": "GET"
-        })
+        res = await client.options(
+            "/health",
+            headers={"Origin": "http://localhost:3000", "Access-Control-Request-Method": "GET"},
+        )
         assert res.headers.get("access-control-allow-origin") is None

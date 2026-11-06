@@ -2,7 +2,6 @@
 
 import json
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 import structlog
 from sqlalchemy import select, update, delete, desc
@@ -137,12 +136,16 @@ class SqliteOutbox:
         session = get_session(self._db_url)
         events = []
         try:
-            records = session.execute(
-                select(BusOutboxModel)
-                .where(BusOutboxModel.status == "pending")
-                .order_by(BusOutboxModel.created_at.asc())
-                .limit(limit)
-            ).scalars().all()
+            records = (
+                session.execute(
+                    select(BusOutboxModel)
+                    .where(BusOutboxModel.status == "pending")
+                    .order_by(BusOutboxModel.created_at.asc())
+                    .limit(limit)
+                )
+                .scalars()
+                .all()
+            )
 
             for r in records:
                 try:
@@ -177,11 +180,15 @@ class SqliteOutbox:
         session = get_session(self._db_url)
         dlq_list = []
         try:
-            records = session.execute(
-                select(BusDeadLetterModel)
-                .order_by(desc(BusDeadLetterModel.failed_at))
-                .limit(limit)
-            ).scalars().all()
+            records = (
+                session.execute(
+                    select(BusDeadLetterModel)
+                    .order_by(desc(BusDeadLetterModel.failed_at))
+                    .limit(limit)
+                )
+                .scalars()
+                .all()
+            )
 
             for r in records:
                 try:
@@ -189,16 +196,18 @@ class SqliteOutbox:
                 except Exception:
                     payload = {"raw": r.payload_json}
 
-                dlq_list.append({
-                    "id": r.id,
-                    "event_id": r.event_id,
-                    "topic": r.topic,
-                    "payload": payload,
-                    "error_reason": r.error_reason,
-                    "error": r.error_reason,
-                    "failed_at": r.failed_at.isoformat() if r.failed_at else None,
-                    "retry_count": r.retry_count,
-                })
+                dlq_list.append(
+                    {
+                        "id": r.id,
+                        "event_id": r.event_id,
+                        "topic": r.topic,
+                        "payload": payload,
+                        "error_reason": r.error_reason,
+                        "error": r.error_reason,
+                        "failed_at": r.failed_at.isoformat() if r.failed_at else None,
+                        "retry_count": r.retry_count,
+                    }
+                )
         except Exception as e:
             logger.error("fetch_dlq_events_failed", error=str(e))
         finally:

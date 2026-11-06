@@ -1,12 +1,12 @@
 """Abstract base class for all ARGUS agents."""
-import asyncio
+
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import Any, List, Optional, TYPE_CHECKING
 import structlog
 from datetime import datetime, timezone
 
 from argus.core.enums import AgentStatus
-from argus.core.types import AgentId, TaskId
+from argus.core.types import AgentId
 
 if TYPE_CHECKING:
     from argus.core.interfaces import (
@@ -181,8 +181,6 @@ class BaseAgent(ABC):
             "avg_response_time": self.avg_response_time,
         }
         try:
-            await self.message_bus.publish(
-                f"agent.{self.agent_id}.heartbeat", heartbeat
-            )
+            await self.message_bus.publish(f"agent.{self.agent_id}.heartbeat", heartbeat)
         except Exception as exc:
             self.logger.warning("heartbeat_publish_failed", error=str(exc))

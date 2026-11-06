@@ -20,7 +20,7 @@ logger = structlog.get_logger("argus.integrations.mcp")
 
 class ArgusMCPServer(BaseMCPServer):
     """Production read-only MCP server exposing ARGUS inspection tools.
-    
+
     Tools:
     - get_incident: Inspect incident details, timeline, risk score, and actions.
     - get_trace: Inspect pipeline execution trace and stage latencies.
@@ -28,12 +28,14 @@ class ArgusMCPServer(BaseMCPServer):
     - lookup_mitre: Lookup MITRE ATT&CK techniques, descriptions, and mitigations.
     """
 
-    def __init__(self, name: str = "argus-mcp", version: str = "1.0.0", resources_dir: Optional[str] = None):
+    def __init__(
+        self, name: str = "argus-mcp", version: str = "1.0.0", resources_dir: Optional[str] = None
+    ):
         super().__init__(name=name, version=version)
         self.logger = logger.bind(server=self.name, version=self.version)
         self._initialized = False
         self._mitre_db: Dict[str, Any] = {}
-        
+
         # Locate knowledge context resources
         if resources_dir:
             self._resources_dir = resources_dir
@@ -52,7 +54,10 @@ class ArgusMCPServer(BaseMCPServer):
             try:
                 with open(mitre_path, "r", encoding="utf-8") as f:
                     self._mitre_db = json.load(f)
-                self.logger.info("mcp_mitre_db_loaded", techniques_count=len(self._mitre_db.get("techniques", {})))
+                self.logger.info(
+                    "mcp_mitre_db_loaded",
+                    techniques_count=len(self._mitre_db.get("techniques", {})),
+                )
             except Exception as e:
                 self.logger.warning("mcp_mitre_db_load_error", error=str(e))
         else:
@@ -79,12 +84,12 @@ class ArgusMCPServer(BaseMCPServer):
                     "properties": {
                         "incident_id": {
                             "type": "string",
-                            "description": "Unique identifier of the incident (e.g., 'INC-20261104-001' or UUID)."
+                            "description": "Unique identifier of the incident (e.g., 'INC-20261104-001' or UUID).",
                         }
                     },
-                    "required": ["incident_id"]
+                    "required": ["incident_id"],
                 },
-                "read_only": True
+                "read_only": True,
             },
             {
                 "name": "get_trace",
@@ -94,12 +99,12 @@ class ArgusMCPServer(BaseMCPServer):
                     "properties": {
                         "correlation_id": {
                             "type": "string",
-                            "description": "Correlation ID of the pipeline execution flow (e.g., 'flow-3c3d627c')."
+                            "description": "Correlation ID of the pipeline execution flow (e.g., 'flow-3c3d627c').",
                         }
                     },
-                    "required": ["correlation_id"]
+                    "required": ["correlation_id"],
                 },
-                "read_only": True
+                "read_only": True,
             },
             {
                 "name": "explain_flow",
@@ -109,17 +114,17 @@ class ArgusMCPServer(BaseMCPServer):
                     "properties": {
                         "features": {
                             "type": "object",
-                            "description": "Dictionary of feature values (e.g. pkt_mean_to_max, tcp_flag_density, log_pkt_mean, log_pkt_max)."
+                            "description": "Dictionary of feature values (e.g. pkt_mean_to_max, tcp_flag_density, log_pkt_mean, log_pkt_max).",
                         },
                         "model_name": {
                             "type": "string",
                             "description": "Model identifier to explain against. Defaults to 'model_d2_coral'.",
-                            "default": "model_d2_coral"
-                        }
+                            "default": "model_d2_coral",
+                        },
                     },
-                    "required": ["features"]
+                    "required": ["features"],
                 },
-                "read_only": True
+                "read_only": True,
             },
             {
                 "name": "lookup_mitre",
@@ -129,16 +134,16 @@ class ArgusMCPServer(BaseMCPServer):
                     "properties": {
                         "technique_id": {
                             "type": "string",
-                            "description": "MITRE technique ID (e.g., 'T1059', 'T1110', 'T0814')."
+                            "description": "MITRE technique ID (e.g., 'T1059', 'T1110', 'T0814').",
                         },
                         "attack_type": {
                             "type": "string",
-                            "description": "General attack classification (e.g., 'brute_force', 'ddos', 'reconnaissance', 'c2')."
-                        }
-                    }
+                            "description": "General attack classification (e.g., 'brute_force', 'ddos', 'reconnaissance', 'c2').",
+                        },
+                    },
                 },
-                "read_only": True
-            }
+                "read_only": True,
+            },
         ]
 
     async def call_tool(self, name: str, args: Dict[str, Any]) -> Any:
@@ -155,15 +160,16 @@ class ArgusMCPServer(BaseMCPServer):
         elif name == "explain_flow":
             return await self._tool_explain_flow(
                 features=args.get("features", {}),
-                model_name=args.get("model_name", "model_d2_coral")
+                model_name=args.get("model_name", "model_d2_coral"),
             )
         elif name == "lookup_mitre":
             return await self._tool_lookup_mitre(
-                technique_id=args.get("technique_id"),
-                attack_type=args.get("attack_type")
+                technique_id=args.get("technique_id"), attack_type=args.get("attack_type")
             )
         else:
-            raise ValueError(f"Unknown tool '{name}'. Available: get_incident, get_trace, explain_flow, lookup_mitre")
+            raise ValueError(
+                f"Unknown tool '{name}'. Available: get_incident, get_trace, explain_flow, lookup_mitre"
+            )
 
     async def _tool_get_incident(self, incident_id: Optional[str]) -> Dict[str, Any]:
         """Read-only tool: Retrieve incident by ID."""
@@ -171,13 +177,14 @@ class ArgusMCPServer(BaseMCPServer):
             return {"found": False, "error": "Missing required parameter 'incident_id'"}
 
         from argus.services.incident_service import incident_service
+
         incident = incident_service.get_incident(incident_id)
 
         if incident is None:
             return {
                 "found": False,
                 "incident_id": incident_id,
-                "error": f"Incident '{incident_id}' not found in active cache or durable store."
+                "error": f"Incident '{incident_id}' not found in active cache or durable store.",
             }
 
         # Safely convert to read-only dict
@@ -220,6 +227,7 @@ class ArgusMCPServer(BaseMCPServer):
             return {"found": False, "error": "Missing required parameter 'correlation_id'"}
 
         from argus.orchestrator.store import IncidentStore
+
         store = IncidentStore()
         run_data = store.get_pipeline_run(correlation_id)
 
@@ -227,7 +235,7 @@ class ArgusMCPServer(BaseMCPServer):
             return {
                 "found": False,
                 "correlation_id": correlation_id,
-                "error": f"Pipeline trace for correlation_id '{correlation_id}' not found in durable store."
+                "error": f"Pipeline trace for correlation_id '{correlation_id}' not found in durable store.",
             }
 
         return {
@@ -244,10 +252,15 @@ class ArgusMCPServer(BaseMCPServer):
             "total_stages": len(run_data.get("traces", [])),
         }
 
-    async def _tool_explain_flow(self, features: Dict[str, Any], model_name: str = "model_d2_coral") -> Dict[str, Any]:
+    async def _tool_explain_flow(
+        self, features: Dict[str, Any], model_name: str = "model_d2_coral"
+    ) -> Dict[str, Any]:
         """Read-only tool: Compute TreeSHAP attributions for given features."""
         if not features or not isinstance(features, dict):
-            return {"success": False, "error": "Parameter 'features' must be a non-empty dictionary of float values."}
+            return {
+                "success": False,
+                "error": "Parameter 'features' must be a non-empty dictionary of float values.",
+            }
 
         # Convert feature values to floats
         clean_features = {}
@@ -261,7 +274,9 @@ class ArgusMCPServer(BaseMCPServer):
             return {"success": False, "error": "No valid numerical features provided."}
 
         try:
-            base_val, shap_dict, top_feat, top_impact = model_registry.explain(model_name, clean_features)
+            base_val, shap_dict, top_feat, top_impact = model_registry.explain(
+                model_name, clean_features
+            )
             prob, _label, _thresh = model_registry.predict(model_name, clean_features)
 
             return {
@@ -278,13 +293,11 @@ class ArgusMCPServer(BaseMCPServer):
             return {
                 "success": False,
                 "model_name": model_name,
-                "error": f"SHAP explanation failed: {str(e)}"
+                "error": f"SHAP explanation failed: {str(e)}",
             }
 
     async def _tool_lookup_mitre(
-        self,
-        technique_id: Optional[str] = None,
-        attack_type: Optional[str] = None
+        self, technique_id: Optional[str] = None, attack_type: Optional[str] = None
     ) -> Dict[str, Any]:
         """Read-only tool: Lookup MITRE ATT&CK techniques."""
         techniques = self._mitre_db.get("techniques", {})
@@ -305,7 +318,7 @@ class ArgusMCPServer(BaseMCPServer):
                 "query_type": "technique_id",
                 "technique_id": tid,
                 "error": f"MITRE technique '{tid}' not found in local database.",
-                "available_ids": sorted(list(techniques.keys()))[:10]
+                "available_ids": sorted(list(techniques.keys()))[:10],
             }
 
         # Attack type category lookup
@@ -344,20 +357,20 @@ class ArgusMCPServer(BaseMCPServer):
                 "uri": "argus://incidents",
                 "name": "Active Security Incidents",
                 "description": "List of recent security incidents and risk assessments.",
-                "mimeType": "application/json"
+                "mimeType": "application/json",
             },
             {
                 "uri": "argus://models",
                 "name": "Verified Model Registry",
                 "description": "List of loaded detection models, weights status, and expected feature counts.",
-                "mimeType": "application/json"
+                "mimeType": "application/json",
             },
             {
                 "uri": "argus://mitre",
                 "name": "MITRE ATT&CK Catalog",
                 "description": "Index of supported MITRE ATT&CK Enterprise techniques.",
-                "mimeType": "application/json"
-            }
+                "mimeType": "application/json",
+            },
         ]
 
     async def read_resource(self, uri: str) -> Any:
@@ -367,6 +380,7 @@ class ArgusMCPServer(BaseMCPServer):
 
         if uri == "argus://incidents":
             from argus.services.incident_service import incident_service
+
             incidents = incident_service.list_incidents(limit=20)
             return [
                 {
@@ -375,7 +389,7 @@ class ArgusMCPServer(BaseMCPServer):
                     "severity": inc.severity,
                     "risk_score": inc.risk_score,
                     "threat_level": inc.threat_level,
-                    "created_at": str(inc.created_at)
+                    "created_at": str(inc.created_at),
                 }
                 for inc in incidents
             ]

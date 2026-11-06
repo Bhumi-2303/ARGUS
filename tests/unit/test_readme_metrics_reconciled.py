@@ -19,10 +19,11 @@ def verified_five_model_df():
     """Load five_model_complete_comparison.csv directly from the main branch in git."""
     import subprocess
     import io
+
     try:
         csv_bytes = subprocess.check_output(
             ["git", "show", "main:results/verified/five_model_complete_comparison.csv"],
-            stderr=subprocess.DEVNULL
+            stderr=subprocess.DEVNULL,
         )
         return pd.read_csv(io.BytesIO(csv_bytes))
     except Exception as e:
@@ -44,7 +45,9 @@ def test_readme_no_forbidden_claims_or_static_badges(readme_text):
     )
 
     # 3. Must not state ARGUS solves or resolves cross-domain transfer
-    solve_match = re.search(r"\b(resolves|solves)\s+(cross-domain|domain\s+transfer)\b", readme_text, re.IGNORECASE)
+    solve_match = re.search(
+        r"\b(resolves|solves)\s+(cross-domain|domain\s+transfer)\b", readme_text, re.IGNORECASE
+    )
     assert solve_match is None, (
         f"Found unsupportable claim in README: '{solve_match.group(0)}'. "
         "ARGUS provides partial mitigation only (Clean CORAL MCC 0.3855, ROC-AUC 0.597)."
@@ -62,8 +65,14 @@ def test_readme_table_iv_matches_verified_five_model_csv(readme_text, verified_f
     table_match = re.search(r"### Table IV:.*?\n\n(.*?)\n\n####", readme_text, re.DOTALL)
     assert table_match is not None, "Failed to locate Table IV in README.md"
 
-    table_lines = [l.strip() for l in table_match.group(1).strip().split("\n") if l.strip().startswith("|")]
-    assert len(table_lines) >= 7, f"Table IV must have at least header + separator + 5 model rows (found {len(table_lines)})"
+    table_lines = [
+        line.strip()
+        for line in table_match.group(1).strip().split("\n")
+        if line.strip().startswith("|")
+    ]
+    assert len(table_lines) >= 7, (
+        f"Table IV must have at least header + separator + 5 model rows (found {len(table_lines)})"
+    )
 
     raw_headers = [c.strip() for c in table_lines[0].split("|")[1:-1]]
     # Map markdown header names to CSV column names
@@ -97,7 +106,10 @@ def test_readme_table_iv_matches_verified_five_model_csv(readme_text, verified_f
 
     # Parse rows (skip header and divider)
     for line in table_lines[2:]:
-        cols = [c.replace("*", "").replace("+", "").replace("$", "").replace("\\", "").strip() for c in line.split("|")[1:-1]]
+        cols = [
+            c.replace("*", "").replace("+", "").replace("$", "").replace("\\", "").strip()
+            for c in line.split("|")[1:-1]
+        ]
         model_col = cols[0]
         canonical_name = normalize_model_name(model_col)
         if canonical_name not in csv_rows_by_model:
@@ -139,11 +151,13 @@ def test_readme_headline_numbers_reconciled(readme_text):
     """Verify that specific known headline reconciliation values match single source of truth."""
     # 1. Clean CORAL MCC headline is 0.3855
     assert "0.3855" in readme_text, "Missing authoritative Clean CORAL MCC (+0.3855) in README"
-    assert "0.5970" in readme_text or "0.597" in readme_text, "Missing Clean CORAL ROC-AUC (0.5970) in README"
+    assert "0.5970" in readme_text or "0.597" in readme_text, (
+        "Missing Clean CORAL ROC-AUC (0.5970) in README"
+    )
 
     # 2. DANN headline is 0.3321 / 0.06% (or 0.0006)
     assert "0.3321" in readme_text, "Missing authoritative DANN ROC-AUC (0.3321) in README"
-    assert ("0.06%" in readme_text or "0.06\\%" in readme_text or "0.0006" in readme_text), (
+    assert "0.06%" in readme_text or "0.06\\%" in readme_text or "0.0006" in readme_text, (
         "Missing authoritative DANN Specificity (0.06% / 0.0006) in README"
     )
 

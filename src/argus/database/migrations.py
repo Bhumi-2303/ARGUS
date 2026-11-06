@@ -2,7 +2,6 @@
 
 from typing import Any
 import structlog
-from sqlalchemy.engine import Engine
 
 from argus.database.models import Base
 
@@ -16,6 +15,7 @@ async def create_all_tables(engine: Any) -> None:
     """
     if isinstance(engine, str):
         from argus.database.engine import get_sync_engine
+
         underlying = get_sync_engine(engine)
     else:
         underlying = getattr(engine, "_engine", engine)
@@ -27,6 +27,7 @@ def create_all_tables_sync(engine: Any) -> None:
     """Synchronous helper for table creation."""
     if isinstance(engine, str):
         from argus.database.engine import get_sync_engine
+
         underlying = get_sync_engine(engine)
     else:
         underlying = getattr(engine, "_engine", engine)

@@ -1,4 +1,5 @@
 """Abstract base class for all ARGUS services."""
+
 from abc import ABC
 import structlog
 

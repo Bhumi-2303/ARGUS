@@ -6,28 +6,24 @@ Phase 9 (Path traversal), Phase 10 (Model artifact security), Phase 11 (Resource
 Phase 12 (Error leakage), Phase 13 (CORS), and Phase 15 (Production fail-closed).
 """
 
-import os
 import json
 import time
 import uuid
 import pytest
 import jwt
-from fastapi import HTTPException
 from httpx import AsyncClient, ASGITransport
-from cryptography.hazmat.primitives.asymmetric import rsa, ec
+from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 
-from configs.settings import get_settings, ArgusSettings
+from configs.settings import get_settings
 from argus.auth.jwks import JWKSClient
-from argus.auth.jwt import JWTValidator
-from argus.auth.models import UserPrincipal
 from argus.api.main import app, create_app
-from argus.security.audit import AuditLogger
 
 
 # ---------------------------------------------------------------------------
 # FIXTURES
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture(scope="module")
 def valid_rsa_key():
@@ -42,7 +38,7 @@ def valid_rsa_key():
         "jwk": jwk_dict,
         "kid": "trusted-rsa-key-1",
         "issuer": "https://idp.grid-defense.internal/oauth2",
-        "audience": "argus-api-prod"
+        "audience": "argus-api-prod",
     }
 
 
@@ -50,11 +46,7 @@ def valid_rsa_key():
 def untrusted_rsa_key():
     private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     public_key = private_key.public_key()
-    return {
-        "private": private_key,
-        "public": public_key,
-        "kid": "attacker-key-99"
-    }
+    return {"private": private_key, "public": public_key, "kid": "attacker-key-99"}
 
 
 @pytest.fixture
@@ -65,12 +57,15 @@ def mock_prod_environment(valid_rsa_key, monkeypatch):
     monkeypatch.setattr(settings.security, "oidc_enabled", True)
     monkeypatch.setattr(settings.security, "oidc_issuer", valid_rsa_key["issuer"])
     monkeypatch.setattr(settings.security, "oidc_audience", valid_rsa_key["audience"])
-    monkeypatch.setattr(settings.security, "oidc_jwks_url", f"{valid_rsa_key['issuer']}/.well-known/jwks.json")
+    monkeypatch.setattr(
+        settings.security, "oidc_jwks_url", f"{valid_rsa_key['issuer']}/.well-known/jwks.json"
+    )
     monkeypatch.setattr(settings.security, "oidc_algorithms", ["RS256", "ES256"])
     monkeypatch.setattr(settings.security, "cors_origins", ["https://argus.grid-defense.internal"])
 
     # Prepopulate JWKS client in validator
     from argus.auth.jwt import jwt_validator
+
     jwt_validator.jwks_client._keys = {valid_rsa_key["kid"]: valid_rsa_key["public"]}
     jwt_validator.jwks_client._last_fetch_time = time.time()
     return settings
@@ -88,7 +83,7 @@ def create_token(
     kid=None,
     alg="RS256",
     key=None,
-    extra_claims=None
+    extra_claims=None,
 ):
     now = int(time.time())
     payload = {
@@ -99,7 +94,7 @@ def create_token(
         "nbf": now + nbf_offset,
         "iat": now,
         "roles": roles or ["operator"],
-        "permissions": permissions or ["run:prediction", "read:models", "read:domains"]
+        "permissions": permissions or ["run:prediction", "read:models", "read:domains"],
     }
     if extra_claims:
         payload.update(extra_claims)
@@ -114,14 +109,24 @@ def create_token(
 # PHASE 3: ADVERSARIAL JWT ATTACKS
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_attack_01_expired_token(mock_prod_environment, valid_rsa_key):
     """1. Expired token must be rejected."""
     token = create_token(valid_rsa_key, expires_in=-100)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        res = await client.post("/api/v1/predict", headers={"Authorization": f"Bearer {token}"}, json={
-            "features": {"pkt_mean_to_max": 0.5, "tcp_flag_density": 0.1, "log_pkt_mean": 4.0, "log_pkt_max": 5.0}
-        })
+        res = await client.post(
+            "/api/v1/predict",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "features": {
+                    "pkt_mean_to_max": 0.5,
+                    "tcp_flag_density": 0.1,
+                    "log_pkt_mean": 4.0,
+                    "log_pkt_max": 5.0,
+                }
+            },
+        )
         assert res.status_code == 401
         assert "expired" in res.json().get("detail", "").lower()
 
@@ -131,9 +136,18 @@ async def test_attack_02_future_nbf(mock_prod_environment, valid_rsa_key):
     """2. Future nbf must be rejected."""
     token = create_token(valid_rsa_key, nbf_offset=1000)
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        res = await client.post("/api/v1/predict", headers={"Authorization": f"Bearer {token}"}, json={
-            "features": {"pkt_mean_to_max": 0.5, "tcp_flag_density": 0.1, "log_pkt_mean": 4.0, "log_pkt_max": 5.0}
-        })
+        res = await client.post(
+            "/api/v1/predict",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "features": {
+                    "pkt_mean_to_max": 0.5,
+                    "tcp_flag_density": 0.1,
+                    "log_pkt_mean": 4.0,
+                    "log_pkt_max": 5.0,
+                }
+            },
+        )
         assert res.status_code == 401
 
 
@@ -142,9 +156,18 @@ async def test_attack_03_wrong_issuer(mock_prod_environment, valid_rsa_key):
     """3. Wrong issuer must be rejected."""
     token = create_token(valid_rsa_key, issuer="https://evil-idp.attacker.com")
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        res = await client.post("/api/v1/predict", headers={"Authorization": f"Bearer {token}"}, json={
-            "features": {"pkt_mean_to_max": 0.5, "tcp_flag_density": 0.1, "log_pkt_mean": 4.0, "log_pkt_max": 5.0}
-        })
+        res = await client.post(
+            "/api/v1/predict",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "features": {
+                    "pkt_mean_to_max": 0.5,
+                    "tcp_flag_density": 0.1,
+                    "log_pkt_mean": 4.0,
+                    "log_pkt_max": 5.0,
+                }
+            },
+        )
         assert res.status_code == 401
 
 
@@ -153,9 +176,18 @@ async def test_attack_04_wrong_audience(mock_prod_environment, valid_rsa_key):
     """4. Wrong audience must be rejected."""
     token = create_token(valid_rsa_key, audience="some-other-api")
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        res = await client.post("/api/v1/predict", headers={"Authorization": f"Bearer {token}"}, json={
-            "features": {"pkt_mean_to_max": 0.5, "tcp_flag_density": 0.1, "log_pkt_mean": 4.0, "log_pkt_max": 5.0}
-        })
+        res = await client.post(
+            "/api/v1/predict",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "features": {
+                    "pkt_mean_to_max": 0.5,
+                    "tcp_flag_density": 0.1,
+                    "log_pkt_mean": 4.0,
+                    "log_pkt_max": 5.0,
+                }
+            },
+        )
         assert res.status_code == 401
 
 
@@ -166,9 +198,18 @@ async def test_attack_05_missing_signature(mock_prod_environment, valid_rsa_key)
     parts = token.split(".")
     unsigned_token = f"{parts[0]}.{parts[1]}."
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        res = await client.post("/api/v1/predict", headers={"Authorization": f"Bearer {unsigned_token}"}, json={
-            "features": {"pkt_mean_to_max": 0.5, "tcp_flag_density": 0.1, "log_pkt_mean": 4.0, "log_pkt_max": 5.0}
-        })
+        res = await client.post(
+            "/api/v1/predict",
+            headers={"Authorization": f"Bearer {unsigned_token}"},
+            json={
+                "features": {
+                    "pkt_mean_to_max": 0.5,
+                    "tcp_flag_density": 0.1,
+                    "log_pkt_mean": 4.0,
+                    "log_pkt_max": 5.0,
+                }
+            },
+        )
         assert res.status_code == 401
 
 
@@ -176,22 +217,37 @@ async def test_attack_05_missing_signature(mock_prod_environment, valid_rsa_key)
 async def test_attack_06_alg_none(mock_prod_environment, valid_rsa_key):
     """6. alg=none attack must be rejected."""
     header = {"alg": "none", "typ": "JWT", "kid": valid_rsa_key["kid"]}
-    payload = {"sub": "admin", "iss": valid_rsa_key["issuer"], "aud": valid_rsa_key["audience"], "exp": int(time.time()) + 3600}
+    payload = {
+        "sub": "admin",
+        "iss": valid_rsa_key["issuer"],
+        "aud": valid_rsa_key["audience"],
+        "exp": int(time.time()) + 3600,
+    }
     import base64
+
     h_b64 = base64.urlsafe_b64encode(json.dumps(header).encode()).decode().rstrip("=")
     p_b64 = base64.urlsafe_b64encode(json.dumps(payload).encode()).decode().rstrip("=")
     none_token = f"{h_b64}.{p_b64}."
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        res = await client.post("/api/v1/predict", headers={"Authorization": f"Bearer {none_token}"}, json={
-            "features": {"pkt_mean_to_max": 0.5, "tcp_flag_density": 0.1, "log_pkt_mean": 4.0, "log_pkt_max": 5.0}
-        })
+        res = await client.post(
+            "/api/v1/predict",
+            headers={"Authorization": f"Bearer {none_token}"},
+            json={
+                "features": {
+                    "pkt_mean_to_max": 0.5,
+                    "tcp_flag_density": 0.1,
+                    "log_pkt_mean": 4.0,
+                    "log_pkt_max": 5.0,
+                }
+            },
+        )
         assert res.status_code == 401
 
 
 @pytest.mark.asyncio
 async def test_attack_07_algorithm_confusion_hs256(mock_prod_environment, valid_rsa_key):
     """7. Algorithm confusion: signing with RSA public key using HS256 must be rejected.
-    
+
     PyJWT 2.8+ rejects PEM keys as HMAC secrets at the library level, so we
     construct the forged token manually using Python's hmac module directly.
     This simulates a real attacker who would craft raw bytes.
@@ -201,8 +257,7 @@ async def test_attack_07_algorithm_confusion_hs256(mock_prod_environment, valid_
     import base64
 
     pub_pem = valid_rsa_key["public"].public_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo
+        encoding=serialization.Encoding.PEM, format=serialization.PublicFormat.SubjectPublicKeyInfo
     )
     # Manually construct an HS256-signed JWT using the RSA public key as the HMAC secret
     header = {"alg": "HS256", "typ": "JWT", "kid": valid_rsa_key["kid"]}
@@ -212,7 +267,7 @@ async def test_attack_07_algorithm_confusion_hs256(mock_prod_environment, valid_
         "aud": valid_rsa_key["audience"],
         "exp": int(time.time()) + 3600,
         "roles": ["admin"],
-        "permissions": ["run:prediction"]
+        "permissions": ["run:prediction"],
     }
     h_b64 = base64.urlsafe_b64encode(json.dumps(header).encode()).decode().rstrip("=")
     p_b64 = base64.urlsafe_b64encode(json.dumps(payload).encode()).decode().rstrip("=")
@@ -222,21 +277,46 @@ async def test_attack_07_algorithm_confusion_hs256(mock_prod_environment, valid_
     forged_token = f"{h_b64}.{p_b64}.{s_b64}"
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        res = await client.post("/api/v1/predict", headers={"Authorization": f"Bearer {forged_token}"}, json={
-            "features": {"pkt_mean_to_max": 0.5, "tcp_flag_density": 0.1, "log_pkt_mean": 4.0, "log_pkt_max": 5.0}
-        })
+        res = await client.post(
+            "/api/v1/predict",
+            headers={"Authorization": f"Bearer {forged_token}"},
+            json={
+                "features": {
+                    "pkt_mean_to_max": 0.5,
+                    "tcp_flag_density": 0.1,
+                    "log_pkt_mean": 4.0,
+                    "log_pkt_max": 5.0,
+                }
+            },
+        )
         assert res.status_code == 401
 
 
 @pytest.mark.asyncio
 async def test_attack_08_unsupported_algorithm(mock_prod_environment, valid_rsa_key):
     """8. Unsupported symmetric algorithm HS512 must be rejected."""
-    payload = {"sub": "admin", "iss": valid_rsa_key["issuer"], "aud": valid_rsa_key["audience"], "exp": int(time.time()) + 3600}
-    token = jwt.encode(payload, "secret-key", algorithm="HS512", headers={"kid": valid_rsa_key["kid"]})
+    payload = {
+        "sub": "admin",
+        "iss": valid_rsa_key["issuer"],
+        "aud": valid_rsa_key["audience"],
+        "exp": int(time.time()) + 3600,
+    }
+    token = jwt.encode(
+        payload, "secret-key", algorithm="HS512", headers={"kid": valid_rsa_key["kid"]}
+    )
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        res = await client.post("/api/v1/predict", headers={"Authorization": f"Bearer {token}"}, json={
-            "features": {"pkt_mean_to_max": 0.5, "tcp_flag_density": 0.1, "log_pkt_mean": 4.0, "log_pkt_max": 5.0}
-        })
+        res = await client.post(
+            "/api/v1/predict",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "features": {
+                    "pkt_mean_to_max": 0.5,
+                    "tcp_flag_density": 0.1,
+                    "log_pkt_mean": 4.0,
+                    "log_pkt_max": 5.0,
+                }
+            },
+        )
         assert res.status_code == 401
 
 
@@ -245,9 +325,18 @@ async def test_attack_09_unknown_kid(mock_prod_environment, valid_rsa_key):
     """9. Token referencing an unknown kid must fail closed."""
     token = create_token(valid_rsa_key, kid="non-existent-kid-12345")
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        res = await client.post("/api/v1/predict", headers={"Authorization": f"Bearer {token}"}, json={
-            "features": {"pkt_mean_to_max": 0.5, "tcp_flag_density": 0.1, "log_pkt_mean": 4.0, "log_pkt_max": 5.0}
-        })
+        res = await client.post(
+            "/api/v1/predict",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "features": {
+                    "pkt_mean_to_max": 0.5,
+                    "tcp_flag_density": 0.1,
+                    "log_pkt_mean": 4.0,
+                    "log_pkt_max": 5.0,
+                }
+            },
+        )
         assert res.status_code == 401
 
 
@@ -258,13 +347,22 @@ async def test_attack_10_malformed_jwt(mock_prod_environment):
         "not-a-jwt",
         "header.only",
         "header.payload.signature.extra",
-        "eyJhbGciOiJSUzI1NiJ9.invalid-base64.signature"
+        "eyJhbGciOiJSUzI1NiJ9.invalid-base64.signature",
     ]
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         for bad in malformed_tokens:
-            res = await client.post("/api/v1/predict", headers={"Authorization": f"Bearer {bad}"}, json={
-                "features": {"pkt_mean_to_max": 0.5, "tcp_flag_density": 0.1, "log_pkt_mean": 4.0, "log_pkt_max": 5.0}
-            })
+            res = await client.post(
+                "/api/v1/predict",
+                headers={"Authorization": f"Bearer {bad}"},
+                json={
+                    "features": {
+                        "pkt_mean_to_max": 0.5,
+                        "tcp_flag_density": 0.1,
+                        "log_pkt_mean": 4.0,
+                        "log_pkt_max": 5.0,
+                    }
+                },
+            )
             assert res.status_code == 401
 
 
@@ -272,14 +370,32 @@ async def test_attack_10_malformed_jwt(mock_prod_environment):
 async def test_attack_11_empty_jwt(mock_prod_environment):
     """11. Empty JWT header/value must return 401."""
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        res1 = await client.post("/api/v1/predict", headers={"Authorization": "Bearer "}, json={
-            "features": {"pkt_mean_to_max": 0.5, "tcp_flag_density": 0.1, "log_pkt_mean": 4.0, "log_pkt_max": 5.0}
-        })
+        res1 = await client.post(
+            "/api/v1/predict",
+            headers={"Authorization": "Bearer "},
+            json={
+                "features": {
+                    "pkt_mean_to_max": 0.5,
+                    "tcp_flag_density": 0.1,
+                    "log_pkt_mean": 4.0,
+                    "log_pkt_max": 5.0,
+                }
+            },
+        )
         assert res1.status_code == 401
 
-        res2 = await client.post("/api/v1/predict", headers={}, json={
-            "features": {"pkt_mean_to_max": 0.5, "tcp_flag_density": 0.1, "log_pkt_mean": 4.0, "log_pkt_max": 5.0}
-        })
+        res2 = await client.post(
+            "/api/v1/predict",
+            headers={},
+            json={
+                "features": {
+                    "pkt_mean_to_max": 0.5,
+                    "tcp_flag_density": 0.1,
+                    "log_pkt_mean": 4.0,
+                    "log_pkt_max": 5.0,
+                }
+            },
+        )
         assert res2.status_code == 401
 
 
@@ -292,9 +408,18 @@ async def test_attack_12_modified_payload(mock_prod_environment, valid_rsa_key):
     tampered_payload = parts[1][:-1] + ("A" if parts[1][-1] != "A" else "B")
     tampered_token = f"{parts[0]}.{tampered_payload}.{parts[2]}"
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        res = await client.post("/api/v1/predict", headers={"Authorization": f"Bearer {tampered_token}"}, json={
-            "features": {"pkt_mean_to_max": 0.5, "tcp_flag_density": 0.1, "log_pkt_mean": 4.0, "log_pkt_max": 5.0}
-        })
+        res = await client.post(
+            "/api/v1/predict",
+            headers={"Authorization": f"Bearer {tampered_token}"},
+            json={
+                "features": {
+                    "pkt_mean_to_max": 0.5,
+                    "tcp_flag_density": 0.1,
+                    "log_pkt_mean": 4.0,
+                    "log_pkt_max": 5.0,
+                }
+            },
+        )
         assert res.status_code == 401
 
 
@@ -306,20 +431,40 @@ async def test_attack_13_modified_signature(mock_prod_environment, valid_rsa_key
     tampered_sig = parts[2][:-2] + "XX"
     tampered_token = f"{parts[0]}.{parts[1]}.{tampered_sig}"
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        res = await client.post("/api/v1/predict", headers={"Authorization": f"Bearer {tampered_token}"}, json={
-            "features": {"pkt_mean_to_max": 0.5, "tcp_flag_density": 0.1, "log_pkt_mean": 4.0, "log_pkt_max": 5.0}
-        })
+        res = await client.post(
+            "/api/v1/predict",
+            headers={"Authorization": f"Bearer {tampered_token}"},
+            json={
+                "features": {
+                    "pkt_mean_to_max": 0.5,
+                    "tcp_flag_density": 0.1,
+                    "log_pkt_mean": 4.0,
+                    "log_pkt_max": 5.0,
+                }
+            },
+        )
         assert res.status_code == 401
 
 
 @pytest.mark.asyncio
-async def test_attack_14_untrusted_key_signature(mock_prod_environment, valid_rsa_key, untrusted_rsa_key):
+async def test_attack_14_untrusted_key_signature(
+    mock_prod_environment, valid_rsa_key, untrusted_rsa_key
+):
     """14. Token signed by an untrusted key must fail verification."""
     token = create_token(valid_rsa_key, key=untrusted_rsa_key["private"], kid=valid_rsa_key["kid"])
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        res = await client.post("/api/v1/predict", headers={"Authorization": f"Bearer {token}"}, json={
-            "features": {"pkt_mean_to_max": 0.5, "tcp_flag_density": 0.1, "log_pkt_mean": 4.0, "log_pkt_max": 5.0}
-        })
+        res = await client.post(
+            "/api/v1/predict",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "features": {
+                    "pkt_mean_to_max": 0.5,
+                    "tcp_flag_density": 0.1,
+                    "log_pkt_mean": 4.0,
+                    "log_pkt_max": 5.0,
+                }
+            },
+        )
         assert res.status_code == 401
 
 
@@ -327,10 +472,13 @@ async def test_attack_14_untrusted_key_signature(mock_prod_environment, valid_rs
 # PHASE 4: JWKS ADVERSARIAL TESTING
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_jwks_outage_fails_closed(mock_prod_environment):
     """JWKS network outage with unknown kid must fail closed (401), not 500 or bypass."""
-    client = JWKSClient(jwks_url="https://unreachable-idp.example.invalid/keys", timeout_seconds=1.0)
+    client = JWKSClient(
+        jwks_url="https://unreachable-idp.example.invalid/keys", timeout_seconds=1.0
+    )
     key = await client.get_key_for_kid("any-kid")
     assert key is None
 
@@ -338,10 +486,7 @@ async def test_jwks_outage_fails_closed(mock_prod_environment):
 @pytest.mark.asyncio
 async def test_jwks_refresh_rate_limiting(valid_rsa_key):
     """JWKS client rate limits refresh calls to protect against kid rotation attacks."""
-    client = JWKSClient(
-        jwks_url="https://idp.example.com/keys",
-        min_refresh_interval_seconds=60.0
-    )
+    client = JWKSClient(jwks_url="https://idp.example.com/keys", min_refresh_interval_seconds=60.0)
     client._keys = {"cached-key": valid_rsa_key["public"]}
     client._last_fetch_time = time.time() - 5.0  # Only 5s elapsed
 
@@ -356,6 +501,7 @@ async def test_jwks_refresh_rate_limiting(valid_rsa_key):
 # PHASE 5 & 6: RBAC COMPLETE MATRIX & INCIDENT APPROVAL
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_rbac_unauthenticated_user_rejected(mock_prod_environment):
     """Unauthenticated request to protected endpoints must return 401."""
@@ -367,7 +513,7 @@ async def test_rbac_unauthenticated_user_rejected(mock_prod_environment):
             ("POST", "/api/v1/predict"),
             ("POST", "/api/v1/explain"),
             ("GET", "/api/v1/monitoring/registry"),
-            ("POST", "/api/v1/incidents/inc-test-01/approve")
+            ("POST", "/api/v1/incidents/inc-test-01/approve"),
         ]
         for method, ep in endpoints:
             if method == "GET":
@@ -388,9 +534,18 @@ async def test_rbac_user_without_permission_forbidden(mock_prod_environment, val
         assert res_ok.status_code == 200
 
         # Forbidden: needs run:prediction
-        res_fail = await client.post("/api/v1/predict", headers={"Authorization": f"Bearer {token}"}, json={
-            "features": {"pkt_mean_to_max": 0.5, "tcp_flag_density": 0.1, "log_pkt_mean": 4.0, "log_pkt_max": 5.0}
-        })
+        res_fail = await client.post(
+            "/api/v1/predict",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "features": {
+                    "pkt_mean_to_max": 0.5,
+                    "tcp_flag_density": 0.1,
+                    "log_pkt_mean": 4.0,
+                    "log_pkt_max": 5.0,
+                }
+            },
+        )
         assert res_fail.status_code == 403
         assert "access denied" in res_fail.json().get("detail", "").lower()
 
@@ -402,17 +557,21 @@ async def test_incident_approval_actor_forgery_prevented(mock_prod_environment, 
         valid_rsa_key,
         sub="real-operator-42",
         roles=["operator"],
-        permissions=["approve:response", "write:incidents", "read:incidents"]
+        permissions=["approve:response", "write:incidents", "read:incidents"],
     )
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         # Create incident with correct schema (event_id, severity, asset are required)
-        create_res = await client.post("/api/v1/incidents/", headers={"Authorization": f"Bearer {operator_token}"}, json={
-            "event_id": f"evt-adversarial-{uuid.uuid4().hex[:8]}",
-            "severity": "HIGH",
-            "asset": "PLC-SCADA-01",
-            "approval_required": True
-        })
+        create_res = await client.post(
+            "/api/v1/incidents/",
+            headers={"Authorization": f"Bearer {operator_token}"},
+            json={
+                "event_id": f"evt-adversarial-{uuid.uuid4().hex[:8]}",
+                "severity": "HIGH",
+                "asset": "PLC-SCADA-01",
+                "approval_required": True,
+            },
+        )
         assert create_res.status_code == 201, f"Incident creation failed: {create_res.text}"
         incident_data = create_res.json()["data"]
         incident_id = incident_data["incident_id"]
@@ -422,7 +581,9 @@ async def test_incident_approval_actor_forgery_prevented(mock_prod_environment, 
         approve_res = await client.post(
             f"/api/v1/incidents/{incident_id}/approve",
             headers={"Authorization": f"Bearer {operator_token}"},
-            json={"reason": "Approved by adversarial test, attempting actor forgery via super-admin"}
+            json={
+                "reason": "Approved by adversarial test, attempting actor forgery via super-admin"
+            },
         )
         assert approve_res.status_code == 200, f"Approval failed: {approve_res.text}"
         data = approve_res.json()["data"]
@@ -435,6 +596,7 @@ async def test_incident_approval_actor_forgery_prevented(mock_prod_environment, 
 # ---------------------------------------------------------------------------
 # PHASE 9: PATH TRAVERSAL ATTACKS
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_path_traversal_all_vectors_rejected(mock_prod_environment, valid_rsa_key):
@@ -450,18 +612,23 @@ async def test_path_traversal_all_vectors_rejected(mock_prod_environment, valid_
         "dann_final_test_metrics%00.csv",
         "results/verified/five_model_complete_comparison.csv",
         "..",
-        "."
+        ".",
     ]
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         for payload in traversal_payloads:
-            res = await client.get(f"/api/v1/results/{payload}", headers={"Authorization": f"Bearer {admin_token}"})
+            res = await client.get(
+                f"/api/v1/results/{payload}", headers={"Authorization": f"Bearer {admin_token}"}
+            )
             # Must return 400 Bad Request or 404, never 200 with arbitrary file content
-            assert res.status_code in (400, 404), f"Payload '{payload}' bypassed traversal filter: {res.status_code}"
+            assert res.status_code in (400, 404), (
+                f"Payload '{payload}' bypassed traversal filter: {res.status_code}"
+            )
 
 
 # ---------------------------------------------------------------------------
 # PHASE 11 & 12: INPUT BOUNDS & ERROR MASKING
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_input_validation_nan_inf_negative_rejected(mock_prod_environment, valid_rsa_key):
@@ -469,15 +636,33 @@ async def test_input_validation_nan_inf_negative_rejected(mock_prod_environment,
     token = create_token(valid_rsa_key, roles=["operator"], permissions=["run:prediction"])
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         # Negative value
-        res_neg = await client.post("/api/v1/predict", headers={"Authorization": f"Bearer {token}"}, json={
-            "features": {"pkt_mean_to_max": -1.0, "tcp_flag_density": 0.1, "log_pkt_mean": 4.0, "log_pkt_max": 5.0}
-        })
+        res_neg = await client.post(
+            "/api/v1/predict",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "features": {
+                    "pkt_mean_to_max": -1.0,
+                    "tcp_flag_density": 0.1,
+                    "log_pkt_mean": 4.0,
+                    "log_pkt_max": 5.0,
+                }
+            },
+        )
         assert res_neg.status_code == 422
 
         # Upper bound exceeded
-        res_high = await client.post("/api/v1/predict", headers={"Authorization": f"Bearer {token}"}, json={
-            "features": {"pkt_mean_to_max": 999999.0, "tcp_flag_density": 0.1, "log_pkt_mean": 4.0, "log_pkt_max": 5.0}
-        })
+        res_high = await client.post(
+            "/api/v1/predict",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "features": {
+                    "pkt_mean_to_max": 999999.0,
+                    "tcp_flag_density": 0.1,
+                    "log_pkt_mean": 4.0,
+                    "log_pkt_max": 5.0,
+                }
+            },
+        )
         assert res_high.status_code == 422
 
 
@@ -486,23 +671,35 @@ async def test_error_masking_no_tracebacks_leaked(mock_prod_environment, valid_r
     """Simulated 500 error must return generic message without stack traces or paths."""
     token = create_token(valid_rsa_key, roles=["operator"], permissions=["run:prediction"])
     # Pass an unknown model name to trigger internal handling
-    async with AsyncClient(transport=ASGITransport(app=app, raise_app_exceptions=False), base_url="http://test") as client:
-        res = await client.post("/api/v1/predict", headers={"Authorization": f"Bearer {token}"}, json={
-            "model_name": "unknown_model_crash_test",
-            "features": {"pkt_mean_to_max": 0.5, "tcp_flag_density": 0.1, "log_pkt_mean": 4.0, "log_pkt_max": 5.0}
-        })
+    async with AsyncClient(
+        transport=ASGITransport(app=app, raise_app_exceptions=False), base_url="http://test"
+    ) as client:
+        res = await client.post(
+            "/api/v1/predict",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "model_name": "unknown_model_crash_test",
+                "features": {
+                    "pkt_mean_to_max": 0.5,
+                    "tcp_flag_density": 0.1,
+                    "log_pkt_mean": 4.0,
+                    "log_pkt_max": 5.0,
+                },
+            },
+        )
         assert res.status_code in (400, 500)
         body = res.text
         # Ensure sensitive internals are not present
         assert "Traceback (most recent call last)" not in body
         assert "/home/bhumi" not in body
         assert "site-packages" not in body
-        assert "File \"" not in body
+        assert 'File "' not in body
 
 
 # ---------------------------------------------------------------------------
 # PHASE 13 & 14: CORS & SECURITY HEADERS
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_cors_rejects_unauthorized_origins(mock_prod_environment):
@@ -510,17 +707,20 @@ async def test_cors_rejects_unauthorized_origins(mock_prod_environment):
     prod_app = create_app(mock_prod_environment)
     async with AsyncClient(transport=ASGITransport(app=prod_app), base_url="http://test") as client:
         # Malicious origin
-        res = await client.options("/health", headers={
-            "Origin": "https://malicious-attacker.com",
-            "Access-Control-Request-Method": "GET"
-        })
+        res = await client.options(
+            "/health",
+            headers={
+                "Origin": "https://malicious-attacker.com",
+                "Access-Control-Request-Method": "GET",
+            },
+        )
         assert res.headers.get("access-control-allow-origin") != "https://malicious-attacker.com"
 
         # Localhost in production
-        res_local = await client.options("/health", headers={
-            "Origin": "http://localhost:3000",
-            "Access-Control-Request-Method": "GET"
-        })
+        res_local = await client.options(
+            "/health",
+            headers={"Origin": "http://localhost:3000", "Access-Control-Request-Method": "GET"},
+        )
         assert res_local.headers.get("access-control-allow-origin") != "http://localhost:3000"
 
 

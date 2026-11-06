@@ -15,32 +15,30 @@ router = APIRouter()
 
 @router.post("/explain", response_model=ExplainResponse, tags=["explain"])
 async def explain_flow(
-    request: ExplainRequest,
-    user: UserPrincipal = Depends(require_permission("run:explanation"))
+    request: ExplainRequest, user: UserPrincipal = Depends(require_permission("run:explanation"))
 ):
     """Compute SHAP feature attribution values for a target flow and model with RBAC enforcement."""
     features_dict = request.features.model_dump()
     model_name = request.model_name
 
     try:
-        base_val, shap_dict, top_feat, top_impact = model_registry.explain(model_name, features_dict)
+        base_val, shap_dict, top_feat, top_impact = model_registry.explain(
+            model_name, features_dict
+        )
         return ExplainResponse(
             model_name=model_name,
             base_value=round(base_val, 6),
             shap_values={k: round(v, 6) for k, v in shap_dict.items()},
             feature_values=features_dict,
             top_feature=top_feat,
-            top_feature_impact=round(top_impact, 6)
+            top_feature_impact=round(top_impact, 6),
         )
     except (KeyError, ValueError) as ke:
         logger.warning("explain_unknown_model_or_feature", model=model_name, error=str(ke))
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(ke)
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(ke))
     except Exception as ex:
         logger.error("explain_calculation_failed", model=model_name, error=str(ex), exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"SHAP feature explanation failed for model '{model_name}'."
+            detail=f"SHAP feature explanation failed for model '{model_name}'.",
         )

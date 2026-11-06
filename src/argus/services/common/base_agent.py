@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from argus.services.common.schemas import AgentMessage
 
+
 class BaseAgent(ABC):
     def __init__(self, name: str, role: str):
         self.name = name

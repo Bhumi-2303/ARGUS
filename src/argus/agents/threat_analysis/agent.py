@@ -1,18 +1,20 @@
 """Main Threat Analysis Agent implementation."""
-import asyncio
-from typing import Any, Dict, List, Optional
+
+from typing import Any, List
 import structlog
-import traceback
 import time
 
 from argus.core.base_agent import BaseAgent
 from argus.core.enums import AgentStatus
 
-from argus.agents.threat_analysis.config import config
 from argus.agents.threat_analysis.models.schemas import (
-    FeatureEventInput, ThreatAnalysisResult, ThreatLevel, Evidence
+    FeatureEventInput,
+    ThreatAnalysisResult,
+    ThreatLevel,
+    Evidence,
 )
 from argus.registry.model_registry import model_registry, MODEL_METADATA
+
 
 class ThreatAnalysisAgent(BaseAgent):
     """Analyzes incoming feature events to detect threats using verified ML models."""
@@ -57,22 +59,24 @@ class ThreatAnalysisAgent(BaseAgent):
             event = FeatureEventInput(**context)
         else:
             event = context
-            
+
         self.logger.info("reasoning_started", event_id=event.event_id)
-        
+
         # Use the requested model version or default to the verified xgb_adapted
         model_to_use = event.model_version if event.model_version else "xgb_adapted"
-        
+
         start_t = time.time()
-        
+
         # Do not catch and fabricate predictions! Let registry errors propagate as real pipeline errors.
         prob, label, threshold = model_registry.predict(model_to_use, event.features)
-        
+
         # Explainability attributions are collected as evidence
-        base_val, shap_vals, top_feat, top_impact = model_registry.explain(model_to_use, event.features)
-            
+        base_val, shap_vals, top_feat, top_impact = model_registry.explain(
+            model_to_use, event.features
+        )
+
         latency = (time.time() - start_t) * 1000.0
-        
+
         # Calculate Threat Level (standard argus thresholds)
         threat_level = ThreatLevel.LOW
         if label == 1:
@@ -82,21 +86,23 @@ class ThreatAnalysisAgent(BaseAgent):
                 threat_level = ThreatLevel.HIGH
             else:
                 threat_level = ThreatLevel.MEDIUM
-                
+
         # Format Evidence from SHAP attributions
         evidence = []
         for feat, imp in shap_vals.items():
             if abs(imp) > 0.01:
-                evidence.append(Evidence(
-                    type="feature_attribution",
-                    description=f"SHAP contribution from {feat}",
-                    importance=imp,
-                    value=event.features.get(feat)
-                ))
-        
+                evidence.append(
+                    Evidence(
+                        type="feature_attribution",
+                        description=f"SHAP contribution from {feat}",
+                        importance=imp,
+                        value=event.features.get(feat),
+                    )
+                )
+
         meta = MODEL_METADATA.get(model_to_use, {})
         protocol_status = meta.get("protocol_status", "diagnostic")
-        
+
         return {
             "event": event,
             "threat_level": threat_level,
@@ -104,7 +110,7 @@ class ThreatAnalysisAgent(BaseAgent):
             "evidence": evidence,
             "model_version": model_to_use,
             "protocol_status": protocol_status,
-            "latency_ms": latency
+            "latency_ms": latency,
         }
 
     async def plan(self, reasoning: Any) -> Any:
@@ -114,7 +120,7 @@ class ThreatAnalysisAgent(BaseAgent):
     async def execute(self, plan: Any) -> Any:
         """Assemble the ThreatAnalysisResult."""
         event: FeatureEventInput = plan["event"]
-        
+
         result = ThreatAnalysisResult(
             source_event_id=event.event_id,
             correlation_id=event.correlation_id,
@@ -125,7 +131,7 @@ class ThreatAnalysisAgent(BaseAgent):
             recommended_actions=[],
             model_version=plan["model_version"],
             protocol_status=plan["protocol_status"],
-            latency_ms=plan["latency_ms"]
+            latency_ms=plan["latency_ms"],
         )
         return result
 
@@ -134,7 +140,6 @@ class ThreatAnalysisAgent(BaseAgent):
 
     async def update_memory(self, result: Any) -> None:
         pass
-
 
     async def publish(self, result: Any) -> None:
         if isinstance(result, ThreatAnalysisResult) and self.blackboard and self.message_bus:
@@ -153,27 +158,25 @@ class ThreatAnalysisAgent(BaseAgent):
                 attack_type="attack" if result.threat_level.value != "low" else "benign",
                 severity=result.confidence,
                 description=f"Predicted by {result.model_version} ({result.protocol_status})",
-                implementation_status=result.protocol_status
+                implementation_status=result.protocol_status,
             )
-            
+
             await self.blackboard.write(
                 section=BlackboardSection.THREAT_RESULTS,
                 key=threat_event.trace_id,
-                value=threat_event
-            )
-            
-            await self.message_bus.publish(
-                topic=f"events.threat.{result.threat_level.value}",
-                message=threat_event
+                value=threat_event,
             )
 
+            await self.message_bus.publish(
+                topic=f"events.threat.{result.threat_level.value}", message=threat_event
+            )
 
     async def health(self) -> Any:
         return {
             "agent_id": str(self.agent_id),
             "status": self.status.value,
             "tasks_completed": self.tasks_completed,
-            "tasks_failed": self.tasks_failed
+            "tasks_failed": self.tasks_failed,
         }
 
     async def shutdown(self) -> None:

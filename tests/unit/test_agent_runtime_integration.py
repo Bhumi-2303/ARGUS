@@ -11,14 +11,14 @@ Proves:
 import os
 import uuid
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from argus.orchestrator.pipeline import execute_pipeline
 from argus.registry.model_registry import model_registry
 from argus.services.incident_service import incident_service
 from argus.schemas.incident import Incident, IncidentStatus
 from argus.tools.mcp.mcp_registry import MCPRegistry
-from argus.integrations.config import AgentRuntimeConfig, get_runtime_config
+from argus.integrations.config import get_runtime_config
 from argus.integrations.mcp.server import ArgusMCPServer
 from argus.integrations.adk.narrator import IncidentNarrator, IncidentNarrative
 from argus.integrations.adk.adapter import ADKAdapter
@@ -50,7 +50,14 @@ async def test_pipeline_output_identical_with_layer_enabled_and_disabled(sample_
     model_name = "model_d2_coral"
 
     # 1. Execute pipeline with layer DISABLED (default)
-    with patch.dict(os.environ, {"ARGUS_AGENT_RUNTIME": "false", "ARGUS_MCP_SERVER": "false", "ARGUS_ADK_NARRATOR": "false"}):
+    with patch.dict(
+        os.environ,
+        {
+            "ARGUS_AGENT_RUNTIME": "false",
+            "ARGUS_MCP_SERVER": "false",
+            "ARGUS_ADK_NARRATOR": "false",
+        },
+    ):
         cfg_disabled = get_runtime_config()
         assert not cfg_disabled.enabled
         assert not cfg_disabled.mcp_server_enabled
@@ -63,7 +70,10 @@ async def test_pipeline_output_identical_with_layer_enabled_and_disabled(sample_
         )
 
     # 2. Execute pipeline with layer ENABLED
-    with patch.dict(os.environ, {"ARGUS_AGENT_RUNTIME": "true", "ARGUS_MCP_SERVER": "true", "ARGUS_ADK_NARRATOR": "true"}):
+    with patch.dict(
+        os.environ,
+        {"ARGUS_AGENT_RUNTIME": "true", "ARGUS_MCP_SERVER": "true", "ARGUS_ADK_NARRATOR": "true"},
+    ):
         cfg_enabled = get_runtime_config()
         assert cfg_enabled.enabled
         assert cfg_enabled.mcp_server_enabled
@@ -101,11 +111,25 @@ async def test_pipeline_output_identical_with_layer_enabled_and_disabled(sample_
 
     # Decision Support outputs
     actions_disabled = [
-        (a.action_type, a.description, tuple(a.target_assets), a.playbook_reference, a.priority, a.urgency)
+        (
+            a.action_type,
+            a.description,
+            tuple(a.target_assets),
+            a.playbook_reference,
+            a.priority,
+            a.urgency,
+        )
         for a in ctx_disabled.decision.recommended_actions
     ]
     actions_enabled = [
-        (a.action_type, a.description, tuple(a.target_assets), a.playbook_reference, a.priority, a.urgency)
+        (
+            a.action_type,
+            a.description,
+            tuple(a.target_assets),
+            a.playbook_reference,
+            a.priority,
+            a.urgency,
+        )
         for a in ctx_enabled.decision.recommended_actions
     ]
     assert actions_disabled == actions_enabled
@@ -139,10 +163,9 @@ async def test_mcp_tool_explain_flow(sample_flow_features):
     server = ArgusMCPServer()
     await server.initialize()
 
-    res = await server.call_tool("explain_flow", {
-        "features": sample_flow_features,
-        "model_name": "model_d2_coral"
-    })
+    res = await server.call_tool(
+        "explain_flow", {"features": sample_flow_features, "model_name": "model_d2_coral"}
+    )
 
     assert res["success"] is True
     assert "probability" in res
@@ -314,7 +337,7 @@ async def test_adk_narrator_degrades_cleanly_without_api_key():
         "mitre_techniques": ["T1059", "T1110"],
         "recommended_actions": [
             "Trigger automated firewall drop rule on ingress router",
-            "Notify SOC Tier 2 on-call analyst"
+            "Notify SOC Tier 2 on-call analyst",
         ],
     }
 
@@ -354,6 +377,7 @@ async def test_adk_narrator_never_alters_original_incident_or_pipeline():
     }
     # Deep copy representation
     import copy
+
     snapshot = copy.deepcopy(original)
 
     narrator = IncidentNarrator()
@@ -384,7 +408,9 @@ async def test_adk_narrator_graceful_handling_of_llm_error():
     }
 
     # Simulate network timeout during LLM call
-    with patch.object(narrator, "_call_gemini_narrator", side_effect=TimeoutError("Request timed out after 5.0s")):
+    with patch.object(
+        narrator, "_call_gemini_narrator", side_effect=TimeoutError("Request timed out after 5.0s")
+    ):
         narrative = await narrator.narrate_incident(incident_dict)
 
         assert narrative.is_llm_generated is False

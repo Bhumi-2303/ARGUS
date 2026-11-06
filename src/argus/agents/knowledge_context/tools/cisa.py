@@ -1,4 +1,5 @@
 """CISATool — Retrieves CISA ICS-CERT advisories from local JSON database."""
+
 import json
 import os
 from typing import Any, Dict, List
@@ -37,7 +38,12 @@ class CISATool(BaseTool):
 
     def _lookup(self, attack_type: str) -> List[Dict[str, Any]]:
         mapping = self._db.get("attack_type_mapping", {})
-        advisory_ids = mapping.get(attack_type, mapping.get("default", []) if attack_type not in ("benign", "normal", "unknown") else [])
+        advisory_ids = mapping.get(
+            attack_type,
+            mapping.get("default", [])
+            if attack_type not in ("benign", "normal", "unknown")
+            else [],
+        )
         advisories = self._db.get("advisories", {})
         return [advisories[aid] for aid in advisory_ids if aid in advisories]
 

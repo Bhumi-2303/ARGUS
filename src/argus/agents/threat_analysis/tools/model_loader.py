@@ -1,7 +1,7 @@
 """Model Loader tool for Threat Analysis Agent."""
+
 import asyncio
 import hashlib
-import os
 import joblib
 from typing import Any, Dict
 import structlog
@@ -16,7 +16,6 @@ except ImportError:
 from argus.core.base_tool import BaseTool
 from argus.core.enums import ToolCategory
 from argus.agents.threat_analysis.models.schemas import ModelType
-from argus.agents.threat_analysis.config import config
 
 
 class ModelLoader(BaseTool):
@@ -29,7 +28,7 @@ class ModelLoader(BaseTool):
             version="1.0.0",
             category=ToolCategory.UTILITY,
             description="Loads and caches ML models from disk securely.",
-            required_permissions=["fs:read:models"]
+            required_permissions=["fs:read:models"],
         )
         self._model_cache: Dict[str, Any] = {}
         self._lock = asyncio.Lock()
@@ -57,18 +56,20 @@ class ModelLoader(BaseTool):
         # Verify checksum
         try:
             expected_hash = sha256_path.read_text().strip()
-            
+
             # Read file in chunks to not exhaust memory
             sha256 = hashlib.sha256()
             with open(path, "rb") as f:
                 for chunk in iter(lambda: f.read(4096), b""):
                     sha256.update(chunk)
-            
+
             actual_hash = sha256.hexdigest()
             if actual_hash != expected_hash:
-                self.logger.error("checksum_mismatch", path=str(path), expected=expected_hash, actual=actual_hash)
+                self.logger.error(
+                    "checksum_mismatch", path=str(path), expected=expected_hash, actual=actual_hash
+                )
                 return False
-                
+
             return True
         except Exception as e:
             self.logger.error("checksum_validation_failed", error=str(e))
@@ -85,13 +86,13 @@ class ModelLoader(BaseTool):
             # Check cache again inside lock
             if model_path in self._model_cache:
                 return self._model_cache[model_path]
-                
+
             is_valid = await self.validate(model_type, model_path)
             if not is_valid:
                 raise ValueError(f"Model validation failed for {model_path}")
 
             self.logger.info("loading_model", path=model_path, type=model_type)
-            
+
             # Offload blocking IO to a thread
             model = await asyncio.to_thread(self._load_model_sync, model_type, model_path)
             self._model_cache[model_path] = model

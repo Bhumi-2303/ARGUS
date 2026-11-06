@@ -1,11 +1,13 @@
 """Internal pipeline schemas for the Knowledge & Context Agent."""
-from typing import Any, Dict, List, Optional
-from dataclasses import dataclass, field
+
+from typing import Any, Dict, List
+from dataclasses import dataclass
 from pydantic import BaseModel, Field
 
 
 class RetrievalResult(BaseModel):
     """Result from a single knowledge retrieval tool."""
+
     source: str = Field(..., description="Name of the retrieval source (e.g. mitre, cve)")
     records: List[Dict[str, Any]] = Field(default_factory=list, description="Retrieved records")
     query_used: str = Field(default="", description="Query key used for lookup")
@@ -17,13 +19,24 @@ class RetrievalResult(BaseModel):
 
 class EnrichmentContext(BaseModel):
     """Aggregated retrieval results from all tools, ready for synthesis."""
+
     attack_type: str = Field(..., description="Normalized attack type from ThreatEvent")
-    mitre_results: RetrievalResult = Field(default_factory=lambda: RetrievalResult(source="mitre_attack"))
-    mitre_ics_results: RetrievalResult = Field(default_factory=lambda: RetrievalResult(source="mitre_attack_ics"))
+    mitre_results: RetrievalResult = Field(
+        default_factory=lambda: RetrievalResult(source="mitre_attack")
+    )
+    mitre_ics_results: RetrievalResult = Field(
+        default_factory=lambda: RetrievalResult(source="mitre_attack_ics")
+    )
     cve_results: RetrievalResult = Field(default_factory=lambda: RetrievalResult(source="cve_db"))
-    cisa_results: RetrievalResult = Field(default_factory=lambda: RetrievalResult(source="cisa_advisories"))
-    playbook_results: RetrievalResult = Field(default_factory=lambda: RetrievalResult(source="playbooks"))
-    vector_results: RetrievalResult = Field(default_factory=lambda: RetrievalResult(source="vector_search"))
+    cisa_results: RetrievalResult = Field(
+        default_factory=lambda: RetrievalResult(source="cisa_advisories")
+    )
+    playbook_results: RetrievalResult = Field(
+        default_factory=lambda: RetrievalResult(source="playbooks")
+    )
+    vector_results: RetrievalResult = Field(
+        default_factory=lambda: RetrievalResult(source="vector_search")
+    )
 
     class Config:
         arbitrary_types_allowed = True
@@ -31,6 +44,7 @@ class EnrichmentContext(BaseModel):
 
 class SynthesisResult(BaseModel):
     """Output of the GeminiReasoner after synthesizing all retrieval results."""
+
     attack_context: Dict[str, Any] = Field(..., description="Structured attack summary")
     mitre_techniques: List[Dict[str, Any]] = Field(default_factory=list)
     cves: List[Dict[str, Any]] = Field(default_factory=list)
@@ -44,6 +58,7 @@ class SynthesisResult(BaseModel):
 @dataclass
 class KCAPipelineConfig:
     """Configuration for the Knowledge & Context Agent pipeline."""
+
     resources_dir: str = ""
     use_gemini: bool = False
     use_vector_search: bool = False

@@ -76,15 +76,16 @@ def test_pruned_memory_stubs_are_deleted():
 
     # Attempting to import stubs from argus.memory must fail
     import argus.memory as mem
+
     assert not hasattr(mem, "Cache")
     assert not hasattr(mem, "PersistentMemory")
     assert not hasattr(mem, "VectorMemory")
 
     with pytest.raises(ImportError):
-        from argus.memory import cache  # type: ignore
+        from argus.memory import cache  # noqa: F401  # type: ignore
 
     with pytest.raises(ImportError):
-        from argus.memory import persistent_memory  # type: ignore
+        from argus.memory import persistent_memory  # noqa: F401  # type: ignore
 
     with pytest.raises(ImportError):
-        from argus.memory import vector_memory  # type: ignore
+        from argus.memory import vector_memory  # noqa: F401  # type: ignore

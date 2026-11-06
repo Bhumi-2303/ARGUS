@@ -5,7 +5,6 @@ CORS locking, security headers, rate limiting, exception masking, and static SPA
 """
 
 import os
-import sys
 import json
 import hashlib
 import urllib.parse
@@ -18,7 +17,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 import structlog
-import asyncio
 
 from configs.settings import get_settings
 from argus.registry.registry import AgentRegistry
@@ -71,7 +69,7 @@ ARGUS_PORT = settings.port
 
 def verify_required_artifacts():
     """Verify that all required model artifacts, verified results, and sample files exist and match SHA-256 manifest.
-    
+
     Refuses to start and raises RuntimeError if any file is missing or has been altered.
     """
     logger.info("startup_artifact_verification_initiated")
@@ -91,7 +89,7 @@ def verify_required_artifacts():
             "artifacts/models/xgb_source.json",
             "artifacts/models/xgb_adapted.json",
             "data/samples/ciciot.parquet",
-            "data/samples/nfton.parquet"
+            "data/samples/nfton.parquet",
         ]
         manifest = {}
     else:
@@ -101,7 +99,9 @@ def verify_required_artifacts():
 
     missing = [f for f in required_files if not os.path.exists(f)]
     if missing:
-        error_msg = f"CRITICAL STARTUP FAILURE: {len(missing)} required artifact/sample file(s) missing:\n"
+        error_msg = (
+            f"CRITICAL STARTUP FAILURE: {len(missing)} required artifact/sample file(s) missing:\n"
+        )
         for m in missing:
             error_msg += f"  - Missing file: '{m}'\n"
         logger.critical("startup_verification_failed", missing_files=missing)
@@ -120,7 +120,9 @@ def verify_required_artifacts():
         error_msg = f"CRITICAL ARTIFACT INTEGRITY FAILURE: {len(checksum_failures)} file(s) failed SHA-256 verification:\n"
         for filepath, exp_h, act_h in checksum_failures:
             error_msg += f"  - File '{filepath}': expected {exp_h}, got {act_h}\n"
-        logger.critical("artifact_integrity_verification_failed", failures=[f[0] for f in checksum_failures])
+        logger.critical(
+            "artifact_integrity_verification_failed", failures=[f[0] for f in checksum_failures]
+        )
         raise RuntimeError(error_msg)
 
     logger.info("startup_artifact_verification_passed", total_verified=len(required_files))
@@ -135,7 +137,7 @@ async def start_agent_chain():
         description="DIA",
         capabilities=["data_normalization"],
         permissions=[],
-        tools=[]
+        tools=[],
     )
     taa = ThreatAnalysisAgent()
     rpa = RiskPredictionAgent()
@@ -146,7 +148,7 @@ async def start_agent_chain():
         description="KCA",
         capabilities=["threat_enrichment"],
         permissions=[],
-        tools=[]
+        tools=[],
     )
     dsa = DecisionSupportAgent(
         agent_id="agent_dsa",
@@ -155,7 +157,7 @@ async def start_agent_chain():
         description="DSA",
         capabilities=["action_recommendation"],
         permissions=[],
-        tools=[]
+        tools=[],
     )
 
     agents_list = [dia, taa, rpa, kca, dsa]
@@ -169,7 +171,7 @@ async def start_agent_chain():
             capabilities=a.capabilities,
             permissions=a.permissions,
             tools=a.tools,
-            status=AgentStatus.READY
+            status=AgentStatus.READY,
         )
         await agent_registry.register(reg)
 
@@ -191,6 +193,7 @@ async def lifespan(app: FastAPI):
     # 1. Initialize OpenTelemetry (off by default, optional Grafana Cloud export)
     try:
         from argus.observability.otel import setup_opentelemetry
+
         setup_opentelemetry()
     except Exception as otel_err:
         logger.warning("opentelemetry_initialization_warning", error=str(otel_err))
@@ -203,6 +206,7 @@ async def lifespan(app: FastAPI):
     try:
         from argus.database.engine import get_engine
         from argus.database.migrations import create_all_tables
+
         await create_all_tables(get_engine())
     except Exception as db_err:
         logger.warning("database_initialization_warning", error=str(db_err))
@@ -222,6 +226,7 @@ async def lifespan(app: FastAPI):
     logger.info("api_shutdown_initiating")
     await global_bus.stop()
     from argus.database.engine import close_db_connections
+
     await close_db_connections()
     logger.info("api_shutdown_complete")
 
@@ -302,9 +307,21 @@ def _configure_spa(app: FastAPI, web_dist_path: str) -> None:
         for p_str in all_path_reprs:
             u1 = urllib.parse.unquote(p_str)
             u2 = urllib.parse.unquote(u1)
-            if ".." in p_str or ".." in u1 or ".." in u2 or "\\" in p_str or "\\" in u1 or "\\" in u2:
-                logger.warning("spa_traversal_attempt_blocked", requested_path=full_path, raw_path=raw_path)
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid path traversal sequence.")
+            if (
+                ".." in p_str
+                or ".." in u1
+                or ".." in u2
+                or "\\" in p_str
+                or "\\" in u1
+                or "\\" in u2
+            ):
+                logger.warning(
+                    "spa_traversal_attempt_blocked", requested_path=full_path, raw_path=raw_path
+                )
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid path traversal sequence.",
+                )
 
         # 3. Path traversal prevention: enforce candidate path remains inside web_dist_path
         base_dir = Path(web_dist_path).resolve()
@@ -314,7 +331,9 @@ def _configure_spa(app: FastAPI, web_dist_path: str) -> None:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid path.")
 
         if not candidate.is_relative_to(base_dir):
-            logger.warning("spa_traversal_attempt_blocked", requested_path=full_path, resolved=str(candidate))
+            logger.warning(
+                "spa_traversal_attempt_blocked", requested_path=full_path, resolved=str(candidate)
+            )
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Access denied.")
 
         # 4. If actual file exists on disk inside web_dist_path, serve it
@@ -324,7 +343,10 @@ def _configure_spa(app: FastAPI, web_dist_path: str) -> None:
         # 5. Missing static asset or file-like path -> 404 (do NOT serve index.html)
         has_extension = bool(candidate.suffix) or ("." in Path(full_path).name)
         if has_extension or full_path.startswith("assets/"):
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Static asset '{full_path}' not found.")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Static asset '{full_path}' not found.",
+            )
 
         # 6. Reject blocked system directory prefixes
         clean_path = full_path.strip("/")
@@ -333,11 +355,15 @@ def _configure_spa(app: FastAPI, web_dist_path: str) -> None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found.")
 
         # 7. Fallback to index.html only for recognized SPA routes or single-segment extensionless routes
-        if clean_path in VALID_SPA_ROUTES or (len(Path(full_path).parts) <= 1 and not has_extension):
+        if clean_path in VALID_SPA_ROUTES or (
+            len(Path(full_path).parts) <= 1 and not has_extension
+        ):
             index_file = base_dir / "index.html"
             if index_file.is_file():
                 return FileResponse(str(index_file))
-            return JSONResponse(status_code=404, content={"error": "Frontend build index.html not found"})
+            return JSONResponse(
+                status_code=404, content={"error": "Frontend build index.html not found"}
+            )
 
         # Unknown multi-segment or unrecognized path
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found.")
@@ -355,9 +381,21 @@ def create_app(settings: Optional[Any] = None) -> FastAPI:
     """
     app_settings = settings if settings is not None else get_settings()
 
-    docs_url = None if app_settings.is_production and not app_settings.security.enable_public_docs else "/docs"
-    redoc_url = None if app_settings.is_production and not app_settings.security.enable_public_docs else "/redoc"
-    openapi_url = None if app_settings.is_production and not app_settings.security.enable_public_docs else "/openapi.json"
+    docs_url = (
+        None
+        if app_settings.is_production and not app_settings.security.enable_public_docs
+        else "/docs"
+    )
+    redoc_url = (
+        None
+        if app_settings.is_production and not app_settings.security.enable_public_docs
+        else "/redoc"
+    )
+    openapi_url = (
+        None
+        if app_settings.is_production and not app_settings.security.enable_public_docs
+        else "/openapi.json"
+    )
 
     application = FastAPI(
         title="ARGUS Cybersecurity Platform API",
@@ -432,4 +470,5 @@ app = create_app()
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("argus.api.main:app", host=ARGUS_HOST, port=ARGUS_PORT, reload=False)

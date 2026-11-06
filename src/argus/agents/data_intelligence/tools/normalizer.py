@@ -4,6 +4,7 @@ from argus.core.base_tool import BaseTool
 from argus.core.enums import ToolCategory
 from argus.agents.data_intelligence.schemas import CleanedChunk, NormalizedChunk, PipelineConfig
 
+
 class NormalizerTool(BaseTool):
     """Normalizes numeric data using min-max or z-score scaling."""
 
@@ -14,7 +15,7 @@ class NormalizerTool(BaseTool):
             version="1.0.0",
             category=ToolCategory.UTILITY,
             description="Normalizes dataframe columns.",
-            required_permissions=["data:write"]
+            required_permissions=["data:write"],
         )
 
     async def initialize(self) -> None:
@@ -26,12 +27,12 @@ class NormalizerTool(BaseTool):
     async def execute(self, **kwargs: Any) -> NormalizedChunk:
         cleaned_chunk: CleanedChunk = kwargs["cleaned_chunk"]
         config: PipelineConfig = kwargs["config"]
-        
+
         df = cleaned_chunk.data.copy()
         numeric_cols = df.select_dtypes(include=[np.number]).columns
-        
+
         parameters = {}
-        
+
         if config.normalization_method == "min_max":
             for col in numeric_cols:
                 c_min = float(df[col].min())
@@ -41,7 +42,7 @@ class NormalizerTool(BaseTool):
                     df[col] = (df[col] - c_min) / (c_max - c_min)
                 else:
                     df[col] = 0.0
-                    
+
         elif config.normalization_method == "z_score":
             for col in numeric_cols:
                 c_mean = float(df[col].mean())
@@ -56,7 +57,7 @@ class NormalizerTool(BaseTool):
             cleaned_chunk=cleaned_chunk,
             data=df,
             method=config.normalization_method,
-            parameters=parameters
+            parameters=parameters,
         )
 
     async def shutdown(self) -> None:
@@ -66,10 +67,7 @@ class NormalizerTool(BaseTool):
         md = super().metadata()
         md["parameters_schema"] = {
             "type": "object",
-            "properties": {
-                "cleaned_chunk": {"type": "object"},
-                "config": {"type": "object"}
-            },
-            "required": ["cleaned_chunk", "config"]
+            "properties": {"cleaned_chunk": {"type": "object"}, "config": {"type": "object"}},
+            "required": ["cleaned_chunk", "config"],
         }
         return md

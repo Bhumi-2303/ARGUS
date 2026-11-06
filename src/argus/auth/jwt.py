@@ -93,7 +93,7 @@ class JWTValidator:
 
     async def validate_token(self, token: str) -> UserPrincipal:
         """Validate JWT signature and claims, returning authenticated UserPrincipal.
-        
+
         Raises:
             HTTPException: 401 Unauthorized on invalid, expired, or untrusted token.
         """
@@ -127,24 +127,31 @@ class JWTValidator:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Invalid token header: 'alg' header missing.",
-                    headers={"WWW-Authenticate": "Bearer error=\"invalid_token\""},
+                    headers={"WWW-Authenticate": 'Bearer error="invalid_token"'},
                 )
 
             # 2. Prevent algorithm confusion: strictly verify against allowed asymmetric algorithms
             allowed_algs = [a.upper() for a in self.settings.security.oidc_algorithms]
-            if alg.upper() not in allowed_algs or alg.lower() in ("none", "hs256", "hs384", "hs512"):
-                logger.warning("unsupported_jwt_algorithm_attempted", algorithm=alg, allowed=allowed_algs)
+            if alg.upper() not in allowed_algs or alg.lower() in (
+                "none",
+                "hs256",
+                "hs384",
+                "hs512",
+            ):
+                logger.warning(
+                    "unsupported_jwt_algorithm_attempted", algorithm=alg, allowed=allowed_algs
+                )
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail=f"Unsupported token algorithm '{alg}'.",
-                    headers={"WWW-Authenticate": "Bearer error=\"invalid_token\""},
+                    headers={"WWW-Authenticate": 'Bearer error="invalid_token"'},
                 )
 
             if not kid:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Invalid token header: 'kid' (key ID) missing.",
-                    headers={"WWW-Authenticate": "Bearer error=\"invalid_token\""},
+                    headers={"WWW-Authenticate": 'Bearer error="invalid_token"'},
                 )
 
             # 3. Lookup signing key in JWKS cache / refresh
@@ -154,7 +161,7 @@ class JWTValidator:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Signing key not found in identity provider JWKS.",
-                    headers={"WWW-Authenticate": "Bearer error=\"invalid_token\""},
+                    headers={"WWW-Authenticate": 'Bearer error="invalid_token"'},
                 )
 
             # 4. Decode and verify signature, issuer, audience, and exp
@@ -182,31 +189,33 @@ class JWTValidator:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token has expired.",
-                headers={"WWW-Authenticate": "Bearer error=\"invalid_token\", error_description=\"Token expired\""},
+                headers={
+                    "WWW-Authenticate": 'Bearer error="invalid_token", error_description="Token expired"'
+                },
             )
         except InvalidIssuerError:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token issuer does not match expected identity provider.",
-                headers={"WWW-Authenticate": "Bearer error=\"invalid_token\""},
+                headers={"WWW-Authenticate": 'Bearer error="invalid_token"'},
             )
         except InvalidAudienceError:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token audience does not match ARGUS API audience.",
-                headers={"WWW-Authenticate": "Bearer error=\"invalid_token\""},
+                headers={"WWW-Authenticate": 'Bearer error="invalid_token"'},
             )
         except InvalidSignatureError:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token signature verification failed.",
-                headers={"WWW-Authenticate": "Bearer error=\"invalid_token\""},
+                headers={"WWW-Authenticate": 'Bearer error="invalid_token"'},
             )
         except InvalidAlgorithmError as iae:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail=f"Disallowed algorithm: {str(iae)}",
-                headers={"WWW-Authenticate": "Bearer error=\"invalid_token\""},
+                headers={"WWW-Authenticate": 'Bearer error="invalid_token"'},
             )
         except HTTPException:
             raise
@@ -215,7 +224,7 @@ class JWTValidator:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token validation failed.",
-                headers={"WWW-Authenticate": "Bearer error=\"invalid_token\""},
+                headers={"WWW-Authenticate": 'Bearer error="invalid_token"'},
             )
 
     def _validate_dev_jwt(self, token: str) -> UserPrincipal:

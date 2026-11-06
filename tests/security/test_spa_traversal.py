@@ -35,6 +35,7 @@ def any_asset_name():
 # 1. VALID FRONTEND SPA ROUTES (200 OK with index.html)
 # ===========================================================================
 
+
 @pytest.mark.asyncio
 async def test_valid_root_route_returns_index_html():
     """Valid root route '/' returns index.html with HTTP 200."""
@@ -45,18 +46,21 @@ async def test_valid_root_route_returns_index_html():
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("route", [
-    "/dashboard",
-    "/input",
-    "/topology",
-    "/explain",
-    "/results",
-    "/privacy",
-    "/terms",
-    "/models",
-    "/shift",
-    "/overview",
-])
+@pytest.mark.parametrize(
+    "route",
+    [
+        "/dashboard",
+        "/input",
+        "/topology",
+        "/explain",
+        "/results",
+        "/privacy",
+        "/terms",
+        "/models",
+        "/shift",
+        "/overview",
+    ],
+)
 async def test_valid_client_side_routes_return_index_html(route):
     """Recognized client-side SPA routes return index.html with HTTP 200."""
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
@@ -69,6 +73,7 @@ async def test_valid_client_side_routes_return_index_html(route):
 # 2. STATIC ASSET SERVING & 404 ON MISSING ASSETS
 # ===========================================================================
 
+
 @pytest.mark.asyncio
 async def test_valid_static_asset_returns_200(any_asset_name):
     """An existing static file in web/dist or web/dist/assets is served with HTTP 200."""
@@ -80,11 +85,14 @@ async def test_valid_static_asset_returns_200(any_asset_name):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("missing_asset", [
-    "/assets/missing.js",
-    "/assets/nonexistent.css",
-    "/assets/bundle.abc12345.js",
-])
+@pytest.mark.parametrize(
+    "missing_asset",
+    [
+        "/assets/missing.js",
+        "/assets/nonexistent.css",
+        "/assets/bundle.abc12345.js",
+    ],
+)
 async def test_missing_static_assets_return_404(missing_asset):
     """Missing static assets in /assets/ must return HTTP 404, never index.html."""
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
@@ -94,13 +102,16 @@ async def test_missing_static_assets_return_404(missing_asset):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("file_path", [
-    "/favicon.ico",
-    "/robots.txt",
-    "/sitemap.xml",
-    "/nonexistent_file.png",
-    "/styles.css",
-])
+@pytest.mark.parametrize(
+    "file_path",
+    [
+        "/favicon.ico",
+        "/robots.txt",
+        "/sitemap.xml",
+        "/nonexistent_file.png",
+        "/styles.css",
+    ],
+)
 async def test_missing_file_like_paths_return_404(file_path):
     """Missing file-like paths with extensions must return HTTP 404, never index.html."""
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
@@ -113,14 +124,18 @@ async def test_missing_file_like_paths_return_404(file_path):
 # 3. DIRECTORY TRAVERSAL & MALICIOUS PATH REJECTION
 # ===========================================================================
 
+
 @pytest.mark.asyncio
-@pytest.mark.parametrize("payload", [
-    "../../../../etc/passwd",
-    "../../etc/shadow",
-    "../../../proc/self/environ",
-    "../../../../Windows/System32/cmd.exe",
-    "..\\..\\Windows\\win.ini",
-])
+@pytest.mark.parametrize(
+    "payload",
+    [
+        "../../../../etc/passwd",
+        "../../etc/shadow",
+        "../../../proc/self/environ",
+        "../../../../Windows/System32/cmd.exe",
+        "..\\..\\Windows\\win.ini",
+    ],
+)
 async def test_traversal_sequence_rejected(payload):
     """Relative traversal patterns return HTTP 400 or HTTP 404."""
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
@@ -130,12 +145,15 @@ async def test_traversal_sequence_rejected(payload):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("encoded_payload", [
-    "%2e%2e%2f%2e%2e%2fetc%2fpasswd",
-    "..%2F..%2F..%2Fetc%2Fpasswd",
-    "%2e%2e%5c%2e%2e%5cboot.ini",
-    "....//....//etc/passwd",
-])
+@pytest.mark.parametrize(
+    "encoded_payload",
+    [
+        "%2e%2e%2f%2e%2e%2fetc%2fpasswd",
+        "..%2F..%2F..%2Fetc%2Fpasswd",
+        "%2e%2e%5c%2e%2e%5cboot.ini",
+        "....//....//etc/passwd",
+    ],
+)
 async def test_encoded_traversal_rejected(encoded_payload):
     """URL-encoded and double-dot traversal sequences return HTTP 400 or HTTP 404."""
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
@@ -145,11 +163,14 @@ async def test_encoded_traversal_rejected(encoded_payload):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("api_traversal", [
-    "/api/v1/results/../../../../etc/passwd",
-    "/api/v1/domains/..%2F..%2Fetc%2Fpasswd",
-    "/api/v1/../../../../etc/passwd",
-])
+@pytest.mark.parametrize(
+    "api_traversal",
+    [
+        "/api/v1/results/../../../../etc/passwd",
+        "/api/v1/domains/..%2F..%2Fetc%2Fpasswd",
+        "/api/v1/../../../../etc/passwd",
+    ],
+)
 async def test_traversal_via_api_route_rejected(api_traversal):
     """Traversal attempts through API URL prefixes return HTTP 400 or HTTP 404."""
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
@@ -168,14 +189,17 @@ async def test_null_byte_injection_rejected():
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("abs_path", [
-    "/etc/passwd",
-    "/etc/shadow",
-    "/var/log/syslog",
-    "/proc/cpuinfo",
-    "/sys/class/net",
-    "/bin/bash",
-])
+@pytest.mark.parametrize(
+    "abs_path",
+    [
+        "/etc/passwd",
+        "/etc/shadow",
+        "/var/log/syslog",
+        "/proc/cpuinfo",
+        "/sys/class/net",
+        "/bin/bash",
+    ],
+)
 async def test_absolute_system_path_injection_returns_404(abs_path):
     """Requests targeting system paths (e.g. /etc/passwd) return HTTP 404, never index.html."""
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
@@ -187,6 +211,7 @@ async def test_absolute_system_path_injection_returns_404(abs_path):
 # ===========================================================================
 # 4. RAW ASGI DIRECT DISPATCH TESTS (BYPASSING CLIENT-SIDE NORMALIZATION)
 # ===========================================================================
+
 
 async def _dispatch_raw_asgi(path: str, raw_path: bytes):
     """Dispatch raw ASGI HTTP request directly to app, bypassing client URL normalization."""
@@ -229,7 +254,9 @@ async def _dispatch_raw_asgi(path: str, raw_path: bytes):
     await app(scope, receive, send)
 
     status_code = response_started.get("status", 500)
-    headers = {k.decode("latin-1"): v.decode("latin-1") for k, v in response_started.get("headers", [])}
+    headers = {
+        k.decode("latin-1"): v.decode("latin-1") for k, v in response_started.get("headers", [])
+    }
     body = b"".join(response_body).decode("latin-1", errors="ignore")
     return status_code, headers, body
 
@@ -238,8 +265,7 @@ async def _dispatch_raw_asgi(path: str, raw_path: bytes):
 async def test_raw_asgi_unnormalized_traversal_rejected():
     """Raw unnormalized dot-dot traversal via ASGI returns HTTP 400 Bad Request."""
     status, headers, body = await _dispatch_raw_asgi(
-        path="/../../../../etc/passwd",
-        raw_path=b"/../../../../etc/passwd"
+        path="/../../../../etc/passwd", raw_path=b"/../../../../etc/passwd"
     )
     assert status == 400
     assert "Invalid path traversal" in body
@@ -251,8 +277,7 @@ async def test_raw_asgi_unnormalized_traversal_rejected():
 async def test_raw_asgi_double_encoded_traversal_rejected():
     """Raw double-encoded dot-dot traversal via ASGI returns HTTP 400 Bad Request."""
     status, headers, body = await _dispatch_raw_asgi(
-        path="/%252e%252e/%252e%252e/etc/passwd",
-        raw_path=b"/%252e%252e/%252e%252e/etc/passwd"
+        path="/%252e%252e/%252e%252e/etc/passwd", raw_path=b"/%252e%252e/%252e%252e/etc/passwd"
     )
     assert status == 400
     assert "Invalid path traversal" in body
@@ -264,8 +289,7 @@ async def test_raw_asgi_double_encoded_traversal_rejected():
 async def test_raw_asgi_backslash_traversal_rejected():
     """Raw Windows backslash traversal via ASGI returns HTTP 400 Bad Request."""
     status, headers, body = await _dispatch_raw_asgi(
-        path="/..\\..\\Windows\\System32\\cmd.exe",
-        raw_path=b"/..\\..\\Windows\\System32\\cmd.exe"
+        path="/..\\..\\Windows\\System32\\cmd.exe", raw_path=b"/..\\..\\Windows\\System32\\cmd.exe"
     )
     assert status == 400
     assert "Invalid path traversal" in body
@@ -276,8 +300,7 @@ async def test_raw_asgi_backslash_traversal_rejected():
 async def test_raw_asgi_null_byte_rejected():
     """Raw null byte injection via ASGI returns HTTP 400 Bad Request."""
     status, headers, body = await _dispatch_raw_asgi(
-        path="/index.html\x00.png",
-        raw_path=b"/index.html\x00.png"
+        path="/index.html\x00.png", raw_path=b"/index.html\x00.png"
     )
     assert status == 400
     assert "Invalid path" in body
@@ -287,10 +310,7 @@ async def test_raw_asgi_null_byte_rejected():
 @pytest.mark.asyncio
 async def test_raw_asgi_absolute_path_returns_404():
     """Raw absolute system path /etc/passwd via ASGI returns HTTP 404."""
-    status, headers, body = await _dispatch_raw_asgi(
-        path="/etc/passwd",
-        raw_path=b"/etc/passwd"
-    )
+    status, headers, body = await _dispatch_raw_asgi(path="/etc/passwd", raw_path=b"/etc/passwd")
     assert status == 404
     assert "Resource not found" in body
     assert "root:x:0:0:" not in body
@@ -300,11 +320,7 @@ async def test_raw_asgi_absolute_path_returns_404():
 @pytest.mark.asyncio
 async def test_raw_asgi_valid_spa_route_returns_index_html():
     """Raw valid client-side route /dashboard via ASGI returns HTTP 200 with index.html."""
-    status, headers, body = await _dispatch_raw_asgi(
-        path="/dashboard",
-        raw_path=b"/dashboard"
-    )
+    status, headers, body = await _dispatch_raw_asgi(path="/dashboard", raw_path=b"/dashboard")
     assert status == 200
     assert "<!doctype html" in body.lower() or "<html" in body.lower()
     assert headers.get("content-type", "").startswith("text/html")
-

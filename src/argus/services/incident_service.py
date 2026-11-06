@@ -15,6 +15,7 @@ logger = structlog.get_logger("argus.services.incidents")
 
 class InvalidTransitionError(Exception):
     """Raised when an incident status transition violates the state machine."""
+
     pass
 
 
@@ -29,7 +30,6 @@ class IncidentService:
         """Persist or update an incident in the database."""
         session = get_session(self._db_url)
         try:
-            now = datetime.now(timezone.utc)
             record = session.execute(
                 select(IncidentModel).where(IncidentModel.incident_id == incident.incident_id)
             ).scalar_one_or_none()
@@ -86,7 +86,9 @@ class IncidentService:
             session.commit()
         except Exception as e:
             session.rollback()
-            logger.error("incident_db_persist_failed", incident_id=incident.incident_id, error=str(e))
+            logger.error(
+                "incident_db_persist_failed", incident_id=incident.incident_id, error=str(e)
+            )
         finally:
             session.close()
 
@@ -98,7 +100,9 @@ class IncidentService:
         incident.add_timeline_event("incident_created", "Incident created from detection event.")
         self._cache[incident.incident_id] = incident
         self._save_to_db(incident)
-        logger.info("incident_created", incident_id=incident.incident_id, severity=incident.severity)
+        logger.info(
+            "incident_created", incident_id=incident.incident_id, severity=incident.severity
+        )
         return incident
 
     def get_incident(self, incident_id: str) -> Optional[Incident]:
@@ -115,11 +119,15 @@ class IncidentService:
             if not record:
                 return None
 
-            timeline_records = session.execute(
-                select(IncidentTimelineModel)
-                .where(IncidentTimelineModel.incident_id == incident_id)
-                .order_by(IncidentTimelineModel.timestamp.asc())
-            ).scalars().all()
+            timeline_records = (
+                session.execute(
+                    select(IncidentTimelineModel)
+                    .where(IncidentTimelineModel.incident_id == incident_id)
+                    .order_by(IncidentTimelineModel.timestamp.asc())
+                )
+                .scalars()
+                .all()
+            )
 
             timeline = [
                 TimelineEvent(
@@ -132,8 +140,16 @@ class IncidentService:
                 for tl in timeline_records
             ]
 
-            status_enum = IncidentStatus(record.status.upper()) if hasattr(IncidentStatus, record.status.upper()) else IncidentStatus.DETECTED
-            approval_enum = ApprovalStatus(record.approval_status.upper()) if hasattr(ApprovalStatus, record.approval_status.upper()) else ApprovalStatus.NOT_REQUIRED
+            status_enum = (
+                IncidentStatus(record.status.upper())
+                if hasattr(IncidentStatus, record.status.upper())
+                else IncidentStatus.DETECTED
+            )
+            approval_enum = (
+                ApprovalStatus(record.approval_status.upper())
+                if hasattr(ApprovalStatus, record.approval_status.upper())
+                else ApprovalStatus.NOT_REQUIRED
+            )
 
             decision_dict = None
             if record.recommended_actions_json:
@@ -191,7 +207,9 @@ class IncidentService:
             results = [inc for inc in results if inc.status == status]
         return results
 
-    def update_status(self, incident_id: str, new_status: IncidentStatus, actor: str = "system") -> Incident:
+    def update_status(
+        self, incident_id: str, new_status: IncidentStatus, actor: str = "system"
+    ) -> Incident:
         """Transition incident status according to authoritative state machine."""
         incident = self.get_incident(incident_id)
         if not incident:
@@ -202,9 +220,21 @@ class IncidentService:
         # Valid explicit transitions
         valid_transitions = {
             IncidentStatus.DETECTED: [IncidentStatus.TRIAGED, IncidentStatus.CLOSED],
-            IncidentStatus.TRIAGED: [IncidentStatus.INVESTIGATING, IncidentStatus.ESCALATED, IncidentStatus.CLOSED],
-            IncidentStatus.INVESTIGATING: [IncidentStatus.CONTAINED, IncidentStatus.RESOLVED, IncidentStatus.ESCALATED],
-            IncidentStatus.ESCALATED: [IncidentStatus.INVESTIGATING, IncidentStatus.CONTAINED, IncidentStatus.CLOSED],
+            IncidentStatus.TRIAGED: [
+                IncidentStatus.INVESTIGATING,
+                IncidentStatus.ESCALATED,
+                IncidentStatus.CLOSED,
+            ],
+            IncidentStatus.INVESTIGATING: [
+                IncidentStatus.CONTAINED,
+                IncidentStatus.RESOLVED,
+                IncidentStatus.ESCALATED,
+            ],
+            IncidentStatus.ESCALATED: [
+                IncidentStatus.INVESTIGATING,
+                IncidentStatus.CONTAINED,
+                IncidentStatus.CLOSED,
+            ],
             IncidentStatus.CONTAINED: [IncidentStatus.RESOLVED],
             IncidentStatus.RESOLVED: [IncidentStatus.CLOSED],
             IncidentStatus.CLOSED: [],
@@ -214,11 +244,17 @@ class IncidentService:
             raise InvalidTransitionError(f"Cannot transition from {current} to {new_status}")
 
         incident.status = new_status
-        incident.add_timeline_event("status_changed", f"Status changed from {current.value} to {new_status.value}", actor=actor)
+        incident.add_timeline_event(
+            "status_changed",
+            f"Status changed from {current.value} to {new_status.value}",
+            actor=actor,
+        )
         self._save_to_db(incident)
         return incident
 
-    def approve_incident(self, incident_id: str, approver: str, reason: str, token: Optional[str] = None) -> Incident:
+    def approve_incident(
+        self, incident_id: str, approver: str, reason: str, token: Optional[str] = None
+    ) -> Incident:
         """Grant human approval for an incident response mitigation."""
         incident = self.get_incident(incident_id)
         if not incident:
@@ -236,7 +272,9 @@ class IncidentService:
         incident.approved_at = now
         incident.approval_reason = reason
 
-        incident.add_timeline_event("approval_granted", f"Action approved by {approver}: {reason}", actor=approver)
+        incident.add_timeline_event(
+            "approval_granted", f"Action approved by {approver}: {reason}", actor=approver
+        )
         self._save_to_db(incident)
 
         # Update DecisionApprovalTokenModel in DB if present
@@ -262,7 +300,9 @@ class IncidentService:
         logger.info("incident_approval_granted", incident_id=incident_id, approver=approver)
         return incident
 
-    def reject_incident(self, incident_id: str, rejecter: str, reason: str, token: Optional[str] = None) -> Incident:
+    def reject_incident(
+        self, incident_id: str, rejecter: str, reason: str, token: Optional[str] = None
+    ) -> Incident:
         """Reject human approval for an incident response mitigation."""
         incident = self.get_incident(incident_id)
         if not incident:
@@ -286,7 +326,9 @@ class IncidentService:
         except InvalidTransitionError:
             pass  # Keep current status if direct close is not allowed by state machine
 
-        incident.add_timeline_event("approval_rejected", f"Action rejected by {rejecter}: {reason}", actor=rejecter)
+        incident.add_timeline_event(
+            "approval_rejected", f"Action rejected by {rejecter}: {reason}", actor=rejecter
+        )
         self._save_to_db(incident)
 
         # Update DecisionApprovalTokenModel in DB if present
@@ -312,13 +354,14 @@ class IncidentService:
         logger.info("incident_approval_rejected", incident_id=incident_id, rejecter=rejecter)
         return incident
 
-    def resolve_decision_token(self, token: str, action: str, actor: str, reason: str) -> Dict[str, Any]:
+    def resolve_decision_token(
+        self, token: str, action: str, actor: str, reason: str
+    ) -> Dict[str, Any]:
         """Resolve a decision approval token by token string ('approve' or 'reject')."""
         session = get_session(self._db_url)
         try:
             record = session.execute(
-                select(DecisionApprovalTokenModel)
-                .where(DecisionApprovalTokenModel.token == token)
+                select(DecisionApprovalTokenModel).where(DecisionApprovalTokenModel.token == token)
             ).scalar_one_or_none()
 
             if not record:
@@ -339,7 +382,9 @@ class IncidentService:
 
             action_lower = action.lower()
             if action_lower not in ("approve", "reject"):
-                raise ValueError(f"Invalid approval action '{action}'. Must be 'approve' or 'reject'.")
+                raise ValueError(
+                    f"Invalid approval action '{action}'. Must be 'approve' or 'reject'."
+                )
 
             new_status = "APPROVED" if action_lower == "approve" else "REJECTED"
             record.status = new_status
@@ -351,9 +396,13 @@ class IncidentService:
             # If token was linked to an incident, sync incident state
             if record.incident_id:
                 if action_lower == "approve":
-                    self.approve_incident(record.incident_id, approver=actor, reason=reason, token=token)
+                    self.approve_incident(
+                        record.incident_id, approver=actor, reason=reason, token=token
+                    )
                 else:
-                    self.reject_incident(record.incident_id, rejecter=actor, reason=reason, token=token)
+                    self.reject_incident(
+                        record.incident_id, rejecter=actor, reason=reason, token=token
+                    )
 
             return {
                 "token": token,
@@ -372,12 +421,16 @@ class IncidentService:
         session = get_session(self._db_url)
         try:
             now = datetime.now(timezone.utc)
-            records = session.execute(
-                select(DecisionApprovalTokenModel)
-                .where(DecisionApprovalTokenModel.status == "PENDING")
-                .order_by(desc(DecisionApprovalTokenModel.created_at))
-                .limit(limit)
-            ).scalars().all()
+            records = (
+                session.execute(
+                    select(DecisionApprovalTokenModel)
+                    .where(DecisionApprovalTokenModel.status == "PENDING")
+                    .order_by(desc(DecisionApprovalTokenModel.created_at))
+                    .limit(limit)
+                )
+                .scalars()
+                .all()
+            )
 
             results = []
             for r in records:
@@ -387,16 +440,18 @@ class IncidentService:
                         exp = exp.replace(tzinfo=timezone.utc)
                     if exp < now:
                         continue
-                results.append({
-                    "token": r.token,
-                    "incident_id": r.incident_id,
-                    "event_id": r.event_id,
-                    "correlation_id": r.correlation_id,
-                    "action_summary": r.action_summary,
-                    "approver_role": r.approver_role,
-                    "created_at": r.created_at.isoformat() if r.created_at else None,
-                    "expires_at": r.expires_at.isoformat() if r.expires_at else None,
-                })
+                results.append(
+                    {
+                        "token": r.token,
+                        "incident_id": r.incident_id,
+                        "event_id": r.event_id,
+                        "correlation_id": r.correlation_id,
+                        "action_summary": r.action_summary,
+                        "approver_role": r.approver_role,
+                        "created_at": r.created_at.isoformat() if r.created_at else None,
+                        "expires_at": r.expires_at.isoformat() if r.expires_at else None,
+                    }
+                )
             return results
         finally:
             session.close()

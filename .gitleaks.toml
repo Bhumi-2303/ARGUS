@@ -2,7 +2,7 @@
 useDefault = true
 
 [allowlist]
-description = "Global allowlist for ARGUS dependencies and data artifacts"
+description = "Global allowlist for ARGUS dependencies, test fixtures, and data artifacts"
 paths = [
     '''node_modules''',
     '''web/node_modules''',
@@ -12,5 +12,9 @@ paths = [
     '''\.pytest_cache''',
     '''data/samples''',
     '''artifacts/manifest\.json''',
-    '''docs/data_metrics_baseline\.json'''
+    '''docs/data_metrics_baseline\.json''',
+    '''tests/security/test_auth_oidc_jwks\.py'''
+]
+stopwords = [
+    "eyJhbGciOiJSUzI1NiIsImtpZCI6InVua25vd24ifQ"
 ]

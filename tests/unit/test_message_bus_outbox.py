@@ -4,7 +4,6 @@ import asyncio
 import os
 import tempfile
 import pytest
-from datetime import datetime, timezone
 
 from argus.bus.events import BusEvent
 from argus.bus.outbox import SqliteOutbox

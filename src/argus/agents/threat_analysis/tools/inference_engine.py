@@ -1,4 +1,5 @@
 """Inference Engine tool for Threat Analysis Agent."""
+
 import asyncio
 import time
 from typing import Any, Dict, List, Optional
@@ -8,7 +9,7 @@ try:
     import numpy as np
 except ImportError:
     np = None
-    
+
 try:
     import xgboost as xgb
 except ImportError:
@@ -29,14 +30,16 @@ class InferenceEngine(BaseTool):
             version="1.0.0",
             category=ToolCategory.UTILITY,
             description="Executes ML models against feature vectors.",
-            required_permissions=["compute:inference"]
+            required_permissions=["compute:inference"],
         )
         self.logger = structlog.get_logger("argus.tool.inference_engine")
 
     async def initialize(self) -> None:
         """Initialize the inference engine."""
         if np is None:
-            self.logger.warning("numpy_not_installed", msg="Inference might fail if dependencies are missing.")
+            self.logger.warning(
+                "numpy_not_installed", msg="Inference might fail if dependencies are missing."
+            )
         self.logger.info("inference_engine_initialized")
 
     async def validate(self, features: Dict[str, float], model: Any, model_type: ModelType) -> bool:
@@ -49,7 +52,9 @@ class InferenceEngine(BaseTool):
             return False
         return True
 
-    async def execute(self, features: Dict[str, float], model: Any, model_type: ModelType) -> InferenceResult:
+    async def execute(
+        self, features: Dict[str, float], model: Any, model_type: ModelType
+    ) -> InferenceResult:
         """Execute inference."""
         is_valid = await self.validate(features=features, model=model, model_type=model_type)
         if not is_valid:
@@ -69,17 +74,23 @@ class InferenceEngine(BaseTool):
             probabilities=probabilities,
             raw_output=raw_output,
             model_type=model_type,
-            latency_ms=latency_ms
+            latency_ms=latency_ms,
         )
 
-    def _run_inference_sync(self, features: Dict[str, float], model: Any, model_type: ModelType) -> tuple[Any, Optional[List[float]], Any]:
+    def _run_inference_sync(
+        self, features: Dict[str, float], model: Any, model_type: ModelType
+    ) -> tuple[Any, Optional[List[float]], Any]:
         """Synchronous inference execution."""
         # Note: In a real system, we must align feature names to the model's expected training order.
         # Here we assume the keys in features dict are ordered or we just sort them for stability.
         sorted_feature_values = [features[k] for k in sorted(features.keys())]
-        
+
         # Reshape to 2D array (1 sample, n features)
-        X = np.array(sorted_feature_values).reshape(1, -1) if np is not None else [sorted_feature_values]
+        X = (
+            np.array(sorted_feature_values).reshape(1, -1)
+            if np is not None
+            else [sorted_feature_values]
+        )
 
         prediction = None
         probabilities = None
@@ -88,16 +99,20 @@ class InferenceEngine(BaseTool):
         if model_type == ModelType.XGBOOST:
             if xgb is None:
                 raise ImportError("xgboost is not installed")
-            
+
             dmatrix = xgb.DMatrix(X, feature_names=sorted(features.keys()))
             # predict returns probabilities for classification by default in many XGB setups
             preds = model.predict(dmatrix)
             raw_output["raw_preds"] = preds.tolist()
-            
+
             if len(preds.shape) > 1 and preds.shape[1] > 1:
                 # Multiclass
                 probabilities = preds[0].tolist()
-                prediction = int(np.argmax(preds[0])) if np is not None else int(preds[0].index(max(preds[0])))
+                prediction = (
+                    int(np.argmax(preds[0]))
+                    if np is not None
+                    else int(preds[0].index(max(preds[0])))
+                )
             else:
                 # Binary
                 prob = float(preds[0])
@@ -114,14 +129,14 @@ class InferenceEngine(BaseTool):
                 probs = model.predict_proba(X)
                 probabilities = probs[0].tolist()
                 raw_output["probabilities"] = probabilities
-            
+
             if hasattr(model, "decision_function"):
                 scores = model.decision_function(X)
                 raw_output["decision_function"] = float(scores[0])
-                
+
                 # Isolation forest convention: -1 is anomaly, 1 is normal
                 # Some implementations vary, we capture the raw score
-        
+
         else:
             raise ValueError(f"Unsupported model type for inference: {model_type}")
 

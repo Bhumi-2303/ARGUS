@@ -7,9 +7,10 @@ Verifies:
 - Explanation failure yields structured unavailable result.
 - No faked/synthesized explanations are produced.
 """
+
 import pytest
 from argus.agents.explainability.agent import ExplainabilityAgent
-from argus.agents.explainability.schemas import ExplainabilityInput, ExplainabilityResult
+from argus.agents.explainability.schemas import ExplainabilityResult
 from argus.registry.model_registry import model_registry
 
 TEST_FEATURES = {
@@ -19,10 +20,12 @@ TEST_FEATURES = {
     "log_pkt_max": 5.2,
 }
 
+
 @pytest.fixture(autouse=True)
 def setup_registry():
     if not model_registry.is_loaded:
         model_registry.load_all()
+
 
 @pytest.fixture
 async def exp_agent():
@@ -38,12 +41,15 @@ async def test_explainability_validates_input(exp_agent):
         "event_id": "test-evt-1",
         "correlation_id": "test-corr-1",
         "features": TEST_FEATURES,
-        "model_version": "xgb_adapted"
+        "model_version": "xgb_adapted",
     }
     assert await exp_agent.validate(valid_input) is True
-    
+
     # Missing required features field
-    assert await exp_agent.validate({"event_id": "test-evt-1", "model_version": "xgb_adapted"}) is False
+    assert (
+        await exp_agent.validate({"event_id": "test-evt-1", "model_version": "xgb_adapted"})
+        is False
+    )
 
 
 @pytest.mark.asyncio
@@ -53,28 +59,28 @@ async def test_explainability_real_shap(exp_agent):
         "event_id": "test-evt-2",
         "correlation_id": "test-corr-2",
         "features": TEST_FEATURES,
-        "model_version": "xgb_adapted"
+        "model_version": "xgb_adapted",
     }
-    
+
     reasoning = await exp_agent.reason(valid_input)
     result = await exp_agent.execute(reasoning)
-    
+
     assert isinstance(result, ExplainabilityResult)
     assert result.status == "available"
     assert result.event_id == "test-evt-2"
     assert result.correlation_id == "test-corr-2"
     assert result.model_version == "xgb_adapted"
-    
+
     # Has SHAP dictionary for all 4 features
     assert len(result.shap_values) == 4
     for f in TEST_FEATURES.keys():
         assert f in result.shap_values
         assert isinstance(result.shap_values[f], float)
-        
+
     # Top feature is identified correctly
     assert result.top_feature in TEST_FEATURES.keys()
     assert result.top_feature_impact == result.shap_values[result.top_feature]
-    
+
     # Timing is recorded
     assert result.latency_ms > 0
     assert result.base_value is not None
@@ -86,12 +92,12 @@ async def test_explainability_handles_missing_model(exp_agent):
     valid_input = {
         "event_id": "test-evt-3",
         "features": TEST_FEATURES,
-        "model_version": "unknown_model_that_does_not_exist"
+        "model_version": "unknown_model_that_does_not_exist",
     }
-    
+
     reasoning = await exp_agent.reason(valid_input)
     result = await exp_agent.execute(reasoning)
-    
+
     assert isinstance(result, ExplainabilityResult)
     assert result.status == "unavailable"
     assert result.reason is not None
@@ -103,15 +109,11 @@ async def test_explainability_handles_missing_model(exp_agent):
 @pytest.mark.asyncio
 async def test_explainability_handles_unavailable_model(exp_agent):
     """DANN model cannot be live-explained, should return unavailable."""
-    valid_input = {
-        "event_id": "test-evt-4",
-        "features": TEST_FEATURES,
-        "model_version": "dann"
-    }
-    
+    valid_input = {"event_id": "test-evt-4", "features": TEST_FEATURES, "model_version": "dann"}
+
     reasoning = await exp_agent.reason(valid_input)
     result = await exp_agent.execute(reasoning)
-    
+
     assert isinstance(result, ExplainabilityResult)
     assert result.status == "unavailable"
     assert "unavailable for live inference" in result.reason

@@ -4,7 +4,7 @@ import asyncio
 import inspect
 from datetime import datetime, timezone
 import fnmatch
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any, Callable, Dict, List, Optional
 import structlog
 
 from argus.bus.events import BusEvent
@@ -15,6 +15,7 @@ logger = structlog.get_logger("argus.bus")
 
 class BackpressureError(Exception):
     """Raised when subscriber queue reaches capacity under excessive load."""
+
     pass
 
 
@@ -35,7 +36,9 @@ class SubscriberRegistration:
             current_loop = asyncio.get_running_loop()
         except RuntimeError:
             current_loop = None
-        if self._queue is None or (current_loop and getattr(self._queue, "_loop", None) not in (None, current_loop)):
+        if self._queue is None or (
+            current_loop and getattr(self._queue, "_loop", None) not in (None, current_loop)
+        ):
             self._queue = asyncio.Queue(maxsize=self.max_queue_size)
         return self._queue
 
@@ -79,7 +82,9 @@ class MessageBus:
             current_loop = asyncio.get_running_loop()
         except RuntimeError:
             current_loop = None
-        if self._lock_obj is None or (current_loop and getattr(self._lock_obj, "_loop", None) not in (None, current_loop)):
+        if self._lock_obj is None or (
+            current_loop and getattr(self._lock_obj, "_loop", None) not in (None, current_loop)
+        ):
             self._lock_obj = asyncio.Lock()
         return self._lock_obj
 
@@ -89,7 +94,9 @@ class MessageBus:
             current_loop = asyncio.get_running_loop()
         except RuntimeError:
             current_loop = None
-        if self._dlq_obj is None or (current_loop and getattr(self._dlq_obj, "_loop", None) not in (None, current_loop)):
+        if self._dlq_obj is None or (
+            current_loop and getattr(self._dlq_obj, "_loop", None) not in (None, current_loop)
+        ):
             self._dlq_obj = asyncio.Queue()
         return self._dlq_obj
 

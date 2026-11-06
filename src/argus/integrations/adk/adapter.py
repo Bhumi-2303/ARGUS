@@ -8,7 +8,7 @@ ARCHITECTURE RULE:
 - All core detection, ML inference, and decision-making logic remain 100% deterministic.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 import structlog
 
 from argus.core.base_agent import BaseAgent
@@ -30,7 +30,9 @@ class ADKAdapter:
         return cls._narrator
 
     @classmethod
-    async def narrate_incident(cls, incident: Any, api_key: Optional[str] = None) -> IncidentNarrative:
+    async def narrate_incident(
+        cls, incident: Any, api_key: Optional[str] = None
+    ) -> IncidentNarrative:
         """Summarize an already-computed security incident into an executive narrative."""
         narrator = cls.get_narrator(api_key=api_key)
         return await narrator.narrate_incident(incident)

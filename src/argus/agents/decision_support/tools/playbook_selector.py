@@ -1,10 +1,12 @@
 """Playbook Selector tool for Decision Support Agent."""
+
 import structlog
 from typing import List
 
 from argus.core.base_tool import BaseTool
 from argus.core.enums import ToolCategory
 from argus.agents.decision_support.models.schemas import DecisionAnalysisInput, Playbook
+
 
 class PlaybookSelector(BaseTool):
     """Selects applicable response playbooks based on the risk event."""
@@ -16,7 +18,7 @@ class PlaybookSelector(BaseTool):
             version="1.0.0",
             category=ToolCategory.UTILITY,
             description="Selects applicable standard operating procedures (SOPs).",
-            required_permissions=[]
+            required_permissions=[],
         )
         self.logger = structlog.get_logger("argus.tool.playbook_selector")
 
@@ -35,38 +37,46 @@ class PlaybookSelector(BaseTool):
         if not await self.validate(input_data):
             raise ValueError("Invalid input for PlaybookSelector")
 
-        severity = input_data.risk_event.severity.upper() if input_data.risk_event.severity else "UNKNOWN"
+        severity = (
+            input_data.risk_event.severity.upper() if input_data.risk_event.severity else "UNKNOWN"
+        )
         assets = input_data.knowledge_event.affected_assets
         vulns = input_data.knowledge_event.known_vulnerabilities
 
         playbooks = []
-        
+
         # Rule 1: High/Critical severity requires containment
         if severity in ("HIGH", "CRITICAL"):
-            playbooks.append(Playbook(
-                playbook_id="SOP-CONTAIN-01",
-                name="Critical Network Containment",
-                description="Standard operating procedure for isolating compromised critical assets.",
-                applicable_assets=assets
-            ))
-            
+            playbooks.append(
+                Playbook(
+                    playbook_id="SOP-CONTAIN-01",
+                    name="Critical Network Containment",
+                    description="Standard operating procedure for isolating compromised critical assets.",
+                    applicable_assets=assets,
+                )
+            )
+
         # Rule 2: Presence of vulnerabilities requires patching/mitigation
         if vulns:
-            playbooks.append(Playbook(
-                playbook_id="SOP-PATCH-02",
-                name="Vulnerability Mitigation",
-                description="Emergency procedure for applying patches or compensating controls.",
-                applicable_assets=assets
-            ))
-            
+            playbooks.append(
+                Playbook(
+                    playbook_id="SOP-PATCH-02",
+                    name="Vulnerability Mitigation",
+                    description="Emergency procedure for applying patches or compensating controls.",
+                    applicable_assets=assets,
+                )
+            )
+
         # Fallback playbook
         if not playbooks:
-            playbooks.append(Playbook(
-                playbook_id="SOP-MONITOR-01",
-                name="Enhanced Monitoring",
-                description="Procedure for increasing telemetry and alerting thresholds.",
-                applicable_assets=assets
-            ))
+            playbooks.append(
+                Playbook(
+                    playbook_id="SOP-MONITOR-01",
+                    name="Enhanced Monitoring",
+                    description="Procedure for increasing telemetry and alerting thresholds.",
+                    applicable_assets=assets,
+                )
+            )
 
         self.logger.info("playbooks_selected", count=len(playbooks))
         return playbooks

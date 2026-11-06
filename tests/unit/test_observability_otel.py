@@ -1,8 +1,7 @@
 """Unit tests for ARGUS OpenTelemetry integration and metrics tracking."""
 
-import os
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from argus.observability.otel import (
     is_otel_enabled,
@@ -75,13 +74,18 @@ def test_grafana_cloud_exporter_initialization(monkeypatch):
     monkeypatch.setenv("GRAFANA_CLOUD_INSTANCE_ID", "12345")
     monkeypatch.setenv("GRAFANA_CLOUD_API_KEY", "glc_secretkey")
 
+    mock_mod = MagicMock()
     with patch("argus.observability.otel.PeriodicExportingMetricReader") as mock_reader:
-        with patch("opentelemetry.exporter.otlp.proto.grpc.metric_exporter.OTLPMetricExporter") as mock_exp:
+        with patch.dict(
+            "sys.modules",
+            {"opentelemetry.exporter.otlp.proto.grpc.metric_exporter": mock_mod},
+        ):
             # Re-run setup branch
             import argus.observability.otel as otel_mod
+
             otel_mod._METER_INITIALIZED = False
             otel_mod.setup_opentelemetry("argus-grafana-test")
-            assert mock_exp.called or mock_reader.called or True
+            assert mock_mod.OTLPMetricExporter.called or mock_reader.called or True
 
 
 @pytest.mark.asyncio

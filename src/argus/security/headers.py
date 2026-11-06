@@ -26,7 +26,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
 
         # 4. Permissions Policy (Disables unused browser hardware APIs)
-        response.headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=(), payment=(), usb=()"
+        response.headers["Permissions-Policy"] = (
+            "geolocation=(), camera=(), microphone=(), payment=(), usb=()"
+        )
 
         # 5. Content Security Policy (Tailored for Vite React SPA)
         csp_directives = [
@@ -47,7 +49,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
         # 6. HTTP Strict Transport Security (HSTS) in production
         if self.settings.is_production:
-            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
+            response.headers["Strict-Transport-Security"] = (
+                "max-age=31536000; includeSubDomains; preload"
+            )
 
         # 7. Sensitive API Caching Prevention
         if request.url.path.startswith("/api/"):

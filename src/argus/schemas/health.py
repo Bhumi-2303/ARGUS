@@ -1,5 +1,6 @@
 """Health and monitoring schemas."""
-from typing import Any, Dict, Optional
+
+from typing import Any, Dict
 from pydantic import BaseModel
 
 from argus.core.enums import AgentStatus
@@ -7,6 +8,7 @@ from argus.core.enums import AgentStatus
 
 class HealthStatus(BaseModel):
     """General health status representation."""
+
     status: AgentStatus
     message: str
     checks: Dict[str, Any] = {}
@@ -14,6 +16,7 @@ class HealthStatus(BaseModel):
 
 class ComponentHealth(BaseModel):
     """Health status of an individual system component."""
+
     name: str
     healthy: bool
     status: str
@@ -23,6 +26,7 @@ class ComponentHealth(BaseModel):
 
 class SystemHealth(BaseModel):
     """Aggregated health status of the entire system."""
+
     status: str
     uptime: float
     components: Dict[str, ComponentHealth] = {}

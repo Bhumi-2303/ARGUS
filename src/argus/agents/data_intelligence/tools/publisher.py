@@ -7,6 +7,7 @@ from argus.core.enums import ToolCategory, TaskPriority
 from argus.schemas.messages import FeatureEvent
 from argus.agents.data_intelligence.schemas import ExtractedFeatures
 
+
 class PublisherTool(BaseTool):
     """Builds FeatureEvent messages from extracted features."""
 
@@ -17,7 +18,7 @@ class PublisherTool(BaseTool):
             version="1.0.0",
             category=ToolCategory.UTILITY,
             description="Builds FeatureEvent messages for publication.",
-            required_permissions=["data:write"]
+            required_permissions=["data:write"],
         )
 
     async def initialize(self) -> None:
@@ -30,11 +31,11 @@ class PublisherTool(BaseTool):
         features: ExtractedFeatures = kwargs["extracted_features"]
         agent_id: str = kwargs["agent_id"]
         start_time: float = kwargs["start_time"]
-        
+
         processing_duration = (time.time() - start_time) * 1000.0
         cleaned = features.normalized_chunk.cleaned_chunk
         raw = cleaned.validated_chunk.raw_chunk
-        
+
         return FeatureEvent(
             request_id=str(uuid.uuid4()),
             trace_id=str(uuid.uuid4()),
@@ -49,7 +50,7 @@ class PublisherTool(BaseTool):
             feature_names=features.feature_names,
             feature_stats=features.statistics,
             normalization_method=features.normalized_chunk.method,
-            processing_duration_ms=processing_duration
+            processing_duration_ms=processing_duration,
         )
 
     async def shutdown(self) -> None:
@@ -62,8 +63,8 @@ class PublisherTool(BaseTool):
             "properties": {
                 "extracted_features": {"type": "object"},
                 "agent_id": {"type": "string"},
-                "start_time": {"type": "number"}
+                "start_time": {"type": "number"},
             },
-            "required": ["extracted_features", "agent_id", "start_time"]
+            "required": ["extracted_features", "agent_id", "start_time"],
         }
         return md

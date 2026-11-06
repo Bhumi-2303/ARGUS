@@ -30,12 +30,14 @@ class IncidentNarrative(BaseModel):
     key_findings: List[str]
     is_llm_generated: bool
     fallback_reason: Optional[str] = None
-    
+
     # Read-only verification anchors — guaranteed 100% identical to computed pipeline results
     verified_risk_score: int = Field(description="Immutable copy of pipeline risk score.")
     verified_severity: str = Field(description="Immutable copy of pipeline severity level.")
     verified_threat_level: str = Field(description="Immutable copy of pipeline threat level.")
-    verified_decision_actions: List[str] = Field(description="Immutable copy of prescribed actions.")
+    verified_decision_actions: List[str] = Field(
+        description="Immutable copy of prescribed actions."
+    )
     generated_at: str
 
 
@@ -86,7 +88,9 @@ class IncidentNarrator:
             top_impact = explanation.get("top_feature_impact", 0.0)
 
             knowledge = data.get("knowledge") or {}
-            mitre = getattr(knowledge, "mitre_techniques", []) or knowledge.get("mitre_techniques", [])
+            mitre = getattr(knowledge, "mitre_techniques", []) or knowledge.get(
+                "mitre_techniques", []
+            )
 
             return {
                 "incident_id": data.get("correlation_id", "FLOW-SIM"),
@@ -126,9 +130,7 @@ class IncidentNarrator:
         }
 
     def _generate_deterministic_narrative(
-        self,
-        facts: Dict[str, Any],
-        fallback_reason: Optional[str] = None
+        self, facts: Dict[str, Any], fallback_reason: Optional[str] = None
     ) -> IncidentNarrative:
         """Generate a complete, structured analyst narrative deterministically."""
         now_iso = datetime.now(timezone.utc).isoformat()
@@ -144,8 +146,8 @@ class IncidentNarrator:
 
         status_note = (
             f"> [!NOTE]\n> **Narrator Mode:** Deterministic Fallback Engine.\n> **Reason:** {fallback_reason}\n"
-            if fallback_reason else
-            "> [!NOTE]\n> **Narrator Mode:** Deterministic Rule-Based Engine (Verified Zero-Hallucination).\n"
+            if fallback_reason
+            else "> [!NOTE]\n> **Narrator Mode:** Deterministic Rule-Based Engine (Verified Zero-Hallucination).\n"
         )
 
         exec_summary = (
@@ -162,8 +164,16 @@ class IncidentNarrator:
             f"Decision Guidance: {len(actions)} containment and remediation action(s) generated",
         ]
 
-        actions_md = "\n".join([f"- **Action {i+1}:** {a}" for i, a in enumerate(actions)]) if actions else "- *No automated remediation required for benign traffic.*"
-        mitre_md = f"Mapped Techniques: `{', '.join(mitre)}`" if mitre else "No active adversarial MITRE tactics identified."
+        actions_md = (
+            "\n".join([f"- **Action {i + 1}:** {a}" for i, a in enumerate(actions)])
+            if actions
+            else "- *No automated remediation required for benign traffic.*"
+        )
+        mitre_md = (
+            f"Mapped Techniques: `{', '.join(mitre)}`"
+            if mitre
+            else "No active adversarial MITRE tactics identified."
+        )
 
         markdown = f"""# Security Incident Briefing: {inc_id}
 
@@ -207,7 +217,7 @@ Analysis of the incoming telemetry batch isolates **`{top_f}`** as the highest-g
         if not self.api_key:
             return self._generate_deterministic_narrative(
                 facts,
-                fallback_reason="No Google Gemini API key configured (GEMINI_API_KEY / GOOGLE_API_KEY unset)."
+                fallback_reason="No Google Gemini API key configured (GEMINI_API_KEY / GOOGLE_API_KEY unset).",
             )
 
         # Attempt live LLM narration with strict guardrails
@@ -217,7 +227,7 @@ Analysis of the incoming telemetry batch isolates **`{top_f}`** as the highest-g
             self.logger.warning("llm_narration_failed_falling_back", error=str(exc))
             return self._generate_deterministic_narrative(
                 facts,
-                fallback_reason=f"Live LLM call failed ({type(exc).__name__}: {str(exc)}). Fallen back to deterministic briefing."
+                fallback_reason=f"Live LLM call failed ({type(exc).__name__}: {str(exc)}). Fallen back to deterministic briefing.",
             )
 
     async def _call_gemini_narrator(self, facts: Dict[str, Any]) -> IncidentNarrative:
@@ -228,30 +238,26 @@ Summarize the following verified security incident for SOC analysts.
 STRICT SAFETY AND FIDELITY RULES:
 1. Rely ONLY on the verified computed metrics below.
 2. Do NOT invent new vulnerabilities, IP addresses, or unstated facts.
-3. You MUST PRESERVE the exact risk score ({facts['risk_score']}/100), severity ({facts['severity']}), and actions.
+3. You MUST PRESERVE the exact risk score ({facts["risk_score"]}/100), severity ({facts["severity"]}), and actions.
 4. Output professional Markdown with Executive Summary, Attribution Breakdown, and Prescribed Actions.
 
 VERIFIED FACTS:
-- Incident ID: {facts['incident_id']}
-- Threat Classification: {facts['threat_level']} (Confidence: {facts['confidence']:.2%})
-- Operational Risk Score: {facts['risk_score']}/100 ({facts['severity']})
-- Top Contributing Feature: {facts['top_feature']} (SHAP Impact: {facts['top_feature_impact']:+.4f})
-- MITRE Techniques: {', '.join(facts['mitre_techniques']) or 'None'}
-- Prescribed Actions: {'; '.join(facts['recommended_actions']) or 'None'}
-- Source -> Destination: {facts['source_ip']} -> {facts['destination_ip']}
+- Incident ID: {facts["incident_id"]}
+- Threat Classification: {facts["threat_level"]} (Confidence: {facts["confidence"]:.2%})
+- Operational Risk Score: {facts["risk_score"]}/100 ({facts["severity"]})
+- Top Contributing Feature: {facts["top_feature"]} (SHAP Impact: {facts["top_feature_impact"]:+.4f})
+- MITRE Techniques: {", ".join(facts["mitre_techniques"]) or "None"}
+- Prescribed Actions: {"; ".join(facts["recommended_actions"]) or "None"}
+- Source -> Destination: {facts["source_ip"]} -> {facts["destination_ip"]}
 """
 
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={self.api_key}"
         payload = {
-            "contents": [
-                {
-                    "parts": [{"text": prompt}]
-                }
-            ],
+            "contents": [{"parts": [{"text": prompt}]}],
             "generationConfig": {
                 "temperature": 0.2,
                 "maxOutputTokens": 1024,
-            }
+            },
         }
 
         async with httpx.AsyncClient(timeout=self.timeout_seconds) as client:

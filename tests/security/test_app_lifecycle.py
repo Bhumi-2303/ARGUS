@@ -27,6 +27,7 @@ def base_settings():
 # 1. APPLICATION LIFECYCLE TESTS
 # ===========================================================================
 
+
 @pytest.mark.asyncio
 async def test_application_lifespan_startup_and_shutdown():
     """Application lifespan initializes and shuts down all framework subsystems cleanly."""
@@ -34,6 +35,7 @@ async def test_application_lifespan_startup_and_shutdown():
     async with lifespan(fresh_app):
         # Within active lifespan: models are loaded and agent orchestrator is running
         from argus.registry.model_registry import model_registry
+
         assert model_registry.is_loaded is True
         assert len(model_registry.loaded_models) >= 5
 
@@ -42,10 +44,21 @@ async def test_application_lifespan_startup_and_shutdown():
 # 2. ROUTER & ENDPOINT REGISTRATION
 # ===========================================================================
 
+
 def test_all_expected_routers_registered():
     """All core API v1 routers and health endpoints are mounted in the application."""
     test_app = create_app()
-    routes = [route.path for route in test_app.routes]
+    routes = []
+    for r in test_app.routes:
+        if hasattr(r, "path"):
+            routes.append(r.path)
+        elif hasattr(r, "original_router"):
+            prefix = getattr(r.original_router, "prefix", "") or getattr(
+                getattr(r, "include_context", None), "prefix", ""
+            )
+            for sub in r.original_router.routes:
+                sub_path = getattr(sub, "path", "")
+                routes.append(f"{prefix}{sub_path}")
 
     # Health & readiness
     assert "/health" in routes
@@ -77,6 +90,7 @@ def test_all_expected_routers_registered():
 # 3. MIDDLEWARE & EXCEPTION HANDLER VERIFICATION
 # ===========================================================================
 
+
 def test_middleware_and_exception_handlers_registered():
     """Security headers, audit middleware, and CORS are registered with exception handlers."""
     test_app = create_app()
@@ -84,6 +98,7 @@ def test_middleware_and_exception_handlers_registered():
     # Verify exception handlers
     from fastapi.exceptions import RequestValidationError
     from starlette.exceptions import HTTPException as StarletteHTTPException
+
     assert StarletteHTTPException in test_app.exception_handlers
     assert RequestValidationError in test_app.exception_handlers
     assert Exception in test_app.exception_handlers
@@ -99,6 +114,7 @@ def test_middleware_and_exception_handlers_registered():
 # 4. INDEPENDENT CORS CONFIGURATION IN HTTP CALLS
 # ===========================================================================
 
+
 @pytest.mark.asyncio
 async def test_production_cors_strict_allowlist_http(base_settings):
     """Production app strictly rejects localhost and allows only configured origin."""
@@ -110,17 +126,17 @@ async def test_production_cors_strict_allowlist_http(base_settings):
 
     async with AsyncClient(transport=ASGITransport(app=prod_app), base_url="http://test") as client:
         # Preflight from unauthorized origin
-        res_unauth = await client.options("/health", headers={
-            "Origin": "http://localhost:3000",
-            "Access-Control-Request-Method": "GET"
-        })
+        res_unauth = await client.options(
+            "/health",
+            headers={"Origin": "http://localhost:3000", "Access-Control-Request-Method": "GET"},
+        )
         assert res_unauth.headers.get("access-control-allow-origin") is None
 
         # Preflight from authorized origin
-        res_auth = await client.options("/health", headers={
-            "Origin": "https://trusted-grid.corp",
-            "Access-Control-Request-Method": "GET"
-        })
+        res_auth = await client.options(
+            "/health",
+            headers={"Origin": "https://trusted-grid.corp", "Access-Control-Request-Method": "GET"},
+        )
         assert res_auth.headers.get("access-control-allow-origin") == "https://trusted-grid.corp"
 
 
@@ -133,10 +149,10 @@ async def test_development_cors_regex_allows_localhost_http(base_settings):
     dev_app = create_app(dev_settings)
 
     async with AsyncClient(transport=ASGITransport(app=dev_app), base_url="http://test") as client:
-        res = await client.options("/health", headers={
-            "Origin": "http://localhost:9999",
-            "Access-Control-Request-Method": "GET"
-        })
+        res = await client.options(
+            "/health",
+            headers={"Origin": "http://localhost:9999", "Access-Control-Request-Method": "GET"},
+        )
         assert res.headers.get("access-control-allow-origin") == "http://localhost:9999"
 
 
@@ -144,9 +160,11 @@ async def test_development_cors_regex_allows_localhost_http(base_settings):
 # 5. ENTRY POINT BACKWARD COMPATIBILITY
 # ===========================================================================
 
+
 def test_uvicorn_entrypoint_compatibility():
     """Module-level 'app' instance matches Uvicorn run target ('argus.api.main:app')."""
     from argus.api.main import app
+
     assert app is module_app
     assert hasattr(app, "router")
     assert callable(app)

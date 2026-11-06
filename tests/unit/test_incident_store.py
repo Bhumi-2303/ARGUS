@@ -10,8 +10,6 @@ from argus.database.engine import get_sync_engine, get_session
 from argus.database.migrations import create_all_tables_sync
 from argus.database.models import (
     IncidentModel,
-    PipelineRunModel,
-    PipelineStageTraceModel,
     DecisionApprovalTokenModel,
 )
 from argus.orchestrator.pipeline import PipelineContext, TraceEvent
@@ -65,18 +63,25 @@ def test_persist_pipeline_run_benign(temp_db):
         correlation_id="corr-benign-01",
         event_id="evt-benign-01",
         flow={"src_ip": "10.0.0.1", "dst_ip": "10.0.0.2"},
-        features={"pkt_mean_to_max": 0.5, "tcp_flag_density": 0.1, "log_pkt_mean": 2.0, "log_pkt_max": 3.0},
+        features={
+            "pkt_mean_to_max": 0.5,
+            "tcp_flag_density": 0.1,
+            "log_pkt_mean": 2.0,
+            "log_pkt_max": 3.0,
+        },
         model_name="model_d2_coral",
         status="completed",
     )
-    ctx.add_trace(TraceEvent(
-        agent="data_intelligence",
-        status="SUCCESS",
-        started_at=datetime.now(timezone.utc),
-        completed_at=datetime.now(timezone.utc),
-        duration=3.5,
-        output_summary="Features normalized",
-    ))
+    ctx.add_trace(
+        TraceEvent(
+            agent="data_intelligence",
+            status="SUCCESS",
+            started_at=datetime.now(timezone.utc),
+            completed_at=datetime.now(timezone.utc),
+            duration=3.5,
+            output_summary="Features normalized",
+        )
+    )
 
     token = store.persist_pipeline_run(ctx)
     assert token is None
@@ -100,7 +105,12 @@ def test_persist_pipeline_run_critical_attack_generates_incident_and_token(temp_
         correlation_id="corr-attack-01",
         event_id="evt-attack-01",
         flow={"src_ip": "192.168.1.50", "dst_ip": "192.168.1.1"},
-        features={"pkt_mean_to_max": 0.9, "tcp_flag_density": 0.95, "log_pkt_mean": 6.0, "log_pkt_max": 7.0},
+        features={
+            "pkt_mean_to_max": 0.9,
+            "tcp_flag_density": 0.95,
+            "log_pkt_mean": 6.0,
+            "log_pkt_max": 7.0,
+        },
         model_name="model_d3_native",
         threat=MockThreat(threat_level="critical", confidence=0.98),
         risk=MockRisk(risk_score=92.0, criticality="HIGH"),
@@ -111,18 +121,22 @@ def test_persist_pipeline_run_critical_attack_generates_incident_and_token(temp_
         ),
         status="completed",
     )
-    ctx.add_trace(TraceEvent(
-        agent="threat_analysis",
-        status="SUCCESS",
-        duration=12.5,
-        output_summary="Threat classified CRITICAL",
-    ))
-    ctx.add_trace(TraceEvent(
-        agent="decision_support",
-        status="SUCCESS",
-        duration=8.0,
-        output_summary="HITL approval required",
-    ))
+    ctx.add_trace(
+        TraceEvent(
+            agent="threat_analysis",
+            status="SUCCESS",
+            duration=12.5,
+            output_summary="Threat classified CRITICAL",
+        )
+    )
+    ctx.add_trace(
+        TraceEvent(
+            agent="decision_support",
+            status="SUCCESS",
+            duration=8.0,
+            output_summary="HITL approval required",
+        )
+    )
 
     token = store.persist_pipeline_run(ctx)
     assert token is not None

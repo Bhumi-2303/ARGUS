@@ -18,7 +18,7 @@ async def get_health():
         status="healthy",
         uptime_seconds=round(uptime, 2),
         timestamp=datetime.now(timezone.utc).isoformat(),
-        models_loaded=model_registry.get_status_dict()
+        models_loaded=model_registry.get_status_dict(),
     )
 
 
@@ -38,10 +38,10 @@ async def get_readiness():
     if not_ready:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"Subsystems not ready: {not_ready}"
+            detail=f"Subsystems not ready: {not_ready}",
         )
     return {
         "status": "ready",
         "ready_models_count": sum(1 for v in status_dict.values() if v),
-        "timestamp": datetime.now(timezone.utc).isoformat()
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }

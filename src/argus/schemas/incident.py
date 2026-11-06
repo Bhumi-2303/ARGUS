@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 import uuid
 
+
 class IncidentStatus(str, Enum):
     DETECTED = "DETECTED"
     TRIAGED = "TRIAGED"
@@ -13,11 +14,13 @@ class IncidentStatus(str, Enum):
     RESOLVED = "RESOLVED"
     CLOSED = "CLOSED"
 
+
 class ApprovalStatus(str, Enum):
     PENDING = "PENDING"
     APPROVED = "APPROVED"
     REJECTED = "REJECTED"
     NOT_REQUIRED = "NOT_REQUIRED"
+
 
 class TimelineEvent(BaseModel):
     event_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -25,6 +28,7 @@ class TimelineEvent(BaseModel):
     action: str
     actor: str = "system"
     details: str = ""
+
 
 class Incident(BaseModel):
     incident_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -37,16 +41,16 @@ class Incident(BaseModel):
     asset_criticality: Optional[int] = None
     risk_score: Optional[float] = None
     risk_tier: Optional[str] = None
-    
+
     # Context summaries
     detector_summary: str = ""
     knowledge_summary: str = ""
-    
+
     # Decisions & Responses
     decision: Optional[Dict[str, Any]] = None
     response: Optional[Dict[str, Any]] = None
     assigned_to: Optional[str] = None
-    
+
     # Approval logic
     approval_required: bool = False
     approval_status: ApprovalStatus = ApprovalStatus.NOT_REQUIRED
@@ -55,7 +59,7 @@ class Incident(BaseModel):
     approved_by: Optional[str] = None
     approved_at: Optional[datetime] = None
     approval_reason: Optional[str] = None
-    
+
     timeline: List[TimelineEvent] = Field(default_factory=list)
     evidence_refs: List[str] = Field(default_factory=list)
     model_provenance: Optional[Dict[str, Any]] = None

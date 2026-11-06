@@ -7,9 +7,10 @@ Covers:
 - Structured error propagation for unknown or unavailable models.
 - Handling of correct FeatureEventInput payloads.
 """
+
 import pytest
 from argus.agents.threat_analysis.agent import ThreatAnalysisAgent
-from argus.agents.threat_analysis.models.schemas import FeatureEventInput, ThreatAnalysisResult
+from argus.agents.threat_analysis.models.schemas import ThreatAnalysisResult
 from argus.registry.model_registry import model_registry
 
 # Known verified test features (benign format)
@@ -20,10 +21,12 @@ TEST_FEATURES = {
     "log_pkt_max": 5.2,
 }
 
+
 @pytest.fixture(autouse=True)
 def setup_registry():
     if not model_registry.is_loaded:
         model_registry.load_all()
+
 
 @pytest.fixture
 async def ta_agent():
@@ -40,10 +43,10 @@ async def test_threat_analysis_agent_validates_input(ta_agent):
         "correlation_id": "test-corr-1",
         "source": "data_intelligence",
         "features": TEST_FEATURES,
-        "timestamp": "2026-09-29T00:00:00Z"
+        "timestamp": "2026-09-29T00:00:00Z",
     }
     assert await ta_agent.validate(valid_input) is True
-    
+
     # Missing required fields
     assert await ta_agent.validate({"event_id": "test-evt-1"}) is False
 
@@ -57,25 +60,25 @@ async def test_threat_analysis_agent_real_inference(ta_agent):
         "source": "data_intelligence",
         "features": TEST_FEATURES,
         "timestamp": "2026-09-29T00:00:00Z",
-        "model_version": "xgb_adapted"
+        "model_version": "xgb_adapted",
     }
-    
+
     reasoning = await ta_agent.reason(valid_input)
     result = await ta_agent.execute(reasoning)
-    
+
     assert isinstance(result, ThreatAnalysisResult)
     assert result.source_event_id == "test-evt-2"
     assert result.correlation_id == "test-corr-2"
     assert result.model_version == "xgb_adapted"
     assert result.protocol_status == "coral_aligned"
-    
+
     # Real inference produces valid float probabilities 0.0 to 1.0
     assert 0.0 <= result.confidence <= 1.0
     assert result.threat_level.value in ("low", "medium", "high", "critical")
-    
+
     # Timing is recorded
     assert result.latency_ms > 0
-    
+
     # SHAP Evidence was recorded
     assert len(result.evidence) > 0
     assert all(e.type == "feature_attribution" for e in result.evidence)
@@ -89,12 +92,12 @@ async def test_threat_analysis_agent_fallback_model(ta_agent):
         "correlation_id": "test-corr-3",
         "source": "data_intelligence",
         "features": TEST_FEATURES,
-        "timestamp": "2026-09-29T00:00:00Z"
+        "timestamp": "2026-09-29T00:00:00Z",
     }
-    
+
     reasoning = await ta_agent.reason(valid_input)
     result = await ta_agent.execute(reasoning)
-    
+
     assert result.model_version == "xgb_adapted"
     assert result.latency_ms > 0
 
@@ -108,9 +111,9 @@ async def test_threat_analysis_agent_propagates_model_errors(ta_agent):
         "source": "data_intelligence",
         "features": TEST_FEATURES,
         "timestamp": "2026-09-29T00:00:00Z",
-        "model_version": "non_existent_model"
+        "model_version": "non_existent_model",
     }
-    
+
     with pytest.raises(KeyError, match="Unknown model name"):
         await ta_agent.reason(bad_input)
 
@@ -123,8 +126,8 @@ async def test_threat_analysis_agent_propagates_unavailable_model_errors(ta_agen
         "source": "data_intelligence",
         "features": TEST_FEATURES,
         "timestamp": "2026-09-29T00:00:00Z",
-        "model_version": "dann"
+        "model_version": "dann",
     }
-    
+
     with pytest.raises(NotImplementedError, match="unavailable for live inference"):
         await ta_agent.reason(bad_input)

@@ -1,7 +1,7 @@
 """Domain shift evaluation endpoint with RBAC, PCA projection, and class-aware CORAL alignment."""
 
 import os
-from typing import Optional, Dict, Any, List
+from typing import Dict, Any
 import numpy as np
 import pandas as pd
 from scipy.stats import ks_2samp
@@ -24,20 +24,23 @@ router = APIRouter()
 @router.get("/shift", response_model=ShiftResponse, tags=["shift"])
 async def get_domain_shift(
     domain: str = Query("nfton", description="Target domain: nfton or iec104"),
-    window_size: int = Query(1000, ge=10, le=50000, description="Rolling window size for statistical shift testing"),
-    user: UserPrincipal = Depends(require_permission("read:telemetry"))
+    window_size: int = Query(
+        1000, ge=10, le=50000, description="Rolling window size for statistical shift testing"
+    ),
+    user: UserPrincipal = Depends(require_permission("read:telemetry")),
 ):
     """Calculate rolling KS statistic and PSI drift metrics against source domain reference."""
     if domain not in ALLOWED_DOMAINS:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid domain '{domain}'. Allowed domains: {sorted(ALLOWED_DOMAINS)}"
+            detail=f"Invalid domain '{domain}'. Allowed domains: {sorted(ALLOWED_DOMAINS)}",
         )
 
     try:
         shift_res = data_manager.calculate_shift(target_domain=domain, window_size=window_size)
         try:
             from argus.observability.metrics import metrics
+
             for f in shift_res.feature_shifts:
                 metrics.record_drift(
                     feature_name=f.feature,
@@ -51,13 +54,13 @@ async def get_domain_shift(
     except FileNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Telemetry data for domain '{domain}' not found."
+            detail=f"Telemetry data for domain '{domain}' not found.",
         )
     except Exception as ex:
         logger.error("shift_calculation_failed", domain=domain, error=str(ex), exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Domain distribution shift computation failed."
+            detail="Domain distribution shift computation failed.",
         )
 
 
@@ -65,18 +68,28 @@ async def get_domain_shift(
 async def get_shift_pca(
     source_domain: str = Query("ciciot", description="Source reference domain"),
     target_domain: str = Query("nfton", description="Target domain for adaptation"),
-    samples: int = Query(200, ge=50, le=1000, description="Sample points per domain for 3D visualization"),
+    samples: int = Query(
+        200, ge=50, le=1000, description="Sample points per domain for 3D visualization"
+    ),
     seed: int = Query(42, ge=0, le=2147483647, description="Deterministic seed for sample points"),
     user: UserPrincipal = Depends(require_permission("read:telemetry")),
 ):
     """Calculate real 3D PCA point clouds and class-aware CORAL alignment transformation matrices."""
-    source_path = f"dataset/{source_domain}.parquet" if os.path.exists(f"dataset/{source_domain}.parquet") else f"data/samples/{source_domain}.parquet"
-    target_path = f"dataset/{target_domain}.parquet" if os.path.exists(f"dataset/{target_domain}.parquet") else f"data/samples/{target_domain}.parquet"
+    source_path = (
+        f"dataset/{source_domain}.parquet"
+        if os.path.exists(f"dataset/{source_domain}.parquet")
+        else f"data/samples/{source_domain}.parquet"
+    )
+    target_path = (
+        f"dataset/{target_domain}.parquet"
+        if os.path.exists(f"dataset/{target_domain}.parquet")
+        else f"data/samples/{target_domain}.parquet"
+    )
 
     if not os.path.exists(source_path) or not os.path.exists(target_path):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Data for source '{source_domain}' or target '{target_domain}' not found."
+            detail=f"Data for source '{source_domain}' or target '{target_domain}' not found.",
         )
 
     try:
@@ -84,14 +97,26 @@ async def get_shift_pca(
         df_target = pd.read_parquet(target_path)
 
         # Deterministic sampling
-        df_s_sampled = df_source.sample(n=min(samples, len(df_source)), random_state=seed).reset_index(drop=True)
-        df_t_sampled = df_target.sample(n=min(samples, len(df_target)), random_state=seed).reset_index(drop=True)
+        df_s_sampled = df_source.sample(
+            n=min(samples, len(df_source)), random_state=seed
+        ).reset_index(drop=True)
+        df_t_sampled = df_target.sample(
+            n=min(samples, len(df_target)), random_state=seed
+        ).reset_index(drop=True)
 
         X_s = df_s_sampled[HARMONIZED_FEATURES].values.astype(np.float64)
-        y_s = df_s_sampled["label"].values.astype(np.int64) if "label" in df_s_sampled else np.zeros(len(df_s_sampled), dtype=np.int64)
+        y_s = (
+            df_s_sampled["label"].values.astype(np.int64)
+            if "label" in df_s_sampled
+            else np.zeros(len(df_s_sampled), dtype=np.int64)
+        )
 
         X_t = df_t_sampled[HARMONIZED_FEATURES].values.astype(np.float64)
-        y_t = df_t_sampled["label"].values.astype(np.int64) if "label" in df_t_sampled else np.zeros(len(df_t_sampled), dtype=np.int64)
+        y_t = (
+            df_t_sampled["label"].values.astype(np.int64)
+            if "label" in df_t_sampled
+            else np.zeros(len(df_t_sampled), dtype=np.int64)
+        )
 
         # Real Class-Aware CORAL fitting
         adapter = ClassAwareCORALAdapter(reg=1e-5)
@@ -146,6 +171,7 @@ async def get_shift_pca(
         # Record drift metrics in OpenTelemetry
         try:
             from argus.observability.metrics import metrics
+
             for idx, feat_name in enumerate(HARMONIZED_FEATURES):
                 metrics.record_drift(
                     feature_name=feat_name,
@@ -164,24 +190,43 @@ async def get_shift_pca(
             "class_adapters": {
                 str(c): {
                     "A": adapt.A.tolist() if adapt.A is not None else None,
-                    "source_mean": adapt.source_mean.tolist() if adapt.source_mean is not None else None,
-                    "target_mean": adapt.target_mean.tolist() if adapt.target_mean is not None else None,
+                    "source_mean": adapt.source_mean.tolist()
+                    if adapt.source_mean is not None
+                    else None,
+                    "target_mean": adapt.target_mean.tolist()
+                    if adapt.target_mean is not None
+                    else None,
                 }
                 for c, adapt in adapter.adapters.items()
-            }
+            },
         }
 
         # Format point arrays for 3D visualization
         source_points = [
-            {"x": round(float(pt[0]), 3), "y": round(float(pt[1]), 3), "z": round(float(pt[2]), 3), "label": int(y_s[i])}
+            {
+                "x": round(float(pt[0]), 3),
+                "y": round(float(pt[1]), 3),
+                "z": round(float(pt[2]), 3),
+                "label": int(y_s[i]),
+            }
             for i, pt in enumerate(pca_source)
         ]
         target_points = [
-            {"x": round(float(pt[0]), 3), "y": round(float(pt[1]), 3), "z": round(float(pt[2]), 3), "label": int(y_t[i])}
+            {
+                "x": round(float(pt[0]), 3),
+                "y": round(float(pt[1]), 3),
+                "z": round(float(pt[2]), 3),
+                "label": int(y_t[i]),
+            }
             for i, pt in enumerate(pca_target)
         ]
         aligned_points = [
-            {"x": round(float(pt[0]), 3), "y": round(float(pt[1]), 3), "z": round(float(pt[2]), 3), "label": int(y_s[i])}
+            {
+                "x": round(float(pt[0]), 3),
+                "y": round(float(pt[1]), 3),
+                "z": round(float(pt[2]), 3),
+                "label": int(y_s[i]),
+            }
             for i, pt in enumerate(pca_aligned)
         ]
 
@@ -200,5 +245,5 @@ async def get_shift_pca(
         logger.error("pca_shift_computation_failed", error=str(ex), exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to compute PCA domain shift: {str(ex)}"
+            detail=f"Failed to compute PCA domain shift: {str(ex)}",
         )

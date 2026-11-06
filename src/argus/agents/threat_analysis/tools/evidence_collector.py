@@ -1,5 +1,6 @@
 """Evidence Collector tool for Threat Analysis Agent."""
-from typing import Any, Dict, List
+
+from typing import Dict, List
 import structlog
 
 from argus.core.base_tool import BaseTool
@@ -17,7 +18,7 @@ class EvidenceCollector(BaseTool):
             version="1.0.0",
             category=ToolCategory.UTILITY,
             description="Collects supporting evidence for inference results.",
-            required_permissions=["compute:inference"]
+            required_permissions=["compute:inference"],
         )
         self.logger = structlog.get_logger("argus.tool.evidence_collector")
 
@@ -31,14 +32,16 @@ class EvidenceCollector(BaseTool):
             return False
         return True
 
-    async def execute(self, features: Dict[str, float], inference_result: InferenceResult) -> List[Evidence]:
+    async def execute(
+        self, features: Dict[str, float], inference_result: InferenceResult
+    ) -> List[Evidence]:
         """Collect evidence from features and inference result."""
         is_valid = await self.validate(features, inference_result)
         if not is_valid:
             raise ValueError("Invalid inputs to EvidenceCollector")
 
         evidence_list: List[Evidence] = []
-        
+
         # 1. Look for extreme feature values as basic evidence
         # In a real system, this would compare against a baseline mean/stddev.
         # For this basic heuristic, we highlight features with large absolute values.
@@ -50,7 +53,7 @@ class EvidenceCollector(BaseTool):
                         type="extreme_feature",
                         description=f"Feature '{feat_name}' has an unusually large magnitude.",
                         importance=0.8,
-                        value=feat_val
+                        value=feat_val,
                     )
                 )
 
@@ -62,10 +65,10 @@ class EvidenceCollector(BaseTool):
                     type="anomaly_score",
                     description="Isolation Forest decision function score.",
                     importance=1.0 if score < 0 else 0.5,
-                    value=score
+                    value=score,
                 )
             )
-            
+
         if "probabilities" in inference_result.raw_output:
             probs = inference_result.raw_output["probabilities"]
             if len(probs) >= 2:
@@ -74,13 +77,13 @@ class EvidenceCollector(BaseTool):
                         type="malicious_probability",
                         description="Model estimated probability of malicious class.",
                         importance=probs[1],
-                        value=probs[1]
+                        value=probs[1],
                     )
                 )
 
         # Sort evidence by importance descending
         evidence_list.sort(key=lambda e: e.importance, reverse=True)
-        
+
         self.logger.info("evidence_collected", count=len(evidence_list))
         return evidence_list
 

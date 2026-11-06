@@ -1,12 +1,17 @@
 """Impact Estimator tool for Risk Prediction Agent."""
-from typing import Any
+
 import structlog
 
 from argus.core.base_tool import BaseTool
 from argus.core.enums import ToolCategory
 from argus.agents.risk_prediction.models.schemas import (
-    RiskAnalysisInput, CriticalityResult, ImpactResult, ImpactSeverity, AssetPriority
+    RiskAnalysisInput,
+    CriticalityResult,
+    ImpactResult,
+    ImpactSeverity,
+    AssetPriority,
 )
+
 
 class ImpactEstimator(BaseTool):
     """Estimates the operational impact of a threat."""
@@ -18,7 +23,7 @@ class ImpactEstimator(BaseTool):
             version="1.0.0",
             category=ToolCategory.UTILITY,
             description="Estimates potential disruption to operations.",
-            required_permissions=[]
+            required_permissions=[],
         )
         self.logger = structlog.get_logger("argus.tool.impact_estimator")
 
@@ -32,7 +37,9 @@ class ImpactEstimator(BaseTool):
             return False
         return True
 
-    async def execute(self, input_data: RiskAnalysisInput, criticality: CriticalityResult) -> ImpactResult:
+    async def execute(
+        self, input_data: RiskAnalysisInput, criticality: CriticalityResult
+    ) -> ImpactResult:
         """Calculate operational impact."""
         if not await self.validate(input_data, criticality):
             raise ValueError("Invalid input for ImpactEstimator")
@@ -45,7 +52,7 @@ class ImpactEstimator(BaseTool):
                 severity=None,
                 estimated_downtime_hours=None,
                 impacted_services=[],
-                reasoning="Asset criticality unavailable; cannot estimate impact."
+                reasoning="Asset criticality unavailable; cannot estimate impact.",
             )
 
         # Simple matrix for impact estimation
@@ -58,7 +65,10 @@ class ImpactEstimator(BaseTool):
         elif asset_priority == AssetPriority.HIGH and threat_level == "high":
             severity = ImpactSeverity.SEVERE
             downtime = 8.0
-        elif asset_priority in (AssetPriority.HIGH, AssetPriority.MEDIUM) and threat_level in ("high", "medium"):
+        elif asset_priority in (AssetPriority.HIGH, AssetPriority.MEDIUM) and threat_level in (
+            "high",
+            "medium",
+        ):
             severity = ImpactSeverity.MODERATE
             downtime = 4.0
         elif threat_level == "info":
@@ -75,7 +85,7 @@ class ImpactEstimator(BaseTool):
             severity=severity,
             estimated_downtime_hours=downtime,
             impacted_services=criticality.critical_assets,
-            reasoning=reasoning
+            reasoning=reasoning,
         )
 
     async def shutdown(self) -> None:

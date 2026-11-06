@@ -1,6 +1,6 @@
 """Metrics tracking facade integrating in-memory counters with OpenTelemetry."""
 
-from typing import Dict, Any, Optional
+from typing import Dict, Optional
 import structlog
 
 from .otel import (
@@ -9,8 +9,6 @@ from .otel import (
     record_agent_duration,
     record_pipeline_stage_outcome,
     record_drift_metrics,
-    get_collected_metrics,
-    is_otel_enabled,
 )
 
 logger = structlog.get_logger("argus.metrics")
@@ -49,10 +47,14 @@ class MetricsTracker:
         record_agent_duration(agent_name, status, duration_ms)
         record_pipeline_stage_outcome(agent_name, status)
 
-    def record_drift(self, feature_name: str, domain: str, ks_statistic: float, psi_statistic: float) -> None:
+    def record_drift(
+        self, feature_name: str, domain: str, ks_statistic: float, psi_statistic: float
+    ) -> None:
         """Record KS and PSI drift metrics in both in-memory gauges and OpenTelemetry."""
         self.gauge("drift_ks_statistic", ks_statistic, {"feature": feature_name, "domain": domain})
-        self.gauge("drift_psi_statistic", psi_statistic, {"feature": feature_name, "domain": domain})
+        self.gauge(
+            "drift_psi_statistic", psi_statistic, {"feature": feature_name, "domain": domain}
+        )
         record_drift_metrics(feature_name, domain, ks_statistic, psi_statistic)
 
     def _format_key(self, name: str, tags: Optional[Dict[str, str]] = None) -> str:

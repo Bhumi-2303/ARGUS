@@ -1,8 +1,10 @@
 """Audit logging utility."""
+
 import uuid
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any
 from pydantic import BaseModel, Field
+
 
 class SecurityAuditEvent(BaseModel):
     audit_event_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -25,16 +27,25 @@ class SecurityAuditEvent(BaseModel):
 
 class AuditLogger:
     """Handles structured audit logging."""
-    
+
     @staticmethod
     def log_event(event: SecurityAuditEvent) -> None:
         """Log a structured security audit event."""
         # Delayed import to avoid circular dependency
         from argus.security.sink import AuditSink
+
         AuditSink.dispatch(event)
 
     @staticmethod
-    def log(actor: str, action: str, resource: str, outcome: str, details: str, ip_address: Optional[str] = None, resource_id: Optional[str] = None) -> None:
+    def log(
+        actor: str,
+        action: str,
+        resource: str,
+        outcome: str,
+        details: str,
+        ip_address: Optional[str] = None,
+        resource_id: Optional[str] = None,
+    ) -> None:
         """Legacy method wrapper for backwards compatibility."""
         event = SecurityAuditEvent(
             actor_id=actor,
@@ -43,6 +54,6 @@ class AuditLogger:
             resource_id=resource_id,
             outcome=outcome,
             reason=details,
-            source_ip=ip_address
+            source_ip=ip_address,
         )
         AuditLogger.log_event(event)

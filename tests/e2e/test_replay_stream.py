@@ -120,8 +120,12 @@ def test_replay_stream_upstream_failure_produces_skipped_downstream(monkeypatch)
             if msg.get("type") == "flow_completed":
                 break
 
-        stage_events = [e for e in events if e.get("type") == "flow_event" and e.get("event_type") == "stage_end"]
-        
+        stage_events = [
+            e
+            for e in events
+            if e.get("type") == "flow_event" and e.get("event_type") == "stage_end"
+        ]
+
         # DIA must be FAILED
         dia_evt = next((e for e in stage_events if e["stage"] == "DATA_INTELLIGENCE"), None)
         assert dia_evt is not None
@@ -129,7 +133,13 @@ def test_replay_stream_upstream_failure_produces_skipped_downstream(monkeypatch)
         assert "Simulated upstream sensor corruption" in dia_evt["error"]
 
         # Downstream stages must all be SKIPPED with dependency error
-        downstream = ["THREAT_ANALYSIS", "EXPLAINABILITY", "KNOWLEDGE_CONTEXT", "RISK_PREDICTION", "DECISION_SUPPORT"]
+        downstream = [
+            "THREAT_ANALYSIS",
+            "EXPLAINABILITY",
+            "KNOWLEDGE_CONTEXT",
+            "RISK_PREDICTION",
+            "DECISION_SUPPORT",
+        ]
         for stage in downstream:
             stage_evt = next((e for e in stage_events if e["stage"] == stage), None)
             assert stage_evt is not None, f"Missing event for stage {stage}"
@@ -218,14 +228,14 @@ def test_replay_stream_rbac_enforcement(monkeypatch):
 
     # 3. Token lacking 'read:telemetry' rejected
     user_without_perm = UserPrincipal(
-        sub="analyst-001",
-        issuer="argus-test",
-        roles=["viewer"],
-        permissions={"read:models"}
+        sub="analyst-001", issuer="argus-test", roles=["viewer"], permissions={"read:models"}
     )
-    monkeypatch.setattr(jwt_validator, "validate_token", lambda token: asyncio.sleep(0, result=user_without_perm))
+    monkeypatch.setattr(
+        jwt_validator, "validate_token", lambda token: asyncio.sleep(0, result=user_without_perm)
+    )
 
     import asyncio
+
     async def mock_validate_no_perm(tok):
         return user_without_perm
 
@@ -236,11 +246,9 @@ def test_replay_stream_rbac_enforcement(monkeypatch):
 
     # 4. Token with 'read:telemetry' succeeds
     user_with_perm = UserPrincipal(
-        sub="operator-001",
-        issuer="argus-test",
-        roles=["operator"],
-        permissions={"read:telemetry"}
+        sub="operator-001", issuer="argus-test", roles=["operator"], permissions={"read:telemetry"}
     )
+
     async def mock_validate_with_perm(tok):
         return user_with_perm
 
@@ -254,12 +262,10 @@ def test_replay_stream_rbac_enforcement(monkeypatch):
 def test_replay_stream_sse_metadata_header():
     """GET /api/v1/stream must include X-Stream-Type header matching 'verified flow replay'."""
     viewer_user = UserPrincipal(
-        sub="viewer-001",
-        issuer="argus-test",
-        roles=["operator"],
-        permissions={"read:telemetry"}
+        sub="viewer-001", issuer="argus-test", roles=["operator"], permissions={"read:telemetry"}
     )
     from argus.auth.rbac import get_current_user
+
     app.dependency_overrides[get_current_user] = lambda: viewer_user
 
     try:

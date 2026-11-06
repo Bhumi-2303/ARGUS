@@ -19,7 +19,6 @@ from httpx import AsyncClient, ASGITransport
 from argus.data.manager import data_manager
 from argus.registry.model_registry import D3_NATIVE_FEATURES, HARMONIZED_FEATURES
 from argus.api.main import app
-from tests.security.test_adversarial_verification import create_token, valid_rsa_key
 
 
 @pytest.fixture
@@ -46,8 +45,10 @@ def sample_4_df():
 
 def test_manager_d3_with_73_features_succeeds(sample_73_df):
     """Manager-level inference on model_d3_native succeeds when all 73 features are present."""
-    with patch("pandas.read_parquet", return_value=sample_73_df), \
-         patch.object(Path, "exists", return_value=True):
+    with (
+        patch("pandas.read_parquet", return_value=sample_73_df),
+        patch.object(Path, "exists", return_value=True),
+    ):
         res = data_manager.simulate_onboard(target_domain="iec104", test_size=20)
         assert res["target_domain"] == "iec104"
         assert res["selected_threshold"] == 0.50
@@ -64,8 +65,10 @@ def test_manager_d3_missing_features_raises_explicit_value_error(sample_4_df):
 
     Crucially, it does NOT swallow the error and convert all predictions into zero.
     """
-    with patch("pandas.read_parquet", return_value=sample_4_df), \
-         patch.object(Path, "exists", return_value=True):
+    with (
+        patch("pandas.read_parquet", return_value=sample_4_df),
+        patch.object(Path, "exists", return_value=True),
+    ):
         with pytest.raises(ValueError) as excinfo:
             data_manager.simulate_onboard(target_domain="iec104", test_size=20)
         err = str(excinfo.value)
@@ -79,8 +82,10 @@ def test_manager_d3_nan_values_raise_explicit_value_error(sample_73_df):
     corrupted_df = sample_73_df.copy()
     corrupted_df.loc[0, "Flow_Duration"] = np.nan
 
-    with patch("pandas.read_parquet", return_value=corrupted_df), \
-         patch.object(Path, "exists", return_value=True):
+    with (
+        patch("pandas.read_parquet", return_value=corrupted_df),
+        patch.object(Path, "exists", return_value=True),
+    ):
         with pytest.raises(ValueError) as excinfo:
             data_manager.simulate_onboard(target_domain="iec104", test_size=20)
         err = str(excinfo.value)
@@ -102,8 +107,10 @@ def test_manager_nfton_coral_succeeds():
 async def test_api_onboard_propagates_missing_features_as_http_400(sample_4_df):
     """End-to-end: API /api/v1/onboard with missing features returns HTTP 400 Bad Request."""
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        with patch("pandas.read_parquet", return_value=sample_4_df), \
-             patch.object(Path, "exists", return_value=True):
+        with (
+            patch("pandas.read_parquet", return_value=sample_4_df),
+            patch.object(Path, "exists", return_value=True),
+        ):
             payload = {
                 "target_domain": "iec104",
                 "adaptation_window_size": 100,

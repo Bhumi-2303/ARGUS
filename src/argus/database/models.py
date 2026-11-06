@@ -5,7 +5,6 @@ runtime and PostgreSQL for enterprise scale.
 """
 
 from datetime import datetime, timezone
-from typing import Optional
 from sqlalchemy import (
     Boolean,
     Column,
@@ -162,7 +161,9 @@ class DecisionApprovalTokenModel(Base):
     correlation_id = Column(String(64), nullable=True, index=True)
     action_summary = Column(Text, nullable=False)
     approver_role = Column(String(64), nullable=True)
-    status = Column(String(32), default="PENDING", nullable=False, index=True)  # PENDING, APPROVED, REJECTED, EXPIRED
+    status = Column(
+        String(32), default="PENDING", nullable=False, index=True
+    )  # PENDING, APPROVED, REJECTED, EXPIRED
     created_at = Column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
@@ -190,7 +191,9 @@ class BusOutboxModel(Base):
         default=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
-    status = Column(String(32), default="pending", nullable=False, index=True)  # pending, delivered, failed, dead_letter
+    status = Column(
+        String(32), default="pending", nullable=False, index=True
+    )  # pending, delivered, failed, dead_letter
     retry_count = Column(Integer, default=0, nullable=False)
     last_error = Column(Text, nullable=True)
     delivered_at = Column(DateTime(timezone=True), nullable=True)

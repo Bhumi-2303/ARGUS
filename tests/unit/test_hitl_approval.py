@@ -85,12 +85,20 @@ def test_hitl_decision_token_approval_success(test_approval_token):
         # Verify token in database
         session = get_session()
         try:
-            tok = session.query(DecisionApprovalTokenModel).filter_by(token=test_approval_token["token"]).first()
+            tok = (
+                session.query(DecisionApprovalTokenModel)
+                .filter_by(token=test_approval_token["token"])
+                .first()
+            )
             assert tok.status == "APPROVED"
             assert tok.resolved_by == "operator-lead-01"
             assert "Confirmed emergency trip" in tok.resolution_reason
 
-            inc = session.query(IncidentModel).filter_by(incident_id=test_approval_token["incident_id"]).first()
+            inc = (
+                session.query(IncidentModel)
+                .filter_by(incident_id=test_approval_token["incident_id"])
+                .first()
+            )
             assert inc.approval_status == "approved"
         finally:
             session.close()
@@ -125,12 +133,20 @@ def test_hitl_decision_token_rejection_success(test_approval_token):
         # Verify token in database
         session = get_session()
         try:
-            tok = session.query(DecisionApprovalTokenModel).filter_by(token=test_approval_token["token"]).first()
+            tok = (
+                session.query(DecisionApprovalTokenModel)
+                .filter_by(token=test_approval_token["token"])
+                .first()
+            )
             assert tok.status == "REJECTED"
             assert tok.resolved_by == "operator-lead-02"
             assert "Scheduled maintenance" in tok.resolution_reason
 
-            inc = session.query(IncidentModel).filter_by(incident_id=test_approval_token["incident_id"]).first()
+            inc = (
+                session.query(IncidentModel)
+                .filter_by(incident_id=test_approval_token["incident_id"])
+                .first()
+            )
             assert inc.approval_status == "rejected"
         finally:
             session.close()
@@ -149,16 +165,18 @@ def test_hitl_incident_direct_reject_endpoint():
     app.dependency_overrides[get_current_user] = lambda: operator
 
     try:
-        inc = incident_service.create_incident(Incident(
-            title="Transient Voltage Dip",
-            description="Power quality event",
-            severity="low",
-            affected_assets=["Bus-1"],
-            event_id="EV-PQ-01",
-            asset="Bus-1",
-            approval_required=True,
-            approval_status=ApprovalStatus.PENDING,
-        ))
+        inc = incident_service.create_incident(
+            Incident(
+                title="Transient Voltage Dip",
+                description="Power quality event",
+                severity="low",
+                affected_assets=["Bus-1"],
+                event_id="EV-PQ-01",
+                asset="Bus-1",
+                approval_required=True,
+                approval_status=ApprovalStatus.PENDING,
+            )
+        )
 
         resp = client.post(
             f"/api/v1/incidents/{inc.incident_id}/reject",

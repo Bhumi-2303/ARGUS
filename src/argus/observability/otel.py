@@ -15,7 +15,6 @@ from structlog import get_logger
 from opentelemetry import metrics, trace
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import (
-    MetricReader,
     PeriodicExportingMetricReader,
     InMemoryMetricReader,
 )
@@ -46,16 +45,23 @@ def is_otel_enabled() -> bool:
 def setup_opentelemetry(service_name: str = "argus-platform") -> None:
     """Initialize OpenTelemetry MeterProvider and TracerProvider with optional Grafana Cloud export."""
     global _METER_INITIALIZED, _IN_MEMORY_READER
-    global request_latency_hist, agent_duration_hist, pipeline_stage_counter, ks_drift_gauge, psi_drift_gauge
+    global \
+        request_latency_hist, \
+        agent_duration_hist, \
+        pipeline_stage_counter, \
+        ks_drift_gauge, \
+        psi_drift_gauge
 
     if _METER_INITIALIZED:
         return
 
-    resource = Resource.create({
-        "service.name": service_name,
-        "service.version": "1.0.0",
-        "deployment.environment": os.getenv("ENVIRONMENT", "production"),
-    })
+    resource = Resource.create(
+        {
+            "service.name": service_name,
+            "service.version": "1.0.0",
+            "deployment.environment": os.getenv("ENVIRONMENT", "production"),
+        }
+    )
 
     readers = []
 
@@ -67,7 +73,7 @@ def setup_opentelemetry(service_name: str = "argus-platform") -> None:
     if is_otel_enabled():
         endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "")
         headers = os.getenv("OTEL_EXPORTER_OTLP_HEADERS", "")
-        
+
         # Check Grafana Cloud specific credentials fallback
         if not endpoint and os.getenv("GRAFANA_CLOUD_OTLP_ENDPOINT"):
             endpoint = os.getenv("GRAFANA_CLOUD_OTLP_ENDPOINT")
@@ -75,12 +81,16 @@ def setup_opentelemetry(service_name: str = "argus-platform") -> None:
             api_key = os.getenv("GRAFANA_CLOUD_API_KEY", "")
             if instance_id and api_key:
                 import base64
+
                 auth_header = base64.b64encode(f"{instance_id}:{api_key}".encode()).decode()
                 headers = f"Authorization=Basic {auth_header}"
 
         if endpoint:
             try:
-                from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
+                from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import (
+                    OTLPMetricExporter,
+                )
+
                 otlp_headers = {}
                 if headers:
                     for part in headers.split(","):
@@ -151,34 +161,32 @@ def record_request_latency(path: str, method: str, status_code: int, duration_ms
     if request_latency_hist is not None:
         request_latency_hist.record(
             duration_ms,
-            {"http.route": path, "http.method": method, "http.status_code": str(status_code)}
+            {"http.route": path, "http.method": method, "http.status_code": str(status_code)},
         )
 
 
 def record_agent_duration(agent_name: str, status: str, duration_ms: float) -> None:
     """Record execution duration of an individual agent stage."""
     if agent_duration_hist is not None:
-        agent_duration_hist.record(
-            duration_ms,
-            {"agent.name": agent_name, "agent.status": status}
-        )
+        agent_duration_hist.record(duration_ms, {"agent.name": agent_name, "agent.status": status})
 
 
 def record_pipeline_stage_outcome(agent_name: str, status: str) -> None:
     """Record pipeline stage outcome counter increment (SUCCESS, SKIPPED, FAILED)."""
     if pipeline_stage_counter is not None:
-        pipeline_stage_counter.add(
-            1,
-            {"agent.name": agent_name, "agent.status": status}
-        )
+        pipeline_stage_counter.add(1, {"agent.name": agent_name, "agent.status": status})
 
 
-def record_drift_metrics(feature_name: str, domain: str, ks_statistic: float, psi_statistic: float) -> None:
+def record_drift_metrics(
+    feature_name: str, domain: str, ks_statistic: float, psi_statistic: float
+) -> None:
     """Record distribution drift metrics for a feature."""
     if ks_drift_gauge is not None:
         ks_drift_gauge.record(ks_statistic, {"feature.name": feature_name, "target.domain": domain})
     if psi_drift_gauge is not None:
-        psi_drift_gauge.record(psi_statistic, {"feature.name": feature_name, "target.domain": domain})
+        psi_drift_gauge.record(
+            psi_statistic, {"feature.name": feature_name, "target.domain": domain}
+        )
 
 
 def get_collected_metrics() -> Dict[str, Any]:

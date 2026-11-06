@@ -2,9 +2,10 @@ from argus.policy.models import PolicyContext, DecisionOutput, ActionType
 from argus.policy.rules import evaluate_risk, requires_approval
 from argus.policy.config import load_policy_config
 
+
 class PolicyEngine:
     """Deterministic security policy engine."""
-    
+
     def __init__(self, version: str = "1.0.0"):
         self.version = version
         self.config = load_policy_config()
@@ -19,14 +20,14 @@ class PolicyEngine:
                 policy_version=self.version,
                 requires_human_approval=False,
                 reason_codes=["fallback_due_to_missing_context"],
-                evidence_refs=[]
+                evidence_refs=[],
             )
 
         # Execute deterministic risk policy
         action_str = evaluate_risk(context)
         action = ActionType(action_str)
         req_approval = requires_approval(action_str, context.criticality)
-        
+
         # Determine policy ID based on action
         policy_id = f"POL-{action_str}"
 
@@ -37,5 +38,5 @@ class PolicyEngine:
             policy_version=self.version,
             requires_human_approval=req_approval,
             reason_codes=[f"matched_{action_str.lower()}_rules"],
-            evidence_refs=[]
+            evidence_refs=[],
         )

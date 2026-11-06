@@ -26,7 +26,9 @@ class AgentRegistry:
             current_loop = asyncio.get_running_loop()
         except RuntimeError:
             current_loop = None
-        if self._lock_obj is None or (current_loop and getattr(self._lock_obj, "_loop", None) not in (None, current_loop)):
+        if self._lock_obj is None or (
+            current_loop and getattr(self._lock_obj, "_loop", None) not in (None, current_loop)
+        ):
             self._lock_obj = asyncio.Lock()
         return self._lock_obj
 

@@ -15,7 +15,9 @@ async def test_internal_server_error_masks_implementation_details(monkeypatch):
     from argus.data.manager import data_manager
 
     def broken_get_domains():
-        raise RuntimeError("CRITICAL_INTERNAL_DB_FAILURE: password='super_secret_db_pass' at /var/data/private.db")
+        raise RuntimeError(
+            "CRITICAL_INTERNAL_DB_FAILURE: password='super_secret_db_pass' at /var/data/private.db"
+        )
 
     monkeypatch.setattr(data_manager, "get_domains", broken_get_domains)
 
@@ -24,10 +26,7 @@ async def test_internal_server_error_masks_implementation_details(monkeypatch):
 
     # Provide authorized user so it passes RBAC and hits the bug
     test_user = UserPrincipal(
-        sub="test-user",
-        issuer="argus-test",
-        roles=["analyst"],
-        permissions={"read:domains"}
+        sub="test-user", issuer="argus-test", roles=["analyst"], permissions={"read:domains"}
     )
     app.dependency_overrides[get_current_user] = lambda: test_user
 
@@ -64,12 +63,9 @@ def test_404_error_envelope_structure():
 
 def test_validation_error_masks_python_internals():
     """422 Validation errors must disclose validation fields without internal Python object dumps."""
-    response = client.post(
-        "/api/v1/predict",
-        json={"invalid_json_shape": True}
-    )
+    response = client.post("/api/v1/predict", json={"invalid_json_shape": True})
     assert response.status_code == 422
     data = response.json()
     assert data.get("error") in ("ValidationError", "validation_error")
     assert "Traceback" not in response.text
-    assert "File \"" not in response.text
+    assert 'File "' not in response.text

@@ -13,12 +13,9 @@ from httpx import AsyncClient, ASGITransport
 
 from argus.registry.model_registry import (
     ModelRegistry,
-    HARMONIZED_FEATURES,
     D3_NATIVE_FEATURES,
-    model_registry,
 )
 from argus.api.main import app
-from tests.security.test_adversarial_verification import create_token, valid_rsa_key
 
 
 @pytest.fixture(scope="module")
@@ -50,6 +47,7 @@ def valid_4_features():
 # 1. VALID INPUT TESTS
 # ===========================================================================
 
+
 def test_valid_native_d3_input_succeeds(registry, valid_d3_features):
     """Native D3 prediction succeeds with all 73 features."""
     prob, label, threshold = registry.predict("model_d3_native", valid_d3_features)
@@ -80,6 +78,7 @@ def test_d3_feature_ordering_invariance(registry, valid_d3_features):
 # ===========================================================================
 # 2. FEATURE MISMATCH & REJECTION TESTS
 # ===========================================================================
+
 
 def test_native_d3_input_with_four_features_rejected(registry, valid_4_features):
     """Passing 4 harmonized features to model_d3_native raises clear ValueError."""
@@ -129,6 +128,7 @@ def test_unexpected_extra_features_rejected(registry, valid_d3_features):
 # 3. NON-FINITE VALUE TESTS (NaN / INF)
 # ===========================================================================
 
+
 def test_native_d3_rejects_nan(registry, valid_d3_features):
     """NaN value in any feature raises ValueError."""
     nan_features = dict(valid_d3_features)
@@ -160,13 +160,19 @@ def test_native_d3_rejects_negative_inf(registry, valid_d3_features):
 # 4. BACKWARD COMPATIBILITY: EXISTING 4-FEATURE MODELS
 # ===========================================================================
 
-@pytest.mark.parametrize("model_name,expected_tau", [
-    ("model_d1_baseline", 0.50),
-    ("model_d2_coral", 0.99),
-    ("xgb_source", 0.50),
-    ("xgb_adapted", 0.99),
-])
-def test_existing_four_feature_models_remain_functional(registry, valid_4_features, model_name, expected_tau):
+
+@pytest.mark.parametrize(
+    "model_name,expected_tau",
+    [
+        ("model_d1_baseline", 0.50),
+        ("model_d2_coral", 0.99),
+        ("xgb_source", 0.50),
+        ("xgb_adapted", 0.99),
+    ],
+)
+def test_existing_four_feature_models_remain_functional(
+    registry, valid_4_features, model_name, expected_tau
+):
     """All 4-feature models continue predicting normally with 4 harmonized features."""
     prob, label, threshold = registry.predict(model_name, valid_4_features)
     assert isinstance(prob, float)
@@ -191,6 +197,7 @@ def test_unavailable_model_dann_raises_not_implemented(registry, valid_4_feature
 # ===========================================================================
 # 5. BATCH PREDICTION TESTS
 # ===========================================================================
+
 
 def test_predict_batch_native_d3_succeeds(registry):
     """Batch prediction on (N, 73) matrix succeeds for model_d3_native."""
@@ -218,9 +225,12 @@ def test_predict_batch_dimension_mismatch_rejected(registry):
 # 6. SHAP EXPLAINABILITY TESTS
 # ===========================================================================
 
+
 def test_explain_native_d3_generates_all_73_attributions(registry, valid_d3_features):
     """TreeExplainer on model_d3_native returns all 73 feature SHAP values."""
-    base_val, shap_dict, top_feat, top_impact = registry.explain("model_d3_native", valid_d3_features)
+    base_val, shap_dict, top_feat, top_impact = registry.explain(
+        "model_d3_native", valid_d3_features
+    )
     assert isinstance(base_val, float)
     assert len(shap_dict) == 73
     assert top_feat in D3_NATIVE_FEATURES
@@ -231,6 +241,7 @@ def test_explain_native_d3_generates_all_73_attributions(registry, valid_d3_feat
 # ===========================================================================
 # 7. END-TO-END API INTEGRATION TESTS
 # ===========================================================================
+
 
 @pytest.mark.asyncio
 async def test_api_predict_native_d3_with_73_features_succeeds(valid_d3_features):

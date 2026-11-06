@@ -13,19 +13,28 @@ import uuid
 from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
 import pandas as pd
-from fastapi import APIRouter, Query, HTTPException, status, WebSocket, WebSocketDisconnect, Depends, Request
+from fastapi import (
+    APIRouter,
+    Query,
+    HTTPException,
+    status,
+    WebSocket,
+    WebSocketDisconnect,
+    Depends,
+    Request,
+)
 from fastapi.responses import StreamingResponse
 from structlog import get_logger
 
 from configs.settings import get_settings
-from argus.schemas.api import StreamEventPayload, ModelPredictionDetail
+from argus.schemas.api import ModelPredictionDetail
 from argus.registry.model_registry import model_registry, HARMONIZED_FEATURES, MODEL_METADATA
 from argus.bus.message_bus import MessageBus
-from argus.auth.rbac import get_current_user, require_permission
+from argus.auth.rbac import require_permission
 from argus.auth.models import UserPrincipal
 from argus.auth.jwt import jwt_validator
 from argus.data.manager import ALLOWED_DOMAINS
-from argus.orchestrator.pipeline import execute_pipeline, TraceEvent
+from argus.orchestrator.pipeline import execute_pipeline
 
 logger = get_logger("argus.stream")
 
@@ -97,10 +106,10 @@ def build_stage_event_payload(
     """Format per-stage events matching both TraceEvent and FlowEventItem schemas."""
     stage = stage_event.get("stage", "UNKNOWN")
     src_node, tgt_node = STAGE_NODES.get(stage, ("orchestrator", stage.lower()))
-    
+
     summary = stage_event.get("summary") or f"{stage}: {stage_event.get('status')}"
     duration_ms = stage_event.get("duration_ms")
-    
+
     payload = {
         "stage": stage,
         "status": stage_event.get("status"),
@@ -110,14 +119,16 @@ def build_stage_event_payload(
         "model_version": stage_event.get("model_version"),
         "error": stage_event.get("error"),
     }
-    
+
     event_item = {
         "event_id": stage_event.get("event_id") or str(uuid.uuid4())[:8],
         "correlation_id": stage_event.get("correlation_id", ""),
         "source_node": src_node,
         "target_node": tgt_node,
         "event_type": stage_event.get("event_type", "stage_end"),
-        "timestamp": stage_event.get("completed_at") or stage_event.get("started_at") or datetime.now(timezone.utc).isoformat(),
+        "timestamp": stage_event.get("completed_at")
+        or stage_event.get("started_at")
+        or datetime.now(timezone.utc).isoformat(),
         "summary": summary,
         "payload": payload,
     }
@@ -144,7 +155,14 @@ def build_stage_event_payload(
 
 class ReplayStreamControl:
     """Thread-safe state container for interactive stream replay controls."""
-    def __init__(self, speed: float = 1.0, domain: str = "nfton", seed: int = 42, model_name: str = "model_d2_coral"):
+
+    def __init__(
+        self,
+        speed: float = 1.0,
+        domain: str = "nfton",
+        seed: int = 42,
+        model_name: str = "model_d2_coral",
+    ):
         self.is_paused = False
         self.pause_event = asyncio.Event()
         self.pause_event.set()
@@ -185,7 +203,9 @@ async def stream_generator(
     """Async generator streaming events replaying verified domain telemetry with bounds checking."""
     norm_dom = normalize_domain_name(domain)
     if norm_dom not in ALLOWED_DOMAINS:
-        err_msg = json.dumps({"error": f"Invalid domain '{domain}'. Allowed: {sorted(ALLOWED_DOMAINS)}"})
+        err_msg = json.dumps(
+            {"error": f"Invalid domain '{domain}'. Allowed: {sorted(ALLOWED_DOMAINS)}"}
+        )
         yield f"event: error\ndata: {err_msg}\n\n"
         return
 
@@ -198,12 +218,19 @@ async def stream_generator(
 
     max_rows = min(rows, MAX_STREAM_ROWS) if rows is not None else MAX_STREAM_ROWS
     delay = 1.0 / max(0.1, min(100.0, speed))
-    logger.info("stream_started", stream_type=STREAM_METADATA_LABEL, domain=norm_dom, models=model_names, speed=speed, rows=min(len(df), max_rows))
+    logger.info(
+        "stream_started",
+        stream_type=STREAM_METADATA_LABEL,
+        domain=norm_dom,
+        models=model_names,
+        speed=speed,
+        rows=min(len(df), max_rows),
+    )
 
     start_time = time.time()
     count = 0
 
-    for idx, row in df.iterrows():
+    for _idx, row in df.iterrows():
         if request and await request.is_disconnected():
             logger.info("stream_client_disconnected", domain=norm_dom, count=count)
             break
@@ -222,14 +249,12 @@ async def stream_generator(
                 m_feat_dict = {col: float(row[col]) for col in expected_feats}
                 prob, pred_lbl, _ = model_registry.predict(m_name, m_feat_dict)
                 predictions_detail[m_name] = ModelPredictionDetail(
-                    probability=round(prob, 6),
-                    label=pred_lbl
+                    probability=round(prob, 6), label=pred_lbl
                 ).model_dump()
             except Exception as ex:
                 logger.warning("stream_inference_failed", model=m_name, error=str(ex))
                 predictions_detail[m_name] = ModelPredictionDetail(
-                    probability=0.50,
-                    label=0
+                    probability=0.50, label=0
                 ).model_dump()
 
         event_payload = {
@@ -239,7 +264,7 @@ async def stream_generator(
             "domain": norm_dom,
             "features": feat_dict,
             "true_label": true_label,
-            "predictions": predictions_detail
+            "predictions": predictions_detail,
         }
 
         if global_bus._running:
@@ -254,12 +279,14 @@ async def stream_generator(
     "/stream",
     tags=["stream", "verified-flow-replay"],
     summary="Verified Flow Replay SSE Stream",
-    description="Server-Sent Events (SSE) stream providing verified flow replay of domain telemetry at controllable speed with RBAC."
+    description="Server-Sent Events (SSE) stream providing verified flow replay of domain telemetry at controllable speed with RBAC.",
 )
 async def get_stream(
     request: Request,
     domain: str = Query("nfton", description="Target domain: ciciot, nfton, iec104"),
-    models: str = Query("model_d2_coral,xgb_source", description="Comma-separated list of models to evaluate"),
+    models: str = Query(
+        "model_d2_coral,xgb_source", description="Comma-separated list of models to evaluate"
+    ),
     speed: float = Query(10.0, ge=0.1, le=100.0, description="Replay speed in flows/sec"),
     seed: int = Query(42, ge=0, le=2147483647, description="Random seed for flow sampling"),
     rows: Optional[int] = Query(None, ge=1, le=1000, description="Max rows to stream"),
@@ -269,7 +296,7 @@ async def get_stream(
     if norm_dom not in ALLOWED_DOMAINS:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid domain '{domain}'. Allowed domains: {sorted(ALLOWED_DOMAINS)}"
+            detail=f"Invalid domain '{domain}'. Allowed domains: {sorted(ALLOWED_DOMAINS)}",
         )
 
     model_list = [m.strip() for m in models.split(",") if m.strip()]
@@ -281,17 +308,24 @@ async def get_stream(
         if m not in known_models:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid model '{m}'. Registered models: {sorted(known_models)}"
+                detail=f"Invalid model '{m}'. Registered models: {sorted(known_models)}",
             )
 
     return StreamingResponse(
-        stream_generator(domain=norm_dom, model_names=model_list, speed=speed, seed=seed, request=request, rows=rows),
+        stream_generator(
+            domain=norm_dom,
+            model_names=model_list,
+            speed=speed,
+            seed=seed,
+            request=request,
+            rows=rows,
+        ),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache, no-transform",
             "X-Accel-Buffering": "no",
             "X-Stream-Type": STREAM_METADATA_LABEL,
-        }
+        },
     )
 
 
@@ -301,7 +335,7 @@ async def _handle_replay_stream_ws(
     models: str = "model_d2_coral",
     speed: float = 1.0,
     seed: int = 42,
-    token: Optional[str] = None
+    token: Optional[str] = None,
 ):
     """Internal WebSocket handler running verified flow replay through the 6-agent pipeline."""
     settings = get_settings()
@@ -355,12 +389,7 @@ async def _handle_replay_stream_ws(
 
     await websocket.accept()
 
-    ctrl = ReplayStreamControl(
-        speed=speed,
-        domain=norm_domain,
-        seed=seed,
-        model_name=model_name
-    )
+    ctrl = ReplayStreamControl(speed=speed, domain=norm_domain, seed=seed, model_name=model_name)
 
     # Handshake: Send stream_init event labeled "verified flow replay"
     init_payload = {
@@ -372,7 +401,7 @@ async def _handle_replay_stream_ws(
         "seed": ctrl.seed,
         "model": ctrl.model_name,
         "total_rows": len(initial_df),
-        "status": "ready"
+        "status": "ready",
     }
     await websocket.send_json(init_payload)
 
@@ -381,13 +410,15 @@ async def _handle_replay_stream_ws(
         try:
             while ctrl.active:
                 raw_text = await websocket.receive_text()
-                
+
                 # Enforce message size limit (32 KB)
                 if len(raw_text.encode("utf-8")) > MAX_WS_MESSAGE_SIZE:
-                    logger.warning("websocket_message_size_exceeded", size=len(raw_text.encode("utf-8")))
+                    logger.warning(
+                        "websocket_message_size_exceeded", size=len(raw_text.encode("utf-8"))
+                    )
                     await websocket.close(
                         code=status.WS_1009_MESSAGE_TOO_BIG,
-                        reason="Message size exceeds 32KB limit"
+                        reason="Message size exceeds 32KB limit",
                     )
                     ctrl.active = False
                     break
@@ -404,51 +435,63 @@ async def _handle_replay_stream_ws(
                         continue
 
                 action = data.get("action") or data.get("type") or data.get("command")
-                
+
                 if action == "pause":
                     ctrl.set_paused(True)
-                    await websocket.send_json({
-                        "type": "control_ack",
-                        "stream_type": STREAM_METADATA_LABEL,
-                        "action": "pause",
-                        "status": "paused"
-                    })
+                    await websocket.send_json(
+                        {
+                            "type": "control_ack",
+                            "stream_type": STREAM_METADATA_LABEL,
+                            "action": "pause",
+                            "status": "paused",
+                        }
+                    )
                 elif action == "resume":
                     ctrl.set_paused(False)
-                    await websocket.send_json({
-                        "type": "control_ack",
-                        "stream_type": STREAM_METADATA_LABEL,
-                        "action": "resume",
-                        "status": "running"
-                    })
+                    await websocket.send_json(
+                        {
+                            "type": "control_ack",
+                            "stream_type": STREAM_METADATA_LABEL,
+                            "action": "resume",
+                            "status": "running",
+                        }
+                    )
                 elif action == "speed":
                     val = float(data.get("value", data.get("speed", 1.0)))
                     ctrl.set_speed(val)
-                    await websocket.send_json({
-                        "type": "control_ack",
-                        "stream_type": STREAM_METADATA_LABEL,
-                        "action": "speed",
-                        "speed": ctrl.speed
-                    })
-                elif action == "domain":
-                    target_dom = normalize_domain_name(str(data.get("value", data.get("domain", ""))))
-                    if target_dom in ALLOWED_DOMAINS:
-                        ctrl.set_domain(target_dom)
-                        await websocket.send_json({
+                    await websocket.send_json(
+                        {
                             "type": "control_ack",
                             "stream_type": STREAM_METADATA_LABEL,
-                            "action": "domain",
-                            "domain": ctrl.domain
-                        })
+                            "action": "speed",
+                            "speed": ctrl.speed,
+                        }
+                    )
+                elif action == "domain":
+                    target_dom = normalize_domain_name(
+                        str(data.get("value", data.get("domain", "")))
+                    )
+                    if target_dom in ALLOWED_DOMAINS:
+                        ctrl.set_domain(target_dom)
+                        await websocket.send_json(
+                            {
+                                "type": "control_ack",
+                                "stream_type": STREAM_METADATA_LABEL,
+                                "action": "domain",
+                                "domain": ctrl.domain,
+                            }
+                        )
                 elif action == "seed":
                     new_seed = int(data.get("value", data.get("seed", 42)))
                     ctrl.set_seed(new_seed)
-                    await websocket.send_json({
-                        "type": "control_ack",
-                        "stream_type": STREAM_METADATA_LABEL,
-                        "action": "seed",
-                        "seed": ctrl.seed
-                    })
+                    await websocket.send_json(
+                        {
+                            "type": "control_ack",
+                            "stream_type": STREAM_METADATA_LABEL,
+                            "action": "seed",
+                            "seed": ctrl.seed,
+                        }
+                    )
         except WebSocketDisconnect:
             ctrl.active = False
         except Exception as exc:
@@ -487,14 +530,16 @@ async def _handle_replay_stream_ws(
                 feat_dict = {col: float(row[col]) for col in HARMONIZED_FEATURES}
                 true_label = int(row["label"]) if "label" in row and pd.notna(row["label"]) else 0
 
+                current_flow_idx = total_replayed
+
                 # Callback to emit per-stage events as they execute
-                async def on_stage_event(stage_evt: Dict[str, Any]):
+                async def on_stage_event(
+                    stage_evt: Dict[str, Any], flow_idx: int = current_flow_idx
+                ):
                     if not ctrl.active:
                         return
                     stage_payload = build_stage_event_payload(
-                        stage_event=stage_evt,
-                        flow_idx=total_replayed,
-                        domain=ctrl.domain
+                        stage_event=stage_evt, flow_idx=flow_idx, domain=ctrl.domain
                     )
                     await websocket.send_json(stage_payload)
 
@@ -503,7 +548,7 @@ async def _handle_replay_stream_ws(
                     features=feat_dict,
                     model_name=ctrl.model_name,
                     source_domain=ctrl.domain,
-                    stage_callback=on_stage_event
+                    stage_callback=on_stage_event,
                 )
 
                 # Emit flow_completed summary event
@@ -519,7 +564,9 @@ async def _handle_replay_stream_ws(
                         "features": feat_dict,
                         "true_label": true_label,
                         "total_stages": len(ctx.trace),
-                        "approval_required": getattr(ctx.decision, "approval_required", False) if ctx.decision else False,
+                        "approval_required": getattr(ctx.decision, "approval_required", False)
+                        if ctx.decision
+                        else False,
                         "approval_token": ctx.approval_token,
                     }
                     await websocket.send_json(completed_payload)
@@ -537,8 +584,7 @@ async def _handle_replay_stream_ws(
     replayer_task = asyncio.create_task(flow_replayer())
 
     done, pending = await asyncio.wait(
-        [receiver_task, replayer_task],
-        return_when=asyncio.FIRST_COMPLETED
+        [receiver_task, replayer_task], return_when=asyncio.FIRST_COMPLETED
     )
 
     ctrl.active = False
@@ -557,7 +603,7 @@ async def websocket_stream(
     models: str = "model_d2_coral",
     speed: float = 1.0,
     seed: int = 42,
-    token: Optional[str] = None
+    token: Optional[str] = None,
 ):
     """WebSocket endpoint providing verified flow replay of network flows through the 6-agent ARGUS pipeline."""
     await _handle_replay_stream_ws(websocket, domain, models, speed, seed, token)
@@ -570,7 +616,7 @@ async def websocket_stream_ws(
     models: str = "model_d2_coral",
     speed: float = 1.0,
     seed: int = 42,
-    token: Optional[str] = None
+    token: Optional[str] = None,
 ):
     """Backward-compatible WebSocket endpoint for verified flow replay."""
     await _handle_replay_stream_ws(websocket, domain, models, speed, seed, token)
