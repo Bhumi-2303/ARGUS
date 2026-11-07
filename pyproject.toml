@@ -50,7 +50,7 @@ dependencies = [
     "sqlalchemy>=2.0.0",
     "aiosqlite>=0.20.0",
     "opentelemetry-api>=1.24.0",
-    "opentelemetry-sdk>=1.24.0",
+    "opentelemetry-sdk>=1.45.2",
     "websockets>=12.0",
 ]
 
