@@ -1,10 +1,12 @@
 """Configuration settings for Threat Analysis Agent."""
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from argus.agents.threat_analysis.models.schemas import ModelType
 
 
 class ThreatAnalysisConfig(BaseSettings):
     """Agent-specific configuration."""
+
     model_config = SettingsConfigDict(env_prefix="ARGUS_TA_")
 
     model_dir: str = "artifacts/models"

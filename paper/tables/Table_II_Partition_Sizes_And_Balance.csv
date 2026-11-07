@@ -1,0 +1,7 @@
+Domain,Partition_Role,Flow_Count,Benign_Count,Attack_Count,Attack_Prevalence,Protocol_Status
+D1 (CICIoT2023),Source Train,"5,491,971","129,538","5,362,433",97.64%,Fixed Source Baseline
+D1 (CICIoT2023),Frozen Test,"1,176,851","27,709","1,149,142",97.64%,Zero-Adaptation Test
+D2 (NF-ToN-IoT-v2),Source Train / Adaptation,"10,508,704","2,881,519","7,627,185",72.58%,Unlabeled Adaptation Split
+D2 (NF-ToN-IoT-v2),Frozen Test,"2,627,177","720,257","1,906,920",72.58%,Blind Target Test Set
+D3 (SCADA IEC-104),Train / Calibration,"2,857,812","2,215,958","641,854",22.46%,Disjoint Calibration Split
+D3 (SCADA IEC-104),Coordinate-Disjoint Test,"714,453","553,944","160,509",22.46%,Final Independent Evaluation

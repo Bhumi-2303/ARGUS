@@ -1,10 +1,9 @@
 """Pydantic schemas for the ARGUS FastAPI v1 endpoints with strict bounds validation."""
 
-import math
 from typing import Dict, List, Any, Optional, Generic, TypeVar
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, ConfigDict
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class APIResponse(BaseModel, Generic[T]):
@@ -36,8 +35,13 @@ class DomainsResponse(BaseModel):
 class ModelInfo(BaseModel):
     model_id: str
     name: str
-    protocol_status: str = Field(..., description="Protocol classification: native, coral_aligned, dann_adapted, or diagnostic_only")
-    threshold: Optional[float] = Field(None, description="Decision threshold for binary classification (null if unavailable)")
+    protocol_status: str = Field(
+        ...,
+        description="Protocol classification: native, coral_aligned, dann_adapted, or diagnostic_only",
+    )
+    threshold: Optional[float] = Field(
+        None, description="Decision threshold for binary classification (null if unavailable)"
+    )
     source_domain: str
     status: str = Field(default="verified", description="verified, partial, or planned")
     target_domain: str
@@ -52,40 +56,37 @@ class ResultTableResponse(BaseModel):
     table_name: str
     source_file: str
     protocol_status: str
-    diagnostic_only: bool = Field(False, description="Flag indicating if results are post-hoc diagnostic only")
+    diagnostic_only: bool = Field(
+        False, description="Flag indicating if results are post-hoc diagnostic only"
+    )
     row_count: int
     data: List[Dict[str, Any]]
 
 
 class FeatureInput(BaseModel):
     """Input feature vector with strict finite number and range bounds."""
+
+    model_config = ConfigDict(extra="allow")
+
     pkt_mean_to_max: float = Field(
         ...,
         ge=0.0,
         le=1000.0,
         allow_inf_nan=False,
-        description="Ratio of mean packet size to max packet size"
+        description="Ratio of mean packet size to max packet size",
     )
     tcp_flag_density: float = Field(
         ...,
         ge=0.0,
         le=1000.0,
         allow_inf_nan=False,
-        description="Density of TCP flags across connection"
+        description="Density of TCP flags across connection",
     )
     log_pkt_mean: float = Field(
-        ...,
-        ge=0.0,
-        le=100.0,
-        allow_inf_nan=False,
-        description="Logarithm of mean packet length"
+        ..., ge=0.0, le=100.0, allow_inf_nan=False, description="Logarithm of mean packet length"
     )
     log_pkt_max: float = Field(
-        ...,
-        ge=0.0,
-        le=100.0,
-        allow_inf_nan=False,
-        description="Logarithm of max packet length"
+        ..., ge=0.0, le=100.0, allow_inf_nan=False, description="Logarithm of max packet length"
     )
 
 
@@ -96,7 +97,7 @@ class PredictRequest(BaseModel):
         min_length=1,
         max_length=64,
         pattern=r"^[a-zA-Z0-9_-]+$",
-        description="Target model for prediction"
+        description="Target model for prediction",
     )
 
 
@@ -136,7 +137,9 @@ class ShiftResponse(BaseModel):
     window_size: int
     ks_threshold: float
     psi_threshold: float
-    domain_shift: bool = Field(..., description="Flag indicating overall domain shift across features")
+    domain_shift: bool = Field(
+        ..., description="Flag indicating overall domain shift across features"
+    )
     feature_shifts: List[FeatureShiftMetric]
 
 
@@ -147,7 +150,7 @@ class ExplainRequest(BaseModel):
         min_length=1,
         max_length=64,
         pattern=r"^[a-zA-Z0-9_-]+$",
-        description="Target model for SHAP attribution"
+        description="Target model for SHAP attribution",
     )
 
 
@@ -166,25 +169,16 @@ class OnboardRequest(BaseModel):
         min_length=1,
         max_length=32,
         pattern=r"^[a-zA-Z0-9_-]+$",
-        description="Target domain identifier for demo onboarding"
+        description="Target domain identifier for demo onboarding",
     )
     adaptation_window_size: int = Field(
-        5000,
-        ge=10,
-        le=50000,
-        description="Size of adaptation window for CORAL transform"
+        5000, ge=10, le=50000, description="Size of adaptation window for CORAL transform"
     )
     calibration_window_size: int = Field(
-        2000,
-        ge=10,
-        le=50000,
-        description="Size of calibration window for threshold selection"
+        2000, ge=10, le=50000, description="Size of calibration window for threshold selection"
     )
     test_window_size: int = Field(
-        3000,
-        ge=10,
-        le=50000,
-        description="Size of test window for evaluation"
+        3000, ge=10, le=50000, description="Size of test window for evaluation"
     )
 
 
@@ -193,7 +187,9 @@ class OnboardResponse(BaseModel):
     demo_scale: bool = Field(True, description="Always true for demo-scale onboarding responses")
     coral_fitted: bool
     selected_threshold: float
-    metrics: Dict[str, float] = Field(..., description="Evaluated test metrics: accuracy, f1, mcc, fpr, fnr")
+    metrics: Dict[str, float] = Field(
+        ..., description="Evaluated test metrics: accuracy, f1, mcc, fpr, fnr"
+    )
     evaluated_test_size: int
 
 

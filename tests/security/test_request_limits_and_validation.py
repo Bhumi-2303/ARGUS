@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from fastapi.testclient import TestClient
 
 from argus.api.main import app
-from argus.schemas.api import FeatureInput, OnboardRequest
+from argus.schemas.api import FeatureInput
 from argus.auth.models import UserPrincipal
 from argus.auth.rbac import get_current_user
 
@@ -19,7 +19,7 @@ def override_authenticated_user():
         sub="tester-analyst",
         issuer="argus-test",
         roles=["analyst", "operator", "admin"],
-        permissions={"run:prediction", "run:explanation", "run:onboarding", "read:models"}
+        permissions={"run:prediction", "run:explanation", "run:onboarding", "read:models"},
     )
     app.dependency_overrides[get_current_user] = lambda: user
     yield
@@ -31,8 +31,7 @@ def test_payload_too_large_rejected_with_413():
     # Send a request with a large body > 1MB
     large_features = {f"feat_{i}": 1.0 for i in range(100000)}
     response = client.post(
-        "/api/v1/predict",
-        json={"model_name": "model_d2_coral", "features": large_features}
+        "/api/v1/predict", json={"model_name": "model_d2_coral", "features": large_features}
     )
     assert response.status_code in (413, 422), f"Unexpected status {response.status_code}"
 
@@ -41,26 +40,17 @@ def test_feature_input_schema_rejects_nan_and_inf():
     """FeatureInput model must reject NaN and Infinity values with ValidationError."""
     with pytest.raises(ValidationError):
         FeatureInput(
-            pkt_mean_to_max=float("nan"),
-            tcp_flag_density=0.5,
-            log_pkt_mean=2.0,
-            log_pkt_max=3.0
+            pkt_mean_to_max=float("nan"), tcp_flag_density=0.5, log_pkt_mean=2.0, log_pkt_max=3.0
         )
 
     with pytest.raises(ValidationError):
         FeatureInput(
-            pkt_mean_to_max=float("inf"),
-            tcp_flag_density=0.5,
-            log_pkt_mean=2.0,
-            log_pkt_max=3.0
+            pkt_mean_to_max=float("inf"), tcp_flag_density=0.5, log_pkt_mean=2.0, log_pkt_max=3.0
         )
 
     with pytest.raises(ValidationError):
         FeatureInput(
-            pkt_mean_to_max=float("-inf"),
-            tcp_flag_density=0.5,
-            log_pkt_mean=2.0,
-            log_pkt_max=3.0
+            pkt_mean_to_max=float("-inf"), tcp_flag_density=0.5, log_pkt_mean=2.0, log_pkt_max=3.0
         )
 
 
@@ -71,8 +61,13 @@ def test_predict_rejects_out_of_bound_features():
         "/api/v1/predict",
         json={
             "model_name": "model_d2_coral",
-            "features": {"pkt_mean_to_max": 999999.0, "tcp_flag_density": 0.5, "log_pkt_mean": 2.0, "log_pkt_max": 3.0}
-        }
+            "features": {
+                "pkt_mean_to_max": 999999.0,
+                "tcp_flag_density": 0.5,
+                "log_pkt_mean": 2.0,
+                "log_pkt_max": 3.0,
+            },
+        },
     )
     assert res_high.status_code == 422
 
@@ -81,8 +76,13 @@ def test_predict_rejects_out_of_bound_features():
         "/api/v1/predict",
         json={
             "model_name": "model_d2_coral",
-            "features": {"pkt_mean_to_max": -5.0, "tcp_flag_density": 0.5, "log_pkt_mean": 2.0, "log_pkt_max": 3.0}
-        }
+            "features": {
+                "pkt_mean_to_max": -5.0,
+                "tcp_flag_density": 0.5,
+                "log_pkt_mean": 2.0,
+                "log_pkt_max": 3.0,
+            },
+        },
     )
     assert res_neg.status_code == 422
 
@@ -93,8 +93,13 @@ def test_explain_rejects_out_of_bound_features():
         "/api/v1/explain",
         json={
             "model_name": "model_d2_coral",
-            "features": {"pkt_mean_to_max": 100000.0, "tcp_flag_density": 0.5, "log_pkt_mean": 2.0, "log_pkt_max": 3.0}
-        }
+            "features": {
+                "pkt_mean_to_max": 100000.0,
+                "tcp_flag_density": 0.5,
+                "log_pkt_mean": 2.0,
+                "log_pkt_max": 3.0,
+            },
+        },
     )
     assert response.status_code == 422
 
@@ -108,8 +113,8 @@ def test_onboard_validation_bounds():
             "target_domain": "nfton",
             "adaptation_window_size": 1000000,
             "calibration_window_size": 2000,
-            "test_window_size": 3000
-        }
+            "test_window_size": 3000,
+        },
     )
     assert res_high.status_code == 422
 
@@ -120,8 +125,8 @@ def test_onboard_validation_bounds():
             "target_domain": "nfton",
             "adaptation_window_size": 1,
             "calibration_window_size": 2000,
-            "test_window_size": 3000
-        }
+            "test_window_size": 3000,
+        },
     )
     assert res_low.status_code == 422
 
@@ -132,7 +137,7 @@ def test_onboard_validation_bounds():
             "target_domain": "nfton; rm -rf /",
             "adaptation_window_size": 5000,
             "calibration_window_size": 2000,
-            "test_window_size": 3000
-        }
+            "test_window_size": 3000,
+        },
     )
     assert res_invalid_domain.status_code == 422

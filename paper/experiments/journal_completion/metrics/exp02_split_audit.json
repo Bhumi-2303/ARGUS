@@ -1,0 +1,35 @@
+{
+  "experiment_id": "EXP-02",
+  "results": [
+    {
+      "split_strategy": "Random i.i.d. Shuffle (Potentially Leaky)",
+      "train_samples": 140000,
+      "test_samples": 60000,
+      "roc_auc": 0.9651,
+      "f1_score": 0.9525,
+      "mcc": 0.8225,
+      "balanced_acc": 0.9036,
+      "inflation_risk": "HIGH - Cross-split burst/session correlation"
+    },
+    {
+      "split_strategy": "Chronological (Past -> Future, Causal)",
+      "train_samples": 140000,
+      "test_samples": 60000,
+      "roc_auc": 0.9666,
+      "f1_score": 0.9523,
+      "mcc": 0.8216,
+      "balanced_acc": 0.9035,
+      "inflation_risk": "ZERO - Respects arrow of time"
+    },
+    {
+      "split_strategy": "Group-Disjoint (0% Session/File Overlap)",
+      "train_samples": 139994,
+      "test_samples": 60006,
+      "roc_auc": 0.9662,
+      "f1_score": 0.9528,
+      "mcc": 0.8213,
+      "balanced_acc": 0.9019,
+      "inflation_risk": "ZERO - Completely unseen hosts/sessions"
+    }
+  ]
+}

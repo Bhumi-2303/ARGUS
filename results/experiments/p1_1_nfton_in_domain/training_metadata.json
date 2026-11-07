@@ -1,0 +1,64 @@
+{
+  "experiment": "ARGUS P1-1 NF-ToN-IoT-v2 In-Domain Supervised Baseline Training",
+  "timestamp": "2026-11-01T13:51:33Z",
+  "dataset": {
+    "path": "data/raw/legacy_package/argus_coral_data/nfton_train_adaptation.csv",
+    "sha256": "63de394798c89f342348e2a57eeb9cdf09f3bae71bc723ae779eb4d23fd0fb22",
+    "total_samples": 8406962,
+    "benign_samples": 2304821,
+    "attack_samples": 6102141,
+    "attack_prevalence": 0.7258437709127269,
+    "features": [
+      "pkt_mean_to_max",
+      "tcp_flag_density",
+      "log_pkt_mean",
+      "log_pkt_max"
+    ],
+    "target": "label",
+    "load_duration_seconds": 3.4814391136169434
+  },
+  "models": {
+    "xgboost": {
+      "class": "xgboost.XGBClassifier",
+      "version": "3.4.1",
+      "artifact_path": "results/experiments/p1_1_nfton_in_domain/xgboost_nfton_in_domain.json",
+      "sha256": "a9fb93d5734afc2379c6af3a8ef6fca5ee4ae1c91c4e42be124b2885ef9122d7",
+      "hyperparameters": {
+        "n_estimators": 100,
+        "learning_rate": 0.1,
+        "max_depth": 8,
+        "tree_method": "hist",
+        "objective": "binary:logistic",
+        "eval_metric": "logloss",
+        "random_state": 42,
+        "n_jobs": -1
+      },
+      "training_duration_seconds": 29.50586247444153,
+      "memory_delta_mb": 138.890625
+    },
+    "lightgbm": {
+      "class": "lightgbm.LGBMClassifier",
+      "version": "4.7.0",
+      "artifact_path": "results/experiments/p1_1_nfton_in_domain/lightgbm_nfton_in_domain.txt",
+      "sha256": "26497e19105bef429773e3be6280ae1a288f139c4675d3534e555948cd453de8",
+      "hyperparameters": {
+        "n_estimators": 100,
+        "learning_rate": 0.1,
+        "max_depth": 8,
+        "num_leaves": 63,
+        "objective": "binary",
+        "metric": "binary_logloss",
+        "random_state": 42,
+        "verbose": -1,
+        "n_jobs": -1
+      },
+      "training_duration_seconds": 44.71075415611267,
+      "memory_delta_mb": 3.68359375
+    }
+  },
+  "hardware": {
+    "cpu_count": 8,
+    "physical_cpu_count": 4,
+    "total_ram_gb": 15.359603881835938
+  }
+}

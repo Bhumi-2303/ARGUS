@@ -1,4 +1,5 @@
 """Abstract base repository for database access."""
+
 from abc import ABC, abstractmethod
 from typing import Generic, List, Optional, TypeVar, Any
 

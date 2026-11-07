@@ -5,8 +5,8 @@ Tests that the full pipeline:
   Knowledge Context → Risk Prediction → Decision Support
 executes with real agents and produces truthful results.
 """
+
 import pytest
-import asyncio
 from argus.orchestrator.pipeline import execute_pipeline, pipeline_context_to_response
 
 
@@ -30,6 +30,7 @@ ATTACK_FEATURES = {
 # ------------------------------------------------------------------
 # Phase 3: Data Intelligence
 # ------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_data_intelligence_validates_features():
@@ -65,6 +66,7 @@ async def test_data_intelligence_rejects_nan():
 # Phase 4: Threat Analysis
 # ------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_threat_analysis_runs_real_model():
     """Threat Analysis uses the real model registry for inference."""
@@ -90,6 +92,7 @@ async def test_threat_analysis_records_trace():
 # Phase 5: Explainability
 # ------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_explainability_produces_real_shap():
     """Explainability step returns real SHAP values from TreeExplainer."""
@@ -112,6 +115,7 @@ async def test_explainability_produces_real_shap():
 # Phase 6: Knowledge Context
 # ------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_knowledge_context_runs():
     """Knowledge Context Agent executes and returns a result."""
@@ -126,6 +130,7 @@ async def test_knowledge_context_runs():
 # ------------------------------------------------------------------
 # Phase 7: Risk Prediction
 # ------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_risk_prediction_runs():
@@ -143,6 +148,7 @@ async def test_risk_prediction_runs():
 # Phase 8: Decision Support
 # ------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_decision_support_runs():
     """Decision Support Agent generates real recommendations."""
@@ -158,6 +164,7 @@ async def test_decision_support_runs():
 # ------------------------------------------------------------------
 # Phase 9: Complete End-to-End
 # ------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_complete_pipeline_all_6_stages():
@@ -185,7 +192,7 @@ async def test_complete_pipeline_all_6_stages():
 @pytest.mark.asyncio
 async def test_full_argus_agent_pipeline():
     """Explicit end-to-end integration test proving real downstream data consumption.
-    
+
     Verifies:
       Input Flow
       → Data Intelligence (features extracted)
@@ -202,51 +209,51 @@ async def test_full_argus_agent_pipeline():
         "log_pkt_mean": 6.5,
         "log_pkt_max": 8.0,
     }
-    
+
     ctx = await execute_pipeline(test_input, model_name="xgb_adapted")
-    
+
     # 1. Pipeline Status
     assert ctx.status == "completed"
     assert ctx.error is None
-    
+
     # 2. Stage 1: Data Intelligence
     assert ctx.features is not None
     assert len(ctx.features) == 4
     assert ctx.features["pkt_mean_to_max"] == 0.85
-    
+
     # 3. Stage 2: Threat Analysis (consumed DIA features)
     assert ctx.threat is not None
     assert ctx.threat.model_version == "xgb_adapted"
     assert 0.0 <= ctx.threat.confidence <= 1.0
     assert ctx.threat.threat_level.value in ("low", "medium", "high", "critical", "info")
-    
+
     # 4. Stage 3: Explainability (consumed DIA features & model)
     assert ctx.explanation is not None
     assert ctx.explanation["status"] == "available"
     assert "shap_values" in ctx.explanation
     assert len(ctx.explanation["shap_values"]) == 4
     assert ctx.explanation["top_feature"] in test_input
-    
+
     # 5. Stage 4: Knowledge Context (consumed threat classification)
     assert ctx.knowledge is not None
     assert ctx.knowledge.confidence >= 0.0
     assert isinstance(ctx.knowledge.mitre_techniques, list)
     assert isinstance(ctx.knowledge.cves, list)
-    
+
     # 6. Stage 5: Risk Prediction (consumed threat & knowledge context)
     assert ctx.risk is not None
     assert 0 <= ctx.risk.risk_score <= 100
     assert ctx.risk.severity in ("LOW", "MEDIUM", "HIGH", "CRITICAL")
     assert 0.0 <= ctx.risk.confidence <= 1.0
     assert ctx.risk.impact_estimation is not None
-    
+
     # 7. Stage 6: Decision Support (consumed risk & knowledge context)
     assert ctx.decision is not None
     assert len(ctx.decision.recommended_actions) > 0
     assert ctx.decision.priority in (1, 2, 3, 4, 5)
     assert ctx.decision.urgency in ("low", "medium", "high", "critical")
     assert ctx.decision.execution_plan is not None
-    
+
     # 8. Execution Trace
     assert len(ctx.trace) == 6
     stages_in_trace = [t.agent for t in ctx.trace]
@@ -303,6 +310,7 @@ async def test_pipeline_response_serialization():
 # Phase 9: Failure Propagation
 # ------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_failure_does_not_appear_as_success():
     """An agent failure must NOT appear as SUCCESS in the trace."""
@@ -327,6 +335,7 @@ async def test_correlation_id_preserved():
 # ------------------------------------------------------------------
 # Phase 10: Trace Correctness
 # ------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_trace_has_timestamps_and_durations():

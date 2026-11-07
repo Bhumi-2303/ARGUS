@@ -1,4 +1,5 @@
 """Typed section implementations for the blackboard."""
+
 from typing import Any, Dict, Optional
 from argus.core.enums import BlackboardSection
 from argus.blackboard.sync import ReadWriteLock, VersionedEntry
@@ -8,6 +9,7 @@ import structlog
 
 class BlackboardSectionImpl:
     """Implementation of a single blackboard section."""
+
     def __init__(self, section: BlackboardSection):
         self.section = section
         self.entries: Dict[str, VersionedEntry] = {}
@@ -45,7 +47,8 @@ class BlackboardSectionImpl:
         try:
             now = datetime.now(timezone.utc)
             return {
-                k: v.value for k, v in self.entries.items()
+                k: v.value
+                for k, v in self.entries.items()
                 if not v.expires_at or v.expires_at >= now
             }
         finally:

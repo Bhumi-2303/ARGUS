@@ -1,0 +1,13 @@
+Model,Target_FPR_Budget,Operating_Threshold,Empirical_FPR,Attack_Recall,Precision,Statistical_Uncertainty,Evidence_Tier
+FTT-LARGE (D3 Native 70-Feat),0.1% FPR,0.985,0.10% ± 0.01%,0.82% ± 0.15%,94.2% ± 1.2%,5-Seed Mean ± SD,Tier 1 (Verified)
+FTT-LARGE (D3 Native 70-Feat),0.5% FPR,0.942,0.48% ± 0.03%,2.14% ± 0.32%,91.8% ± 1.5%,5-Seed Mean ± SD,Tier 1 (Verified)
+FTT-LARGE (D3 Native 70-Feat),1.0% FPR,0.891,0.99% ± 0.05%,3.77% ± 0.44%,89.4% ± 1.8%,5-Seed Mean ± SD,Tier 1 (Verified)
+FTT-LARGE (D3 Native 70-Feat),5.0% FPR,0.764,4.92% ± 0.12%,9.54% ± 1.69%,82.1% ± 2.4%,5-Seed Mean ± SD,Tier 1 (Verified)
+Harmonized 4-Feat Transfer (Full ARGUS),0.1% FPR,0.75,0.00% ± 0.00%,0.00% (Collapsed),0.00%,Deterministic Single-Run,Tier 1 (Verified)
+Harmonized 4-Feat Transfer (Full ARGUS),0.5% FPR,0.75,0.00% ± 0.00%,0.00% (Collapsed),0.00%,Deterministic Single-Run,Tier 1 (Verified)
+Harmonized 4-Feat Transfer (Full ARGUS),1.0% FPR,0.75,0.00% ± 0.00%,0.00% (Collapsed),0.00%,Deterministic Single-Run,Tier 1 (Verified)
+Harmonized 4-Feat Transfer (Full ARGUS),5.0% FPR,0.75,0.00% ± 0.00%,0.00% (Collapsed),0.00%,Deterministic Single-Run,Tier 1 (Verified)
+Native SCADA LightGBM (Native 70-Feat),0.1% FPR,0.742,0.10%,8.49%,96.07%,Deterministic Single-Run,Tier 1 (Verified)
+Native SCADA LightGBM (Native 70-Feat),0.5% FPR,0.68,0.50%,14.22%,92.41%,Deterministic Single-Run,Tier 1 (Verified)
+Native SCADA LightGBM (Native 70-Feat),1.0% FPR,0.61,1.00%,21.05%,88.75%,Deterministic Single-Run,Tier 1 (Verified)
+Native SCADA LightGBM (Native 70-Feat),5.0% FPR,0.45,5.00%,46.38%,78.10%,Deterministic Single-Run,Tier 1 (Verified)

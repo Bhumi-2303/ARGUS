@@ -1,6 +1,5 @@
 """Tests for HTTP security headers and CORS protection policies."""
 
-import pytest
 from fastapi.testclient import TestClient
 
 from argus.api.main import app
@@ -40,10 +39,7 @@ def test_cors_preflight_allowed_origin():
     """Preflight OPTIONS request from configured origin must return CORS headers."""
     response = client.options(
         "/api/v1/domains",
-        headers={
-            "Origin": "http://localhost:5173",
-            "Access-Control-Request-Method": "GET"
-        }
+        headers={"Origin": "http://localhost:5173", "Access-Control-Request-Method": "GET"},
     )
     # Under test/dev environment, localhost is allowed
     assert response.headers.get("access-control-allow-origin") in ("http://localhost:5173", "*")

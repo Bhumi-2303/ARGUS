@@ -1,11 +1,13 @@
-import os, json, time
+import os
+import json
 from pathlib import Path
-from typing import List, Dict, Union, Any, Optional
+from typing import List, Dict, Any, Optional
 
 import requests
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
-from argus.services.common.schemas import FlowRecord
+from argus.services.common.base_agent import BaseAgent
+from argus.services.common.schemas import AgentMessage, FlowRecord
 
 # 1. Environment & Configuration Constants
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
@@ -21,12 +23,15 @@ DEFAULT_CRITICALITY = 3  # Medium default if asset_id not found in inventory
 
 asset_inventory: Dict[str, Dict[str, Any]] = {}
 
+
 def load_asset_inventory() -> Dict[str, Dict[str, Any]]:
     """Loads synthetic asset inventory table from JSON file."""
     global asset_inventory
     inv_file = Path(INVENTORY_PATH) if INVENTORY_PATH else Path(DEFAULT_INVENTORY_PATH)
     if not inv_file.is_file():
-        print(f"[!] Warning: Asset inventory file not found at {inv_file}. Using fallback defaults.")
+        print(
+            f"[!] Warning: Asset inventory file not found at {inv_file}. Using fallback defaults."
+        )
         asset_inventory = {}
         return asset_inventory
 
@@ -36,15 +41,23 @@ def load_asset_inventory() -> Dict[str, Dict[str, Any]]:
     print(f"[+] Loaded {len(asset_inventory)} synthetic asset records from {INVENTORY_PATH}.")
     return asset_inventory
 
+
 # Load inventory at module initialization
 load_asset_inventory()
 
+
 # 2. Pydantic Models
 class RiskScoreRequest(BaseModel):
-    flow_record: Optional[FlowRecord] = Field(None, description="Raw 4-tuple flow record for detector inference")
-    detection_probability: Optional[float] = Field(None, description="Pre-computed detection probability in [0,1]")
+    flow_record: Optional[FlowRecord] = Field(
+        None, description="Raw 4-tuple flow record for detector inference"
+    )
+    detection_probability: Optional[float] = Field(
+        None, description="Pre-computed detection probability in [0,1]"
+    )
     asset_id: str = Field(..., description="Asset identifier (e.g. SCADA-MTU-01)")
-    asset_criticality_override: Optional[int] = Field(None, ge=1, le=5, description="Optional criticality override [1-5]")
+    asset_criticality_override: Optional[int] = Field(
+        None, ge=1, le=5, description="Optional criticality override [1-5]"
+    )
 
     model_config = {
         "json_schema_extra": {
@@ -54,11 +67,12 @@ class RiskScoreRequest(BaseModel):
                     "pkt_mean_to_max": 0.95,
                     "tcp_flag_density": 1.0,
                     "log_pkt_mean": 4.2,
-                    "log_pkt_max": 4.3
-                }
+                    "log_pkt_max": 4.3,
+                },
             }
         }
     }
+
 
 class RiskScoreResponse(BaseModel):
     asset_id: str = Field(..., description="Target asset identifier")
@@ -67,11 +81,17 @@ class RiskScoreResponse(BaseModel):
     asset_criticality: int = Field(..., description="Asset criticality C in [1,5]")
     risk_score: float = Field(..., description="Calculated 0-100 explainable Risk Score")
     risk_tier: str = Field(..., description="Risk tier: Low / Medium / High / Critical")
-    formula_explanation: str = Field(..., description="Step-by-step mathematical calculation formula for paper methodology")
+    formula_explanation: str = Field(
+        ..., description="Step-by-step mathematical calculation formula for paper methodology"
+    )
+
 
 class TriageResponse(BaseModel):
     total_alerts: int = Field(..., description="Total number of alert records triaged")
-    sorted_alerts: List[RiskScoreResponse] = Field(..., description="Alerts sorted by risk_score descending")
+    sorted_alerts: List[RiskScoreResponse] = Field(
+        ..., description="Alerts sorted by risk_score descending"
+    )
+
 
 # 3. Explainable Risk Formula Function
 def calculate_risk(probability: float, criticality: int) -> tuple:
@@ -98,12 +118,14 @@ def calculate_risk(probability: float, criticality: int) -> tuple:
     )
     return score, tier, explanation
 
+
 # 4. FastAPI Service
 app = FastAPI(
     title="ARGUS Risk Prediction & Triage Agent",
     description="FastAPI agent converting high-recall SCADA detections into triaged, ranked 0-100 risk scores.",
-    version="1.0.0"
+    version="1.0.0",
 )
+
 
 @app.get("/health")
 def health_check():
@@ -114,8 +136,9 @@ def health_check():
         "asset_inventory_count": len(asset_inventory),
         "inventory_path": INVENTORY_PATH,
         "formula": f"Risk Score = ({WEIGHT_PROBABILITY:.2f} * P + {WEIGHT_CRITICALITY:.2f} * (C / 5.0)) * 100",
-        "synthetic_notice": "Asset inventory table is synthetic and intended for SCADA demo & triage evaluation."
+        "synthetic_notice": "Asset inventory table is synthetic and intended for SCADA demo & triage evaluation.",
     }
+
 
 def get_asset_info(asset_id: str, override_crit: Optional[int] = None) -> tuple:
     """Retrieves asset name and criticality score from inventory."""
@@ -132,6 +155,7 @@ def get_asset_info(asset_id: str, override_crit: Optional[int] = None) -> tuple:
 
     return name, crit
 
+
 def resolve_probability(req: RiskScoreRequest) -> float:
     """Resolves detection probability from pre-computed value or Detector API call."""
     if req.detection_probability is not None:
@@ -140,7 +164,7 @@ def resolve_probability(req: RiskScoreRequest) -> float:
     if req.flow_record is None:
         raise HTTPException(
             status_code=400,
-            detail="Must provide either 'detection_probability' or 'flow_record' for inference."
+            detail="Must provide either 'detection_probability' or 'flow_record' for inference.",
         )
 
     # Call Detector API (POST http://localhost:8000/predict)
@@ -150,7 +174,7 @@ def resolve_probability(req: RiskScoreRequest) -> float:
         if response.status_code != 200:
             raise HTTPException(
                 status_code=502,
-                detail=f"Detector API returned error {response.status_code}: {response.text}"
+                detail=f"Detector API returned error {response.status_code}: {response.text}",
             )
         data = response.json()
         predictions = data.get("predictions", [])
@@ -160,8 +184,9 @@ def resolve_probability(req: RiskScoreRequest) -> float:
     except requests.exceptions.RequestException as e:
         raise HTTPException(
             status_code=53,
-            detail=f"Failed to connect to Detector API at {DETECTOR_API_URL}: {str(e)}"
+            detail=f"Failed to connect to Detector API at {DETECTOR_API_URL}: {str(e)}",
         )
+
 
 @app.post("/risk_score", response_model=RiskScoreResponse)
 def compute_risk_score(req: RiskScoreRequest):
@@ -181,8 +206,9 @@ def compute_risk_score(req: RiskScoreRequest):
         asset_criticality=crit,
         risk_score=score,
         risk_tier=tier,
-        formula_explanation=explanation
+        formula_explanation=explanation,
     )
+
 
 @app.post("/triage", response_model=TriageResponse)
 def triage_batch(requests_list: List[RiskScoreRequest]):
@@ -227,26 +253,23 @@ def triage_batch(requests_list: List[RiskScoreRequest]):
         name, crit = get_asset_info(req.asset_id, req.asset_criticality_override)
         score, tier, explanation = calculate_risk(prob, crit)
 
-        responses.append(RiskScoreResponse(
-            asset_id=req.asset_id,
-            asset_name=name,
-            detection_probability=prob,
-            asset_criticality=crit,
-            risk_score=score,
-            risk_tier=tier,
-            formula_explanation=explanation
-        ))
+        responses.append(
+            RiskScoreResponse(
+                asset_id=req.asset_id,
+                asset_name=name,
+                detection_probability=prob,
+                asset_criticality=crit,
+                risk_score=score,
+                risk_tier=tier,
+                formula_explanation=explanation,
+            )
+        )
 
     # Triage function: Sort by risk_score descending
     sorted_responses = sorted(responses, key=lambda x: x.risk_score, reverse=True)
 
-    return TriageResponse(
-        total_alerts=len(sorted_responses),
-        sorted_alerts=sorted_responses
-    )
+    return TriageResponse(total_alerts=len(sorted_responses), sorted_alerts=sorted_responses)
 
-from argus.services.common.base_agent import BaseAgent
-from argus.services.common.schemas import AgentMessage
 
 class RiskAgent(BaseAgent):
     def __init__(self):
@@ -256,15 +279,15 @@ class RiskAgent(BaseAgent):
         payload = message.payload
         asset_id = payload.get("asset_id", "SCADA-MTU-01")
         prob = payload.get("probability", 0.0)
-        
+
         # In a review request, we might boost criticality to be safe
         override_crit = None
         if message.message_type == "review_request":
             override_crit = 5
-            
+
         name, crit = get_asset_info(asset_id, override_crit)
         score, tier, explanation = calculate_risk(prob, crit)
-        
+
         return AgentMessage(
             message_id=message.message_id + "-resp",
             event_id=message.event_id,
@@ -277,14 +300,16 @@ class RiskAgent(BaseAgent):
                 "asset_criticality": crit,
                 "risk_score": score,
                 "risk_tier": tier,
-                "formula_explanation": explanation
+                "formula_explanation": explanation,
             },
             confidence=1.0,
             evidence={"explanation": explanation},
-            trace_id=message.trace_id
+            trace_id=message.trace_id,
         )
 
+
 risk_agent_instance = RiskAgent()
+
 
 @app.post("/agent/process", response_model=AgentMessage)
 async def agent_process(message: AgentMessage):

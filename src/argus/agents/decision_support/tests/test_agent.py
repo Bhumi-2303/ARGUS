@@ -2,10 +2,11 @@ import pytest
 from unittest.mock import AsyncMock
 from argus.agents.decision_support.agent import DecisionSupportAgent
 
+
 @pytest.mark.asyncio
 async def test_agent_pipeline(mock_decision_input):
     agent = DecisionSupportAgent()
-    
+
     # Mock the tool initialize methods
     agent.tool_playbooks.initialize = AsyncMock()
     agent.tool_recommendations.initialize = AsyncMock()

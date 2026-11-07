@@ -7,7 +7,7 @@ from structlog import get_logger
 
 from configs.settings import get_settings
 from argus.auth.models import UserPrincipal
-from argus.auth.jwt import jwt_validator, DEFAULT_ROLE_PERMISSIONS
+from argus.auth.jwt import jwt_validator
 from argus.security.audit import AuditLogger, SecurityAuditEvent
 
 logger = get_logger("argus.auth.rbac")
@@ -49,7 +49,9 @@ def _get_dev_principal() -> UserPrincipal:
 async def get_current_user(
     request: Request,
     auth_header: Optional[HTTPAuthorizationCredentials] = Depends(security_bearer),
-    token_query: Optional[str] = Query(None, alias="token", description="Token for WebSocket or SSE stream authentication")
+    token_query: Optional[str] = Query(
+        None, alias="token", description="Token for WebSocket or SSE stream authentication"
+    ),
 ) -> UserPrincipal:
     """FastAPI dependency to extract and validate the current authenticated principal."""
     settings = get_settings()
@@ -75,15 +77,17 @@ async def get_current_user(
     # If token is missing:
     # In production or when OIDC is enabled, FAIL CLOSED (HTTP 401)
     if settings.is_production or settings.security.oidc_enabled:
-        AuditLogger.log_event(SecurityAuditEvent(
-            actor_id="anonymous",
-            actor_type="user",
-            action="AUTHENTICATION_FAILURE",
-            resource=request.url.path,
-            outcome="UNAUTHORIZED",
-            reason="Missing Authorization header in production mode",
-            source_ip=request.client.host if request.client else None,
-        ))
+        AuditLogger.log_event(
+            SecurityAuditEvent(
+                actor_id="anonymous",
+                actor_type="user",
+                action="AUTHENTICATION_FAILURE",
+                resource=request.url.path,
+                outcome="UNAUTHORIZED",
+                reason="Missing Authorization header in production mode",
+                source_ip=request.client.host if request.client else None,
+            )
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication required: Missing Bearer token.",
@@ -99,30 +103,32 @@ async def get_current_user(
 
 def require_permission(required_permission: str):
     """FastAPI dependency factory enforcing a specific granular permission."""
+
     async def permission_dependency(
-        request: Request,
-        user: UserPrincipal = Depends(get_current_user)
+        request: Request, user: UserPrincipal = Depends(get_current_user)
     ) -> UserPrincipal:
         if not user.has_permission(required_permission):
-            AuditLogger.log_event(SecurityAuditEvent(
-                actor_id=user.sub,
-                actor_type="user",
-                action="AUTHORIZATION_FAILURE",
-                resource=request.url.path,
-                outcome="FORBIDDEN",
-                reason=f"User lacks required permission: '{required_permission}'",
-                source_ip=request.client.host if request.client else None,
-                authorization_context={
-                    "required_permission": required_permission,
-                    "user_roles": user.roles,
-                    "user_permissions": list(user.permissions),
-                }
-            ))
+            AuditLogger.log_event(
+                SecurityAuditEvent(
+                    actor_id=user.sub,
+                    actor_type="user",
+                    action="AUTHORIZATION_FAILURE",
+                    resource=request.url.path,
+                    outcome="FORBIDDEN",
+                    reason=f"User lacks required permission: '{required_permission}'",
+                    source_ip=request.client.host if request.client else None,
+                    authorization_context={
+                        "required_permission": required_permission,
+                        "user_roles": user.roles,
+                        "user_permissions": list(user.permissions),
+                    },
+                )
+            )
             logger.warning(
                 "permission_denied",
                 user=user.sub,
                 required_permission=required_permission,
-                path=request.url.path
+                path=request.url.path,
             )
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -135,24 +141,26 @@ def require_permission(required_permission: str):
 
 def require_roles(*allowed_roles: str):
     """FastAPI dependency factory enforcing that the user has at least one of the specified roles."""
+
     async def role_dependency(
-        request: Request,
-        user: UserPrincipal = Depends(get_current_user)
+        request: Request, user: UserPrincipal = Depends(get_current_user)
     ) -> UserPrincipal:
         if not user.has_any_role(*allowed_roles) and not user.has_role("admin"):
-            AuditLogger.log_event(SecurityAuditEvent(
-                actor_id=user.sub,
-                actor_type="user",
-                action="AUTHORIZATION_FAILURE",
-                resource=request.url.path,
-                outcome="FORBIDDEN",
-                reason=f"User lacks required role. Allowed: {list(allowed_roles)}",
-                source_ip=request.client.host if request.client else None,
-                authorization_context={
-                    "allowed_roles": list(allowed_roles),
-                    "user_roles": user.roles,
-                }
-            ))
+            AuditLogger.log_event(
+                SecurityAuditEvent(
+                    actor_id=user.sub,
+                    actor_type="user",
+                    action="AUTHORIZATION_FAILURE",
+                    resource=request.url.path,
+                    outcome="FORBIDDEN",
+                    reason=f"User lacks required role. Allowed: {list(allowed_roles)}",
+                    source_ip=request.client.host if request.client else None,
+                    authorization_context={
+                        "allowed_roles": list(allowed_roles),
+                        "user_roles": user.roles,
+                    },
+                )
+            )
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Access denied: Requires one of roles: {', '.join(allowed_roles)}.",

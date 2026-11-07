@@ -1,12 +1,15 @@
 """Critical Asset Analyzer tool for Risk Prediction Agent."""
-from typing import Any, Dict
+
 import structlog
 
 from argus.core.base_tool import BaseTool
 from argus.core.enums import ToolCategory
 from argus.agents.risk_prediction.models.schemas import (
-    RiskAnalysisInput, CriticalityResult, AssetPriority
+    RiskAnalysisInput,
+    CriticalityResult,
+    AssetPriority,
 )
+
 
 class CriticalAssetAnalyzer(BaseTool):
     """Analyzes the knowledge context to determine the priority of affected assets."""
@@ -18,7 +21,7 @@ class CriticalAssetAnalyzer(BaseTool):
             version="1.0.0",
             category=ToolCategory.UTILITY,
             description="Evaluates asset criticality based on knowledge graph context.",
-            required_permissions=[]
+            required_permissions=[],
         )
         self.logger = structlog.get_logger("argus.tool.critical_asset_analyzer")
 
@@ -44,21 +47,21 @@ class CriticalAssetAnalyzer(BaseTool):
         knowledge = input_data.knowledge_event
         affected = knowledge.affected_assets
         asset_types = knowledge.asset_types
-        
+
         if not affected:
             return CriticalityResult(
                 asset_priority=None,
                 critical_assets=[],
-                reasoning="No affected assets identified in knowledge context; criticality unavailable."
+                reasoning="No affected assets identified in knowledge context; criticality unavailable.",
             )
-            
+
         highest_priority = AssetPriority.LOW
         critical_assets = []
-        
+
         # Simple rule-based evaluation based on asset types
         for asset in affected:
             atype = asset_types.get(asset, "unknown").lower()
-            
+
             if atype in self._critical_types:
                 highest_priority = AssetPriority.CRITICAL
                 critical_assets.append(asset)
@@ -74,9 +77,7 @@ class CriticalAssetAnalyzer(BaseTool):
 
         self.logger.info("asset_criticality_calculated", priority=highest_priority.value)
         return CriticalityResult(
-            asset_priority=highest_priority,
-            critical_assets=critical_assets,
-            reasoning=reasoning
+            asset_priority=highest_priority, critical_assets=critical_assets, reasoning=reasoning
         )
 
     async def shutdown(self) -> None:

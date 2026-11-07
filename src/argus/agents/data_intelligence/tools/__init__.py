@@ -11,5 +11,5 @@ __all__ = [
     "DataCleanerTool",
     "NormalizerTool",
     "FeatureExtractorTool",
-    "PublisherTool"
+    "PublisherTool",
 ]

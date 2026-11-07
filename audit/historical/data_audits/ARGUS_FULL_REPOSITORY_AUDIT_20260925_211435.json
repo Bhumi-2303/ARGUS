@@ -1,0 +1,9 @@
+{
+  "project": "ARGUS",
+  "status": "Scaffolding/Broken",
+  "major_issues": [
+    "Data Leakage",
+    "Fabricated Results",
+    "Disconnected Architecture"
+  ]
+}

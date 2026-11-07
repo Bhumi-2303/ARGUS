@@ -1,10 +1,10 @@
 """Knowledge & Context Agent pipeline orchestrator."""
+
 import time
 from typing import Any, Dict
 
 from argus.schemas.messages import KnowledgeEvent
 from argus.agents.knowledge_context.schemas import (
-    EnrichmentContext,
     KCAPipelineConfig,
     SynthesisResult,
 )
@@ -121,7 +121,8 @@ class KnowledgePipeline:
 
         # Calculate confidence based on how many sources returned results
         sources_with_hits = sum(
-            1 for r in [mitre_result, mitre_ics_result, cve_result, cisa_result, playbook_result]
+            1
+            for r in [mitre_result, mitre_ics_result, cve_result, cisa_result, playbook_result]
             if r.hit_count > 0
         )
         confidence = min(1.0, sources_with_hits * 0.2)

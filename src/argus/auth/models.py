@@ -6,10 +6,13 @@ from pydantic import BaseModel, Field
 
 class UserPrincipal(BaseModel):
     """Authenticated user or service principal identity."""
+
     sub: str = Field(..., description="Unique subject identifier (user ID or client ID)")
     issuer: str = Field(..., description="Token issuer identifier")
     roles: List[str] = Field(default_factory=list, description="Assigned enterprise roles")
-    permissions: Set[str] = Field(default_factory=set, description="Direct or derived granular permissions")
+    permissions: Set[str] = Field(
+        default_factory=set, description="Direct or derived granular permissions"
+    )
     email: Optional[str] = Field(None, description="Principal email address if available")
     client_id: Optional[str] = Field(None, description="OAuth2 client ID if available")
     claims: Dict[str, Any] = Field(default_factory=dict, description="Raw validated token claims")

@@ -1,4 +1,5 @@
 """Core type aliases for ARGUS platform."""
+
 from typing import Any, Dict, TypeAlias, NewType
 
 AgentId = NewType("AgentId", str)

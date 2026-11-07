@@ -15,8 +15,7 @@ router = APIRouter()
 
 @router.post("/predict", response_model=PredictResponse, tags=["predict"])
 async def predict_flow(
-    request: PredictRequest,
-    user: UserPrincipal = Depends(require_permission("run:prediction"))
+    request: PredictRequest, user: UserPrincipal = Depends(require_permission("run:prediction"))
 ):
     """Predict attack probability and binary label for a network flow with RBAC enforcement."""
     features_dict = request.features.model_dump()
@@ -29,23 +28,17 @@ async def predict_flow(
             probability=round(prob, 6),
             prediction=label,
             threshold=threshold,
-            features=features_dict
+            features=features_dict,
         )
-    except KeyError as ke:
+    except (KeyError, ValueError) as ke:
         logger.warning("predict_unknown_model_or_feature", model=model_name, error=str(ke))
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unknown model '{model_name}' or invalid feature structure."
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(ke))
     except NotImplementedError as nie:
         # Expected response for unverified DANN model
-        raise HTTPException(
-            status_code=status.HTTP_501_NOT_IMPLEMENTED,
-            detail=str(nie)
-        )
+        raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail=str(nie))
     except Exception as ex:
         logger.error("inference_execution_failed", model=model_name, error=str(ex), exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Inference failed for model '{model_name}'."
+            detail=f"Inference failed for model '{model_name}'.",
         )

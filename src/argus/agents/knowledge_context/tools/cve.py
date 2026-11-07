@@ -1,4 +1,5 @@
 """CVETool — Retrieves CVE vulnerability data from local JSON database."""
+
 import json
 import os
 from typing import Any, Dict, List
@@ -37,7 +38,12 @@ class CVETool(BaseTool):
 
     def _lookup_by_attack_type(self, attack_type: str) -> List[Dict[str, Any]]:
         mapping = self._db.get("attack_type_mapping", {})
-        cve_ids = mapping.get(attack_type, mapping.get("default", []) if attack_type not in ("benign", "normal", "unknown") else [])
+        cve_ids = mapping.get(
+            attack_type,
+            mapping.get("default", [])
+            if attack_type not in ("benign", "normal", "unknown")
+            else [],
+        )
         cves = self._db.get("cves", {})
         return [cves[cid] for cid in cve_ids if cid in cves]
 

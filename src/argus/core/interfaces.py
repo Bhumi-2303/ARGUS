@@ -1,4 +1,5 @@
 """Protocol interfaces for ARGUS platform structural typing."""
+
 from typing import Protocol, Any, List, Optional
 
 
