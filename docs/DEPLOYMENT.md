@@ -272,11 +272,38 @@ docker compose -f docker-compose.prod.yml up -d --build
 
 ## 8. Continuous Integration & Workflow Verification
 
+### Automated Deployment Gating Policy
+To prevent broken builds on `main` and protect contributors/forks from failing due to missing secrets, all production deployment jobs (`deploy-cloudflare-pages` and `deploy-oracle-arm-vm`) are strictly gated by the following conditions:
+1. **Target Branch**: Must be `refs/heads/main` (`github.ref == 'refs/heads/main'`)
+2. **Trigger Event**: Must be a direct push or merge (`github.event_name == 'push'`)
+3. **Repository Variable**: `vars.DEPLOY_ENABLED` must be explicitly set to `'true'`
+4. **Environment**: Scoped to the `production` GitHub Environment
+
+If `vars.DEPLOY_ENABLED` is missing or not `'true'`, or if the workflow is running on a PR, fork, or feature branch, the deployment jobs are skipped automatically. A summary job (`deploy-skipped-note`) writes an explanatory notice to `$GITHUB_STEP_SUMMARY`.
+
+### Required GitHub Environment Secrets & Variables
+Configure these under **Settings > Environments > production** (or Repository Secrets/Variables):
+
+| Name | Type | Scope / Job | Description |
+|------|------|-------------|-------------|
+| `DEPLOY_ENABLED` | Variable | Repository / Environment | Set to `'true'` to enable automated deployments. |
+| `CLOUDFLARE_API_TOKEN` | Secret | `deploy-cloudflare-pages` | Cloudflare API token with Pages edit permissions. |
+| `CLOUDFLARE_ACCOUNT_ID` | Secret | `deploy-cloudflare-pages` | Cloudflare Account ID. |
+| `CLOUDFLARE_PROJECT_NAME` | Secret | `deploy-cloudflare-pages` | Target Cloudflare Pages project name (`argus-platform`). |
+| `ORACLE_VM_HOST` | Secret | `deploy-oracle-arm-vm` | Public IP or DNS of the Oracle Cloud ARM VM. |
+| `ORACLE_VM_USER` | Secret | `deploy-oracle-arm-vm` | SSH user for VM access (e.g. `ubuntu`). |
+| `ORACLE_SSH_KEY` | Secret | `deploy-oracle-arm-vm` | Private SSH key matching `authorized_keys` on VM. |
+
+### Workflow Verification & Pin Checking
 Before modifying GitHub Actions workflows in `.github/workflows/`, all action references must be pinned to full 40-character commit SHAs with a comment indicating the intended version tag (e.g. `uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2`).
 
-Contributors must run the action pin verification script before committing any workflow modifications:
+Contributors must run the action pin verification script and actionlint before committing any workflow modifications:
 ```bash
+# Verify action pins against upstream tags
 ./tools/ci/verify_action_pins.sh
+
+# Lint workflow syntax (install actionlint if needed)
+actionlint .github/workflows/ci.yml
 ```
-This ensures that every pinned commit SHA exists in the upstream repository and resolves to the specified tag.
+This ensures that every pinned commit SHA exists in the upstream repository and resolves to the specified tag without syntax errors or unpinned references.
 
