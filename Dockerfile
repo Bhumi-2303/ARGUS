@@ -27,12 +27,17 @@ RUN apt-get update && \
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 ENV VIRTUAL_ENV="/opt/venv"
+ENV UV_PROJECT_ENVIRONMENT="/opt/venv"
 
 COPY pyproject.toml uv.lock README.md ./
 COPY src/ ./src/
 
 RUN pip install --no-cache-dir uv && \
-    uv sync --frozen --no-dev
+    uv sync --frozen --no-dev --active && \
+    rm -rf /opt/venv/lib/python3.11/site-packages/nvidia* \
+           /opt/venv/lib/python3.11/site-packages/pip* \
+           /opt/venv/lib/python3.11/site-packages/setuptools* && \
+    find /opt/venv -type d -name "__pycache__" -exec rm -rf {} +
 
 # --- Stage 3: Minimal Hardened Runtime (Multi-Arch, Non-Root, No Compilers) ---
 FROM python:3.11-slim AS runtime
@@ -61,6 +66,7 @@ COPY results/ ./results/
 COPY data/ ./data/
 COPY dataset/*.parquet ./dataset/
 COPY prompts/ ./prompts/
+COPY scripts/ ./scripts/
 
 # Copy compiled frontend assets from frontend-builder
 COPY --from=frontend-builder /web/dist ./web/dist

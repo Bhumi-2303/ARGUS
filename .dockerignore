@@ -7,27 +7,49 @@ dist/
 build/
 .eggs/
 
-# Virtual environments
+# Virtual environments & test caches
 .venv/
 venv/
 env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
 
-# IDE
+# Git & IDE metadata
+.git/
+.github/
 .idea/
 .vscode/
 *.swp
 *.swo
 
-# Environment
+# Environment files
 .env
-.env.local
-.env.production
+.env.*
+.dockerignore
 
-# Large raw dataset caches (preserve data/samples/ for runtime container)
-data/raw/
-data/interim/
-data/processed/
-data/reproduction/
+# Excluded research, experimental, scratch and test directories
+archive/
+experiments/
+results/experiments/
+paper/
+scratch*/
+tests/
+docs/
+verification/
+tools/
+audit/
+reports/
+
+# Archives & raw dataset caches
+*.zip
+*.tar
+*.tar.gz
+data/**
+!data/samples/**
+dataset/*.zip
 *.db
 *.sqlite
 *.sqlite3
@@ -36,21 +58,24 @@ data/reproduction/
 logs/
 *.log
 
-# Docker
-.dockerignore
-
-# Node
+# Node dependencies
 node_modules/
 web/node_modules/
-web/dist/
 
-# OS
+# Generic data patterns to exclude
+**/*.csv
+**/*.parquet
+
+# EXCEPTIONS: Runtime assets required by ARGUS container
+!results/verified/*.csv
+!results/diagnostic/*.csv
+!dataset/ciciot.parquet
+!dataset/nfton.parquet
+!data/samples/*.parquet
+!data/samples/*.csv
+!artifacts/models/**
+!web/dist/**
+
+# OS metadata
 .DS_Store
 Thumbs.db
-
-# Testing & Caches
-.coverage
-htmlcov/
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
