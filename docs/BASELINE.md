@@ -9,9 +9,9 @@
 
 ## 1. Executive Summary: Before vs. After Transformation
 
-| Evaluation Dimension | Initial Baseline (`chore/baseline`) | Final Production State (`chore/observability-final`) | Status / Delta |
+| Evaluation Dimension | Initial Baseline (`chore/baseline`, `4c10b3d`, 2026-11-05) | Final Production State (`chore/observability-final`, `5bb9633`, 2026-11-05) | Status / Delta |
 | :--- | :--- | :--- | :--- |
-| **Total Test Suite** | `283 passed, 0 failed` | **`331 passed, 0 failed`** | **+48 tests passed** (100% success rate) |
+| **Total Test Suite** | `283 passed, 0 failed` (snapshot: `4c10b3d`, 2026-11-05) | **`331 passed, 0 failed`** (snapshot: `5bb9633`, 2026-11-05) | **+48 tests passed** (100% success rate) |
 | **Agent Pipeline Replay** | Synthetic SSE simulation | **True 6-agent WebSocket flow replay (`/api/v1/stream`)** | Full row-level replay, controls & skips |
 | **Topology Bundle Size** | `965.69 kB` (monolithic) | **`23.43 kB`** (initial) + `950.25 kB` (lazy 3D chunk) | **97.6% reduction in initial route load** |
 | **3D Visualizations** | Basic 2D SVG graph | **4 Interactive R3F Scenes** (Topology, CORAL PCA, SHAP, Timeline) | True CORAL transform & 2D fallback |
@@ -42,7 +42,7 @@
 .venv/bin/pytest -q
 ```
 
-### Exact Output
+### Exact Output (snapshot: commit `5bb9633`, 2026-11-05)
 ```text
 ........................................................................ [ 21%]
 ........................................................................ [ 43%]
@@ -53,7 +53,7 @@
 ```
 
 ### Test Statistics
-- **Passed:** `331` (up from `283`)
+- **Passed:** `331` (snapshot: `5bb9633`, 2026-11-05; initial baseline `4c10b3d`: `283`)
 - **Failed:** `0`
 - **Skipped:** `0`
 - **Errors:** `0`

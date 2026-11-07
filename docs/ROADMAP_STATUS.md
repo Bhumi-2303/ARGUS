@@ -70,7 +70,7 @@
   - Labeled `"verified flow replay"` in all API metadata and frontend interfaces.
 - **Evidence:**
   - File: `src/argus/api/routers/stream.py`
-  - Tests: `tests/e2e/test_replay_stream.py` (8 passing E2E tests validating event ordering, speed scaling, error skipping, and disconnect handling).
+  - Tests: `tests/e2e/test_replay_stream.py` (E2E tests validating event ordering, speed scaling, error skipping, and disconnect handling; 8 passed in snapshot commit `5bb9633`, 2026-11-05).
 
 ---
 
@@ -134,7 +134,7 @@
   - Integrated into `pipeline.py`, `SecurityMiddleware`, and `shift.py`.
 - **Evidence:**
   - Files: `src/argus/observability/otel.py`, `src/argus/observability/metrics.py`
-  - Tests: `tests/unit/test_observability_otel.py` (5 passing tests).
+  - Tests: `tests/unit/test_observability_otel.py` (validating all OTel instruments; 6 passed in snapshot commit `5bb9633`, 2026-11-05).
 
 ---
 
@@ -193,7 +193,7 @@
 
 ## 3. Verification & CI Traceability Matrix
 
-| Verification Target | Command | Result | Output Assertion |
+| Verification Target | Command | Result | Output Assertion (snapshot: commit `5bb9633`, 2026-11-05) |
 | :--- | :--- | :---: | :--- |
 | **Full Pytest Suite** | `.venv/bin/pytest tests/ -v` | **PASS** | `331 passed, 0 failed` in 8.40s |
 | **Startup Check** | `.venv/bin/python scripts/startup_check.py` | **PASS** | All 6 models & parquets verified |

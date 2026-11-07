@@ -76,7 +76,7 @@ python scripts/start_demo.py
 ## 4. Running Verification & Automated Tests
 
 ### Full Test Suite Execution
-Execute the entire test suite (283 tests spanning unit, integration, and security checks):
+Execute the entire test suite (spanning unit, integration, and security checks):
 ```bash
 pytest -v
 ```
