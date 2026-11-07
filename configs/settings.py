@@ -43,7 +43,13 @@ class SecuritySettings(BaseSettings):
     jwt_algorithm: str = Field(default="HS256")
     jwt_expiry_minutes: int = Field(default=60)
     cors_origins: List[str] = Field(
-        default=["http://localhost:5173", "http://localhost:3000", "http://localhost:8000"]
+        default=[
+            "http://localhost:5173",
+            "http://localhost:3000",
+            "http://localhost:8000",
+            "http://127.0.0.1:5173",
+            "http://127.0.0.1:8000",
+        ]
     )
 
     # Rate Limiting

@@ -64,6 +64,7 @@ async def create_incident(
         )
 
 
+@router.get("", response_model=APIResponse[List[Incident]])
 @router.get("/", response_model=APIResponse[List[Incident]])
 async def list_incidents(user: UserPrincipal = Depends(require_permission("read:incidents"))):
     """List all incidents."""

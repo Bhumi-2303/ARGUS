@@ -263,6 +263,7 @@ export function TopologyGraph2D({
           return (
             <g
               key={node.id}
+              data-testid={`topology-node-${node.id}`}
               className="cursor-pointer transition-transform duration-200"
               onClick={() => onSelectNode(node)}
             >

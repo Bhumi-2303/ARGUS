@@ -20,6 +20,7 @@ import {
   Minimize2,
   Maximize2,
   Sparkles,
+  Zap,
 } from 'lucide-react';
 import {
   api,
@@ -434,6 +435,17 @@ export default function TopologyPage() {
             <span>Motion: {reducedMotion ? 'Off' : 'On'}</span>
           </button>
 
+          {/* Trigger Flow Simulation */}
+          <button
+            onClick={() => simulateMutation.mutate()}
+            disabled={simulateMutation.isPending}
+            aria-label="Trigger Flow Simulation"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold text-xs font-mono disabled:opacity-50 transition-colors"
+          >
+            <Zap className="w-3.5 h-3.5" />
+            <span>{simulateMutation.isPending ? 'Simulating...' : 'Trigger Flow'}</span>
+          </button>
+
           {/* Reset View */}
           <button
             onClick={() => {
@@ -457,41 +469,46 @@ export default function TopologyPage() {
         <Card className="lg:col-span-2 relative h-[580px] p-0 overflow-hidden border border-slate-800 flex flex-col justify-between bg-slate-950">
           {loadingTopology ? (
             <Skeleton className="w-full h-full" />
-          ) : viewMode !== '2D' ? (
-            <Suspense fallback={<Skeleton className="w-full h-full" />}>
-              <TopologyCanvas3D
-                nodes={nodes}
-                edges={edges}
-                selectedNode={selectedNode}
-                onSelectNode={setSelectedNode}
-                activeEvents={eventTrace}
-                sceneMode={
-                  viewMode === '3D_DOMAIN_SHIFT'
-                    ? 'DOMAIN_SHIFT'
-                    : viewMode === '3D_SHAP'
-                    ? 'SHAP'
-                    : viewMode === '3D_DECISION_TIMELINE'
-                    ? 'DECISION_TIMELINE'
-                    : 'TOPOLOGY'
-                }
-                quality={quality}
-                reducedMotion={reducedMotion}
-                shiftData={shiftPCAData}
-                shiftLoading={loadingShiftPCA}
-                selectedIncident={selectedIncident}
-                nodeStatusMap={nodeStatusMap}
-                onApproveIncident={(id) => approveMutation.mutate(id)}
-              />
-            </Suspense>
           ) : (
-            <TopologyGraph2D
-              nodes={nodes}
-              edges={edges}
-              selectedNode={selectedNode}
-              onSelectNode={setSelectedNode}
-              activeEvents={eventTrace}
-              layoutMode="architecture"
-            />
+            <>
+              <div className={`w-full h-full ${viewMode === '2D' ? 'hidden' : 'block'}`}>
+                <Suspense fallback={<Skeleton className="w-full h-full" />}>
+                  <TopologyCanvas3D
+                    nodes={nodes}
+                    edges={edges}
+                    selectedNode={selectedNode}
+                    onSelectNode={setSelectedNode}
+                    activeEvents={eventTrace}
+                    sceneMode={
+                      viewMode === '3D_DOMAIN_SHIFT'
+                        ? 'DOMAIN_SHIFT'
+                        : viewMode === '3D_SHAP'
+                        ? 'SHAP'
+                        : viewMode === '3D_DECISION_TIMELINE'
+                        ? 'DECISION_TIMELINE'
+                        : 'TOPOLOGY'
+                    }
+                    quality={quality}
+                    reducedMotion={reducedMotion}
+                    shiftData={shiftPCAData}
+                    shiftLoading={loadingShiftPCA}
+                    selectedIncident={selectedIncident}
+                    nodeStatusMap={nodeStatusMap}
+                    onApproveIncident={(id) => approveMutation.mutate(id)}
+                  />
+                </Suspense>
+              </div>
+              {viewMode === '2D' && (
+                <TopologyGraph2D
+                  nodes={nodes}
+                  edges={edges}
+                  selectedNode={selectedNode}
+                  onSelectNode={setSelectedNode}
+                  activeEvents={eventTrace}
+                  layoutMode="architecture"
+                />
+              )}
+            </>
           )}
 
           {/* Canvas Bottom Overlay Banner */}
@@ -620,6 +637,7 @@ export default function TopologyPage() {
                 eventTrace.slice(0, 10).map((evt, idx) => (
                   <div
                     key={`${evt.event_id}-${idx}`}
+                    data-testid="flow-event-item"
                     className="p-2 rounded bg-slate-900/60 border border-slate-800 text-[11px] font-mono"
                   >
                     <div className="flex items-center justify-between text-slate-400 text-[9px] mb-1">
