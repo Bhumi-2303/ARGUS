@@ -1,0 +1,14 @@
+{
+  "artifact_file": "model_d3_native.txt",
+  "sha256": "0dcac73c8655cca3f1a7a5c6df73836a0d5c4ad1d882fab2676b2e32f8bfc21c",
+  "version": "1.0.0",
+  "created_at": "2026-11-07T17:33:23.968955+00:00",
+  "git_commit": "b7ae26f36e327e60d5292649a26da112c5a8430e",
+  "artifact_type": "lightgbm",
+  "signature": null,
+  "signature_type": null,
+  "metadata": {
+    "status": "verified",
+    "format": "txt"
+  }
+}

@@ -289,7 +289,22 @@ curl -X POST "http://localhost:8000/api/v1/agents/trace" \
 - **Content Security Policy (CSP)**: Strict directives including `worker-src 'self' blob:` and `child-src 'self' blob:` to safely accommodate 3D WebGL workers without compromising defense-in-depth.
 - **OWASP Defensive Headers**: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, and sensitive endpoint `Cache-Control: no-store`.
 - **Role-Based Access Control (RBAC)**: Fine-grained permissions (`read:agent-topology`, `execute:flow-simulation`) backed by JWT validation.
-- **Model Tamper Resistance**: All model artifact hashes are verified against [`INTEGRITY_MANIFEST.json`](artifacts/models/INTEGRITY_MANIFEST.json) upon server startup.
+- **Model Tamper Resistance & Safe Artifact Loading Rules**:
+  - **Zero-Pickle Policy**: Deserialization via Python `pickle` or `joblib.load` is strictly banned across the entire codebase to eliminate arbitrary code execution attack surfaces. Banned extensions (`.pkl`, `.pickle`, `.joblib`) are rejected fail-closed, and artifact headers are inspected for pickle opcode magic prefixes (`\x80\x02` through `\x80\x05`).
+  - **Mandatory Safe Formats**:
+    - **XGBoost**: Serialized exclusively to native Universal Binary JSON (`.ubj`) or JSON (`.json`) via `save_model` / `load_model`.
+    - **LightGBM**: Serialized to native text booster format (`.txt`) via `lgb.Booster(model_file=...)`.
+    - **DANN / PyTorch**: Neural network checkpoints loaded strictly with `torch.load(weights_only=True)` or `safetensors`.
+    - **CORAL Adapters**: Second-order covariance alignment matrices and class statistics stored in safe `.npz` (`allow_pickle=False`) or JSON format.
+  - **Pre-Deserialization Integrity Verification**:
+    - Every artifact is accompanied by a companion manifest (`<artifact>.manifest.json` or entry in `artifacts/models/INTEGRITY_MANIFEST.json`) recording its SHA-256 hash, format version, creation timestamp, and git commit.
+    - Files are hashed and compared in constant time prior to deserialization; missing manifests or hash mismatches raise `MissingManifestError` or `ArtifactIntegrityError`.
+  - **HMAC / Ed25519 Cryptographic Signatures**:
+    - Optional cryptographic signature verification supports HMAC-SHA256 (`ARGUS_ARTIFACT_HMAC_KEY`) or asymmetric Ed25519 (`ARGUS_ED25519_PRIVATE_KEY` / `ARGUS_ED25519_PUBLIC_KEY`).
+    - Cryptographic keys are read exclusively from environment variables and are never hardcoded. Under `ARGUS_REQUIRE_SIGNATURE=1`, unsigned models are blocked from loading.
+- **Strict Input Validation & Quarantine**:
+  - Ingress telemetry is validated through `TelemetryValidator` (`src/argus/security/validation.py`) enforcing finite-only bounds, non-negativity, and physical invariants (`pkt_mean_to_max <= 1.0 + 1e-9`).
+  - Corrupted, out-of-bounds, or NaN/Inf inputs fail closed to status `INVALID_FLAG_FOR_REVIEW` (never `BENIGN`). External API callers receive sanitized decisions and risk tiers without exposing internal probability distributions.
 
 ---
 

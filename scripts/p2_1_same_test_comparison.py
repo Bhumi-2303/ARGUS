@@ -309,7 +309,7 @@ def main():
 
     # 5. Model 4: DANN PyTorch Model
     print("\n[Step 5/7] Evaluating DANN PyTorch Model (tau=0.60)...")
-    dann_ckpt = torch.load(DATA_DIR / "dann_results/dann_best_model.pt", map_location="cpu", weights_only=False)
+    dann_ckpt = torch.load(DATA_DIR / "dann_results/dann_best_model.pt", map_location="cpu", weights_only=True)
     adapt_mean = dann_ckpt["adapt_mean"]
     adapt_std = dann_ckpt["adapt_std"]
 

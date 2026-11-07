@@ -280,6 +280,10 @@ class ModelRegistry:
         self._integrity_manifest = self._load_integrity_manifest()
 
         for model_name, meta in MODEL_METADATA.items():
+            if meta.get("status") == "unavailable" or meta.get("type") == "dann_simulated":
+                # Simulated / unavailable models have no inference weights artifact to load
+                continue
+
             rel_path = meta["artifact_path"]
             full_path = os.path.join(self.base_dir, rel_path)
 
@@ -288,9 +292,12 @@ class ModelRegistry:
                 continue
 
             try:
-                # Verify integrity BEFORE loading (critical for joblib deserialization safety)
-                if model_name in self._integrity_manifest:
-                    self._verify_artifact_integrity(model_name, full_path)
+                # Verify integrity BEFORE loading (fail-closed: every model must be present and verified)
+                if model_name not in self._integrity_manifest:
+                    raise RuntimeError(
+                        f"Integrity verification failed: model '{model_name}' is not registered in INTEGRITY_MANIFEST.json"
+                    )
+                self._verify_artifact_integrity(model_name, full_path)
 
                 model_type = meta["type"]
                 if model_type == "lightgbm":

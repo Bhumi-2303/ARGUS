@@ -1,0 +1,14 @@
+{
+  "artifact_file": "xgb_adapted.json",
+  "sha256": "6697c214a3c83fb1422f15fee34a89f2d320a95d28f8036768f01fb513e78a3d",
+  "version": "1.0.0",
+  "created_at": "2026-11-07T17:33:23.968955+00:00",
+  "git_commit": "b7ae26f36e327e60d5292649a26da112c5a8430e",
+  "artifact_type": "xgboost",
+  "signature": null,
+  "signature_type": null,
+  "metadata": {
+    "status": "verified",
+    "format": "json"
+  }
+}

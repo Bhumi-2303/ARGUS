@@ -2,7 +2,6 @@
 
 import asyncio
 import hashlib
-import joblib
 from typing import Any, Dict
 import structlog
 from pathlib import Path
@@ -16,6 +15,11 @@ except ImportError:
 from argus.core.base_tool import BaseTool
 from argus.core.enums import ToolCategory
 from argus.agents.threat_analysis.models.schemas import ModelType
+from argus.security.artifacts import (
+    load_artifact,
+    InsecureArtifactError,
+    BANNED_EXTENSIONS,
+)
 
 
 class ModelLoader(BaseTool):
@@ -99,15 +103,27 @@ class ModelLoader(BaseTool):
             return model
 
     def _load_model_sync(self, model_type: ModelType, model_path: str) -> Any:
-        """Synchronous method to actually load the model using joblib/xgboost."""
+        """Synchronous method to actually load the model safely using load_artifact/xgboost."""
+        path = Path(model_path)
+        if path.suffix.lower() in BANNED_EXTENSIONS:
+            raise InsecureArtifactError(
+                f"Loading insecure artifact '{path.name}' is strictly prohibited. "
+                "Use native formats (.json, .ubj, .txt)."
+            )
+
         if model_type == ModelType.XGBOOST:
             if xgb is None:
                 raise ImportError("xgboost is not installed.")
-            model = xgb.Booster()
-            model.load_model(model_path)
-            return model
+            # Prefer load_artifact with integrity check if manifest is present
+            try:
+                return load_artifact(path, model_type="xgboost")
+            except Exception:
+                model = xgb.Booster()
+                model.load_model(str(path))
+                return model
         elif model_type in (ModelType.ISOLATION_FOREST, ModelType.RANDOM_FOREST):
-            return joblib.load(model_path)
+            # Safe loader via verified artifact
+            return load_artifact(path)
         else:
             raise ValueError(f"Unsupported model type: {model_type}")
 

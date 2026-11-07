@@ -243,7 +243,7 @@ def run_regularization():
 
     # 6. Load Best Checkpoint & Perform Batched Inference
     print(f"\n[4/8] Performing Batched Test Inference on D3 Test Set (N={len(X_d3_test):,})...")
-    ckpt_saved = torch.load(best_ckpt_path, map_location=DEVICE)
+    ckpt_saved = torch.load(best_ckpt_path, map_location=DEVICE, weights_only=True)
     model.load_state_dict(ckpt_saved["model_state_dict"])
     model.eval()
 

@@ -28,5 +28,21 @@
   "xgb_adapted": {
     "artifact_path": "artifacts/models/xgb_adapted.json",
     "sha256": "6697c214a3c83fb1422f15fee34a89f2d320a95d28f8036768f01fb513e78a3d"
+  },
+  "model_d3_protocol_aware": {
+    "artifact_path": "artifacts/models/model_d3_protocol_aware.txt",
+    "sha256": "6ee3c50b930856471cb636218dd0db2db9515fa5d8b2bf4293957014f19ee0dc"
+  },
+  "model_d3_protocol_aware_grouped": {
+    "artifact_path": "artifacts/models/model_d3_protocol_aware_grouped.txt",
+    "sha256": "0eed6e192b82b4159440b18cbadc850f5dfd1c55b17431fe814aff221a19fcc6"
+  },
+  "model_d3_protocol_combined": {
+    "artifact_path": "artifacts/models/model_d3_protocol_combined.txt",
+    "sha256": "99bcacb2251f96885a418151a1c60bc041805ef91e5c6d6616cd92a6f7f3618b"
+  },
+  "model_d3_protocol_combined_grouped": {
+    "artifact_path": "artifacts/models/model_d3_protocol_combined_grouped.txt",
+    "sha256": "efe1fc01c7cfe48a9ee6f6ebf931219abcc94a6bae361478fbeefeafc7ebf15a"
   }
 }

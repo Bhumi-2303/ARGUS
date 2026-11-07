@@ -1,0 +1,14 @@
+{
+  "artifact_file": "model_d3_protocol_aware.txt",
+  "sha256": "6ee3c50b930856471cb636218dd0db2db9515fa5d8b2bf4293957014f19ee0dc",
+  "version": "1.0.0",
+  "created_at": "2026-11-07T17:33:23.968955+00:00",
+  "git_commit": "b7ae26f36e327e60d5292649a26da112c5a8430e",
+  "artifact_type": "lightgbm",
+  "signature": null,
+  "signature_type": null,
+  "metadata": {
+    "status": "verified",
+    "format": "txt"
+  }
+}

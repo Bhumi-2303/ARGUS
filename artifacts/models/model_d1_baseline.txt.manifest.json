@@ -1,0 +1,14 @@
+{
+  "artifact_file": "model_d1_baseline.txt",
+  "sha256": "7f9a8ccc22e3d0c5f8ee45d536cf161a02cf8d9b00a4901db41d1a908f510b7b",
+  "version": "1.0.0",
+  "created_at": "2026-11-07T17:33:23.968955+00:00",
+  "git_commit": "b7ae26f36e327e60d5292649a26da112c5a8430e",
+  "artifact_type": "lightgbm",
+  "signature": null,
+  "signature_type": null,
+  "metadata": {
+    "status": "verified",
+    "format": "txt"
+  }
+}

@@ -438,7 +438,7 @@ def main():
 
         ckpt_file = f"dann_{'d1' if 'D1' in dann_id else 'd2'}_d3_checkpoint.pt"
         model_dann = DANNModel(input_dim=4, feature_dim=64).to(device)
-        model_dann.load_state_dict(torch.load(P3_RESULTS / f"checkpoints/{ckpt_file}", map_location=device))
+        model_dann.load_state_dict(torch.load(P3_RESULTS / f"checkpoints/{ckpt_file}", map_location=device, weights_only=True))
         model_dann.eval()
 
         log(f"  Predicting {dann_id} on calib set...")

@@ -281,7 +281,7 @@ def run_ablation():
         df_hist.to_csv(ABL / f"figures/{cond_id}_loss.csv", index=False)
 
         # Threshold Calibration on D3 Calibration Split
-        ckpt_saved = torch.load(best_ckpt_path, map_location=DEVICE)
+        ckpt_saved = torch.load(best_ckpt_path, map_location=DEVICE, weights_only=True)
         model.load_state_dict(ckpt_saved["model_state_dict"])
         model.eval()
 

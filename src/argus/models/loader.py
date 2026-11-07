@@ -1,51 +1,83 @@
-"""ARGUS Model Loader & Predictor Wrappers."""
+"""ARGUS Model Loader & Predictor Wrappers with Secure Deserialization."""
 
 import os
+from pathlib import Path
+from typing import Any, Optional
 import numpy as np
 import pandas as pd
 
+from argus.security.artifacts import (
+    InsecureArtifactError,
+    load_artifact,
+    BANNED_EXTENSIONS,
+)
+
 
 class ArgusModelWrapper:
-    """Unified predictor wrapper for ARGUS models."""
+    """Unified predictor wrapper for ARGUS models using safe serialization formats."""
 
     def __init__(self, model_type: str, model_path: str):
-        self.model_type = model_type
-        self.model_path = model_path
+        self.model_type = model_type.lower()
+        self.model_path = str(model_path)
         self._model = None
         self.load()
 
     def load(self):
-        """Loads model weights based on model type."""
-        if not os.path.exists(self.model_path):
+        """Loads model weights based on model type using secure deserialization."""
+        path = Path(self.model_path)
+        if not path.exists():
             raise FileNotFoundError(f"Model path does not exist: {self.model_path}")
+
+        # Ban pickle and joblib extensions strictly
+        if path.suffix.lower() in BANNED_EXTENSIONS:
+            raise InsecureArtifactError(
+                f"Loading insecure model format '{path.suffix}' is forbidden. "
+                "Models must use safe formats: XGBoost (.json, .ubj), LightGBM (.txt), or PyTorch weights_only."
+            )
+
+        # Attempt to load through load_artifact if manifest exists, otherwise use safe native format loaders
+        try:
+            self._model = load_artifact(path, model_type=self.model_type)
+            return
+        except Exception:
+            # Fall back to native safe loader if no standalone manifest is present
+            pass
 
         if self.model_type == "xgboost":
             import xgboost as xgb
 
-            self._model = xgb.XGBClassifier()
-            if self.model_path.endswith(".json"):
-                self._model.load_model(self.model_path)
+            if path.suffix.lower() in (".json", ".ubj"):
+                self._model = xgb.XGBClassifier()
+                self._model.load_model(str(path))
             else:
-                import joblib
+                raise InsecureArtifactError(
+                    f"Unsupported XGBoost model format '{path.suffix}'. Use .json or .ubj."
+                )
 
-                self._model = joblib.load(self.model_path)
         elif self.model_type == "lightgbm":
             import lightgbm as lgb
 
-            if self.model_path.endswith(".txt"):
-                self._model = lgb.Booster(model_file=self.model_path)
+            if path.suffix.lower() == ".txt":
+                self._model = lgb.Booster(model_file=str(path))
             else:
-                import joblib
+                raise InsecureArtifactError(
+                    f"Unsupported LightGBM model format '{path.suffix}'. Use native .txt format."
+                )
 
-                self._model = joblib.load(self.model_path)
         elif self.model_type == "dann":
-            import torch
+            if path.suffix.lower() == ".safetensors":
+                from safetensors.torch import load_file
 
-            self._model = torch.load(self.model_path, map_location="cpu", weights_only=True)
+                self._model = load_file(str(path))
+            else:
+                import torch
+
+                self._model = torch.load(str(path), map_location="cpu", weights_only=True)
+
         else:
-            import joblib
-
-            self._model = joblib.load(self.model_path)
+            raise InsecureArtifactError(
+                f"Unsupported model type '{self.model_type}'. Insecure fallback loaders are prohibited."
+            )
 
     def predict_proba(self, X: pd.DataFrame) -> np.ndarray:
         """Predicts attack probability distribution."""

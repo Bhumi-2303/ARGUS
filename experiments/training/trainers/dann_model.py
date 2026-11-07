@@ -300,6 +300,6 @@ class DANNTrainer:
         }, path)
         
     def load(self, path: str):
-        checkpoint = torch.load(path, map_location=self.device)
+        checkpoint = torch.load(path, map_location=self.device, weights_only=True)
         self.config = checkpoint.get('config', self.config)
         self.model.load_state_dict(checkpoint['model_state_dict'])

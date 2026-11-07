@@ -191,7 +191,7 @@ def train_ft_transformer_model(
     pd.DataFrame(history).to_csv(NR / f"logs/training_history_{exp_tag}_seed{seed}.csv", index=False)
 
     # Load best checkpoint for full validation & test evaluation
-    model.load_state_dict(torch.load(best_ckpt_path, map_location=DEVICE))
+    model.load_state_dict(torch.load(best_ckpt_path, map_location=DEVICE, weights_only=True))
     model.eval()
 
     # Predict on Full Validation (for threshold selection)

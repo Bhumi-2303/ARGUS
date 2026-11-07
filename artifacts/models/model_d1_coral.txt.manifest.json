@@ -1,0 +1,14 @@
+{
+  "artifact_file": "model_d1_coral.txt",
+  "sha256": "bd0e425490db7b220224ee95d811d160f1db555d6e0e18d24ebe5b968431b548",
+  "version": "1.0.0",
+  "created_at": "2026-11-07T17:33:23.968955+00:00",
+  "git_commit": "b7ae26f36e327e60d5292649a26da112c5a8430e",
+  "artifact_type": "lightgbm",
+  "signature": null,
+  "signature_type": null,
+  "metadata": {
+    "status": "verified",
+    "format": "txt"
+  }
+}

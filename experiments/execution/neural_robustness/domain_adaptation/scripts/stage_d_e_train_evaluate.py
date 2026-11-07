@@ -269,7 +269,7 @@ def train_and_eval_seed(
     pd.DataFrame(history).to_csv(DA / f"logs/DA01_training_history_seed{seed}.csv", index=False)
 
     # Load best checkpoint for full calibration and test evaluation
-    model.load_state_dict(torch.load(best_ckpt_path, map_location=DEVICE))
+    model.load_state_dict(torch.load(best_ckpt_path, map_location=DEVICE, weights_only=True))
     model.eval()
 
     # Predict on Full Target Calibration (N = 571,563) for threshold selection

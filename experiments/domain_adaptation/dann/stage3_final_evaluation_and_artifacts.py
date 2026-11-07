@@ -128,7 +128,7 @@ def run_final_evaluation_and_artifacts():
     assert ckpt_path.exists(), f"Missing checkpoint: {ckpt_path}"
 
     model = DANNNetwork(input_dim=4, hidden_dim=64, latent_dim=32, dropout=0.10)
-    model.load_state_dict(torch.load(ckpt_path, map_location="cpu"))
+    model.load_state_dict(torch.load(ckpt_path, map_location="cpu", weights_only=True))
     model.to(DEVICE)
     model.eval()
 
