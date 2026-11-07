@@ -267,3 +267,16 @@ If verification fails, rollback to the previous commit immediately:
 git checkout <previous_commit_sha>
 docker compose -f docker-compose.prod.yml up -d --build
 ```
+
+---
+
+## 8. Continuous Integration & Workflow Verification
+
+Before modifying GitHub Actions workflows in `.github/workflows/`, all action references must be pinned to full 40-character commit SHAs with a comment indicating the intended version tag (e.g. `uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2`).
+
+Contributors must run the action pin verification script before committing any workflow modifications:
+```bash
+./tools/ci/verify_action_pins.sh
+```
+This ensures that every pinned commit SHA exists in the upstream repository and resolves to the specified tag.
+

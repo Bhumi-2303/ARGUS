@@ -134,6 +134,7 @@ print('All model weights verified.')
 4. **PR Checklist**:
    - [ ] All 283 pytest test cases pass.
    - [ ] Frontend compiles cleanly (`npm run build`).
+   - [ ] Workflow action pins verified (`./tools/ci/verify_action_pins.sh`).
    - [ ] No unhashed or untracked binary model files added.
    - [ ] No secrets, API keys, or private IP addresses committed.
    - [ ] Relevant documentation in `docs/` and `README.md` updated.
