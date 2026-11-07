@@ -272,9 +272,6 @@ BLOCKED_PATH_PREFIXES = (
 
 def _configure_spa(app: FastAPI, web_dist_path: str) -> None:
     """Mount static frontend assets and safe SPA catch-all route with traversal rejection."""
-    if not os.path.exists(web_dist_path):
-        return
-
     assets_path = os.path.join(web_dist_path, "assets")
     if os.path.exists(assets_path):
         app.mount("/assets", StaticFiles(directory=assets_path), name="assets")
