@@ -1,0 +1,29 @@
+{
+  "NF-ToN Adaptation (Train)": {
+    "total_rows": 8406962,
+    "unique_coordinates": 202194,
+    "duplicate_rows": 8204768,
+    "duplicate_row_percentage": 97.5949,
+    "conflicting_coordinates": 16456,
+    "rows_on_conflicting_coordinates": 6644645,
+    "conflicting_row_percentage": 79.0374
+  },
+  "NF-ToN Calibration": {
+    "total_rows": 2101742,
+    "unique_coordinates": 89325,
+    "duplicate_rows": 2012417,
+    "duplicate_row_percentage": 95.75,
+    "conflicting_coordinates": 4394,
+    "rows_on_conflicting_coordinates": 1578200,
+    "conflicting_row_percentage": 75.0901
+  },
+  "NF-ToN Test": {
+    "total_rows": 2627177,
+    "unique_coordinates": 102188,
+    "duplicate_rows": 2524989,
+    "duplicate_row_percentage": 96.1103,
+    "conflicting_coordinates": 5538,
+    "rows_on_conflicting_coordinates": 1989306,
+    "conflicting_row_percentage": 75.7203
+  }
+}

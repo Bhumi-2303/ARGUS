@@ -94,3 +94,8 @@ select = [
     "E9",   # runtime syntax errors
     "F",    # pyflakes
 ]
+
+[dependency-groups]
+dev = [
+    "hypothesis>=6.170.15",
+]

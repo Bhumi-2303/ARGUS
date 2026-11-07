@@ -1,0 +1,85 @@
+# ==============================================================================
+# ARGUS Telemetry Feature & Raw Input Bounds Specification (Version 1.0.0)
+# ==============================================================================
+# Derived from empirical percentiles of CICIoT2023 and NF-ToN-IoT-v2 training sets,
+# plus physical protocol invariants (RFC 791 / RFC 793).
+# ==============================================================================
+
+version: "1.0.0"
+updated_at: "2026-11-07T22:40:00Z"
+
+limits:
+  max_batch_size: 50000
+  max_payload_bytes: 1048576  # 1 MB
+
+harmonized_features:
+  pkt_mean_to_max:
+    min: 0.0
+    max: 1.0
+    dtype: "float64"
+    allow_null: false
+    description: "Ratio of mean packet length to maximum packet length in flow. Invariant: mean <= max."
+    empirical_p99: 1.0
+    empirical_max: 1.0
+  tcp_flag_density:
+    min: 0.0
+    max: 10.0
+    dtype: "float64"
+    allow_null: false
+    description: "Sum of TCP control flags present in flow. Invariant: <= 9 flags (SYN, ACK, FIN, RST, PSH, URG, ECE, CWR, NS)."
+    empirical_p99: 5.0
+    empirical_max: 6.0
+  log_pkt_mean:
+    min: 0.0
+    max: 12.0
+    dtype: "float64"
+    allow_null: false
+    description: "Natural log of packet length mean (+1). Bound 12.0 covers up to ~162KB jumbo/reassembled frames."
+    empirical_p99: 6.92
+    empirical_max: 9.13
+  log_pkt_max:
+    min: 0.0
+    max: 12.0
+    dtype: "float64"
+    allow_null: false
+    description: "Natural log of packet length max (+1). Invariant: log_pkt_mean <= log_pkt_max."
+    empirical_p99: 7.87
+    empirical_max: 10.47
+
+raw_inputs:
+  "Pkt Len Mean":
+    min: 0.0
+    max: 65535.0
+    dtype: "float64"
+    allow_null: false
+    description: "Mean packet length in bytes. Bounded by maximum IPv4/IPv6 packet size."
+  "Pkt Len Max":
+    min: 0.0
+    max: 65535.0
+    dtype: "float64"
+    allow_null: false
+    description: "Maximum packet length in bytes. Bounded by maximum IPv4/IPv6 packet size."
+  "Duration":
+    min: 0.0
+    max: 86400.0
+    dtype: "float64"
+    allow_null: false
+    description: "Flow duration in seconds, capped at 24 hours."
+  "Header_Length":
+    min: 0.0
+    max: 65535.0
+    dtype: "float64"
+    allow_null: false
+    description: "Protocol header length in bytes."
+  "Rate":
+    min: 0.0
+    max: 1000000000.0
+    dtype: "float64"
+    allow_null: false
+    description: "Transmission rate (packets/sec or bytes/sec)."
+  "Size":
+    min: 0.0
+    max: 1000000000.0
+    dtype: "float64"
+    allow_null: false
+    description: "Total flow size in bytes."

@@ -1,0 +1,4 @@
+split,total_rows,unique_coordinates,duplicate_rows,duplicate_row_percentage,conflicting_coordinates,rows_on_conflicting_coordinates,conflicting_row_percentage
+NF-ToN Adaptation (Train),8406962,202194,8204768,97.5949,16456,6644645,79.0374
+NF-ToN Calibration,2101742,89325,2012417,95.75,4394,1578200,75.0901
+NF-ToN Test,2627177,102188,2524989,96.1103,5538,1989306,75.7203
