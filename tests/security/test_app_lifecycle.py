@@ -48,17 +48,21 @@ async def test_application_lifespan_startup_and_shutdown():
 def test_all_expected_routers_registered():
     """All core API v1 routers and health endpoints are mounted in the application."""
     test_app = create_app()
-    routes = []
+    routes = set()
     for r in test_app.routes:
         if hasattr(r, "path"):
-            routes.append(r.path)
+            routes.add(r.path)
         elif hasattr(r, "original_router"):
             prefix = getattr(r.original_router, "prefix", "") or getattr(
                 getattr(r, "include_context", None), "prefix", ""
             )
             for sub in r.original_router.routes:
                 sub_path = getattr(sub, "path", "")
-                routes.append(f"{prefix}{sub_path}")
+                routes.add(f"{prefix}{sub_path}")
+
+    # Merge routes discovered via public OpenAPI specification traversal
+    for path in test_app.openapi().get("paths", {}).keys():
+        routes.add(path)
 
     # Health & readiness
     assert "/health" in routes

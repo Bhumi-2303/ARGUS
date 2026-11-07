@@ -29,17 +29,20 @@ def base_settings():
 
 
 def _extract_routes(app):
-    paths = []
+    paths = set()
     for r in app.routes:
         if hasattr(r, "path"):
-            paths.append(r.path)
+            paths.add(r.path)
         elif hasattr(r, "original_router"):
             prefix = getattr(r.original_router, "prefix", "") or getattr(
                 getattr(r, "include_context", None), "prefix", ""
             )
             for sub in r.original_router.routes:
                 sub_path = getattr(sub, "path", "")
-                paths.append(f"{prefix}{sub_path}")
+                paths.add(f"{prefix}{sub_path}")
+    # Merge public OpenAPI routes
+    for path in app.openapi().get("paths", {}).keys():
+        paths.add(path)
     return paths
 
 
