@@ -1,4 +1,5 @@
 """KnowledgePublisher — Builds KnowledgeEvent messages from synthesis results."""
+
 import uuid
 from datetime import datetime, timezone
 from typing import Any
@@ -30,7 +31,11 @@ class KnowledgePublisher(BaseTool):
         pass
 
     async def validate(self, **kwargs: Any) -> bool:
-        return "synthesis_result" in kwargs and "agent_id" in kwargs and "processing_duration_ms" in kwargs
+        return (
+            "synthesis_result" in kwargs
+            and "agent_id" in kwargs
+            and "processing_duration_ms" in kwargs
+        )
 
     async def execute(self, **kwargs: Any) -> KnowledgeEvent:
         result: SynthesisResult = kwargs["synthesis_result"]

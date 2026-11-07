@@ -1,0 +1,6 @@
+model,samples,roc_auc,pr_auc,brier_score,expected_calibration_error
+Source-Only XGBoost (D1->D2),2627177,0.3203,0.6382,0.2715,0.2568
+Global CORAL (D1->D2),2627177,0.2788,0.6201,0.3075,0.3297
+Clean Class-Aware CORAL (D1->D2),2627177,0.5932,0.8317,0.4258,0.4518
+DANN (D1->D2),2627177,0.3321,0.6422,0.2726,0.2723
+Native SCADA Model (D3 in-domain),714453,0.647,0.3516,0.1556,0.0055

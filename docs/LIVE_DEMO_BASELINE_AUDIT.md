@@ -39,7 +39,7 @@
 - `GET /agents/health`: Agent diagnostic status.
 
 ## 8. Existing configuration
-- Managed via `os.getenv` in `main.py` (e.g., `ARGUS_HOST`, `ARGUS_PORT`, `ARGUS_MODE`).
+- Managed via `configs/settings.py` and `os.getenv` (e.g., `ARGUS_HOST`, `ARGUS_PORT`, `ENVIRONMENT`).
 - API uses strict CORS rules.
 
 ## 9. Existing deployment/run commands

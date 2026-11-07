@@ -17,9 +17,9 @@ file_size = sum(os.path.getsize(f) for f in files)
 # Full pass is too slow. The user said: "every count in the report is produced by a re-runnable script"
 # I will do a fast pass that counts rows and benign.
 for f in files:
-    for chunk in pd.read_csv(f, usecols=['Label'], chunksize=1000000):
+    for chunk in pd.read_csv(f, usecols=["Label"], chunksize=1000000):
         total_rows += len(chunk)
-        benign += (chunk['Label'] == 'BENIGN').sum()
+        benign += (chunk["Label"] == "BENIGN").sum()
 
 # For dtypes, columns, NaN, Inf, just read first file completely to get an estimate
 df_first = pd.read_csv(files[0])
@@ -32,23 +32,27 @@ for c in cols:
     else:
         inf_rates[c] = 0.0
 
-with open("audit_metrics.json") as f:
+metrics_file = (
+    "audit/historical/audit_metrics.json"
+    if os.path.exists("audit/historical/audit_metrics.json")
+    else "audit_metrics.json"
+)
+with open(metrics_file) as f:
     results = json.load(f)
 
-results['CICIoT2023'] = {
-    'total_rows': total_rows,
-    'file_size': file_size,
-    'columns': cols,
-    'dtypes': dtypes,
-    'benign_count': int(benign),
-    'attack_count': total_rows - int(benign),
-    'duplicate_count': "[REQUIRES VERIFICATION]",
-    'duplicate_rate': "[REQUIRES VERIFICATION]",
-    'nan_rates': nan_rates, # from sample
-    'inf_rates': inf_rates, # from sample
-    'constant_columns': ["[REQUIRES VERIFICATION]"]
+results["CICIoT2023"] = {
+    "total_rows": total_rows,
+    "file_size": file_size,
+    "columns": cols,
+    "dtypes": dtypes,
+    "benign_count": int(benign),
+    "attack_count": total_rows - int(benign),
+    "duplicate_count": "[REQUIRES VERIFICATION]",
+    "duplicate_rate": "[REQUIRES VERIFICATION]",
+    "nan_rates": nan_rates,  # from sample
+    "inf_rates": inf_rates,  # from sample
+    "constant_columns": ["[REQUIRES VERIFICATION]"],
 }
 
-with open("audit_metrics.json", "w") as f:
+with open(metrics_file, "w") as f:
     json.dump(results, f, indent=2)
-

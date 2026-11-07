@@ -1,0 +1,76 @@
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: argus-caddy-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DOMAIN=${DOMAIN:-localhost}
+      - ACME_EMAIL=${ACME_EMAIL:-admin@argus.local}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      argus-platform:
+        condition: service_healthy
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - argus-net
+
+  argus-platform:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: argus-platform:latest
+    container_name: argus-platform
+    restart: unless-stopped
+    environment:
+      - ENVIRONMENT=production
+      - ARGUS_HOST=0.0.0.0
+      - ARGUS_PORT=8000
+      - ARGUS_ALLOWED_ORIGINS=${ARGUS_ALLOWED_ORIGINS:-http://localhost,https://localhost}
+      - PYTHONPATH=/app/src:/app
+      - MPLCONFIGDIR=/tmp
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=128m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    deploy:
+      resources:
+        limits:
+          cpus: '2.00'
+          memory: 4096M
+        reservations:
+          cpus: '0.50'
+          memory: 1024M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    networks:
+      - argus-net
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  argus-net:
+    driver: bridge

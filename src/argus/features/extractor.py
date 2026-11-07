@@ -16,15 +16,15 @@ FEATURE_NAMES = ["pkt_mean_to_max", "tcp_flag_density", "log_pkt_mean", "log_pkt
 
 def extract_four_features(df: pd.DataFrame) -> pd.DataFrame:
     """Extracts the harmonized four statistical features from a network flow DataFrame.
-    
+
     Args:
         df: Input DataFrame containing flow telemetry columns.
-        
+
     Returns:
         DataFrame containing the four extracted features.
     """
     out = pd.DataFrame(index=df.index)
-    
+
     # 1. pkt_mean_to_max
     if "pkt_mean_to_max" in df.columns:
         out["pkt_mean_to_max"] = df["pkt_mean_to_max"]
@@ -33,7 +33,9 @@ def extract_four_features(df: pd.DataFrame) -> pd.DataFrame:
         mean_len = df["Pkt Len Mean"].values
         out["pkt_mean_to_max"] = np.where(max_len == 0, 0.0, mean_len / max_len)
     elif "Header_Length" in df.columns and "Duration" in df.columns:
-        out["pkt_mean_to_max"] = np.where(df["Header_Length"] == 0, 0.0, df["Duration"] / df["Header_Length"])
+        out["pkt_mean_to_max"] = np.where(
+            df["Header_Length"] == 0, 0.0, df["Duration"] / df["Header_Length"]
+        )
     else:
         out["pkt_mean_to_max"] = 0.0
 

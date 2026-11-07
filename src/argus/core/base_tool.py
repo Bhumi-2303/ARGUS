@@ -1,4 +1,5 @@
 """Abstract base class for all ARGUS tools."""
+
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List
 import structlog
@@ -9,17 +10,22 @@ from argus.core.enums import ToolCategory
 class BaseTool(ABC):
     """Abstract interface that every tool must implement."""
 
-    def __init__(self, tool_id: str, name: str, version: str, category: ToolCategory, 
-                 description: str, required_permissions: List[str]):
+    def __init__(
+        self,
+        tool_id: str,
+        name: str,
+        version: str,
+        category: ToolCategory,
+        description: str,
+        required_permissions: List[str],
+    ):
         self.tool_id = tool_id
         self.name = name
         self.version = version
         self.category = category
         self.description = description
         self.required_permissions = required_permissions
-        self.logger = structlog.get_logger("argus.tool").bind(
-            tool_name=self.name
-        )
+        self.logger = structlog.get_logger("argus.tool").bind(tool_name=self.name)
 
     @abstractmethod
     async def initialize(self) -> None:
@@ -45,5 +51,5 @@ class BaseTool(ABC):
             "version": self.version,
             "category": self.category,
             "description": self.description,
-            "required_permissions": self.required_permissions
+            "required_permissions": self.required_permissions,
         }

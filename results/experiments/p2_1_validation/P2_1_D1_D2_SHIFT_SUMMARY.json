@@ -1,0 +1,52 @@
+{
+  "title": "ARGUS P2.1 D1-D2 Conditional Distribution Shift Validation",
+  "total_shared_coordinates": 27,
+  "d1_feature_source": "data/raw/legacy_package/argus_coral_data/ciciot_train_features.csv",
+  "d2_feature_source": "data/raw/legacy_package/argus_coral_data/nfton_train_adaptation.csv",
+  "d1_total_observations": 5491971,
+  "d2_total_observations": 8406962,
+  "d1_unique_coordinates": 802351,
+  "d2_unique_coordinates": 202194,
+  "shared_coordinate_fraction_d1": 3.3651107806932374e-05,
+  "shared_coordinate_fraction_d2": 0.0001335351197364907,
+  "d1_observations_in_shared_coordinates": 1979654,
+  "d2_observations_in_shared_coordinates": 215345,
+  "mean_absolute_conditional_shift": 0.6727013098143163,
+  "median_absolute_conditional_shift": 0.8333333333333334,
+  "class_inverted_coordinates_count": 21,
+  "class_inverted_coordinates_percentage": 77.77777777777779,
+  "statistically_significant_shift_count": 21,
+  "rounding_tolerance_sensitivity": [
+    {
+      "rounding_precision": "round(6)",
+      "decimal_places": 6,
+      "shared_coordinate_clusters": 28,
+      "percentage_increase_over_float64": 3.7037037037037033
+    },
+    {
+      "rounding_precision": "round(5)",
+      "decimal_places": 5,
+      "shared_coordinate_clusters": 32,
+      "percentage_increase_over_float64": 18.51851851851852
+    },
+    {
+      "rounding_precision": "round(4)",
+      "decimal_places": 4,
+      "shared_coordinate_clusters": 69,
+      "percentage_increase_over_float64": 155.55555555555557
+    },
+    {
+      "rounding_precision": "round(3)",
+      "decimal_places": 3,
+      "shared_coordinate_clusters": 341,
+      "percentage_increase_over_float64": 1162.962962962963
+    },
+    {
+      "rounding_precision": "round(2)",
+      "decimal_places": 2,
+      "shared_coordinate_clusters": 2711,
+      "percentage_increase_over_float64": 9940.74074074074
+    }
+  ],
+  "scientific_scope_limitation": "CRITICAL CAVEAT: While these 27 shared coordinates demonstrate empirical conditional distribution shift and label inversion on overlapping feature values, they represent less than 0.02% of the unique coordinates in either domain. It is scientifically invalid to extrapolate universal concept drift or claim that the entire feature space suffers from inverted labels based on 27 coordinate points."
+}

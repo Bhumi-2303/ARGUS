@@ -1,0 +1,82 @@
+{
+  "manifest_version": "1.0.0",
+  "audit_phase": "ARGUS P2.3 \u2014 Adversarial Reconciliation",
+  "generated_at": "2026-11-02T12:00:00Z",
+  "files": {
+    "results/experiments/p2_3_reconciliation/P2_3_PARTITION_IDENTITY.json": {
+      "path": "results/experiments/p2_3_reconciliation/P2_3_PARTITION_IDENTITY.json",
+      "size_bytes": 1836,
+      "sha256": "ed2fb81e60d7523e970ecdba9135c00c8bde69de51799860a501d64b13d85a44"
+    },
+    "results/experiments/p2_3_reconciliation/P2_3_PREDICTION_ARTIFACT_RECONCILIATION.csv": {
+      "path": "results/experiments/p2_3_reconciliation/P2_3_PREDICTION_ARTIFACT_RECONCILIATION.csv",
+      "size_bytes": 2986,
+      "sha256": "2fcd1c0ffe284f6d65dbd093a1a28c341b3a81382f8cbf07585ead04315fc737"
+    },
+    "results/experiments/p2_3_reconciliation/P2_3_METRIC_RECOMPUTATION.csv": {
+      "path": "results/experiments/p2_3_reconciliation/P2_3_METRIC_RECOMPUTATION.csv",
+      "size_bytes": 5872,
+      "sha256": "32f112eaab6889b32c8f0cf744fe852aeafa8ec4deb06ce99413dc253aa266f7"
+    },
+    "results/experiments/p2_3_reconciliation/P2_3_BOOTSTRAP_RECONCILIATION.json": {
+      "path": "results/experiments/p2_3_reconciliation/P2_3_BOOTSTRAP_RECONCILIATION.json",
+      "size_bytes": 9598,
+      "sha256": "5b9ee01080e6c7a5537c1616b3f2b1cb18a73213d9f57781924f45ab24308b78"
+    },
+    "results/experiments/p2_3_reconciliation/P2_3_PAIRED_MODEL_COMPARISONS.json": {
+      "path": "results/experiments/p2_3_reconciliation/P2_3_PAIRED_MODEL_COMPARISONS.json",
+      "size_bytes": 5519,
+      "sha256": "2ac2bac62b6aa62b31b33abb898a1a63961c72e9c3126cfb095a0bde23dc0715"
+    },
+    "results/experiments/p2_3_reconciliation/P2_3_TEST_SUITE_RECONCILIATION.json": {
+      "path": "results/experiments/p2_3_reconciliation/P2_3_TEST_SUITE_RECONCILIATION.json",
+      "size_bytes": 1968,
+      "sha256": "f6cd8aadc5563367addd5b7de2226488d6ecd659a2dc168c3a78a3bc63e8a14a"
+    },
+    "audit/research/P2_3_FINAL_RECONCILIATION_REPORT.md": {
+      "path": "audit/research/P2_3_FINAL_RECONCILIATION_REPORT.md",
+      "size_bytes": 27376,
+      "sha256": "559f71d8a9c415a4afbe2116792fd528b19a6d558be5c9aa1661e0878b1f77bd"
+    },
+    "scripts/p2_3_reconciliation_audit.py": {
+      "path": "scripts/p2_3_reconciliation_audit.py",
+      "size_bytes": 40890,
+      "sha256": "aa5266cf75e7f3180cedd32e0361c512fa1a6207bf65dc9d7b58e4870df7b870"
+    },
+    "scripts/p2_1_same_test_comparison.py": {
+      "path": "scripts/p2_1_same_test_comparison.py",
+      "size_bytes": 17727,
+      "sha256": "d83be42d29be5af50735e02113120f5dafc562d9d17697717b60f38a51dcd8c9"
+    },
+    "scripts/p2_2_statistical_audit.py": {
+      "path": "scripts/p2_2_statistical_audit.py",
+      "size_bytes": 19481,
+      "sha256": "12c6a466170b75fffe652f5d5f00e23b0f150bbf2b3ccf724d548cd73b853456"
+    },
+    "artifacts/models/xgb_adapted.json": {
+      "path": "artifacts/models/xgb_adapted.json",
+      "size_bytes": 294666,
+      "sha256": "6697c214a3c83fb1422f15fee34a89f2d320a95d28f8036768f01fb513e78a3d"
+    },
+    "artifacts/models/xgb_source.json": {
+      "path": "artifacts/models/xgb_source.json",
+      "size_bytes": 457849,
+      "sha256": "bca5465ace699d1c31ff50396c9b6229b601b8b4bf3b8fff42eb3cc29bbb61bc"
+    },
+    "results/experiments/p2_coordinate_generalization/xgboost_disjoint_seed42.json": {
+      "path": "results/experiments/p2_coordinate_generalization/xgboost_disjoint_seed42.json",
+      "size_bytes": 1186826,
+      "sha256": "22f6343c4e362dc264c04c0db76366ce01d2b3a0ed0db145eb72ae25401b0571"
+    },
+    "results/experiments/p2_coordinate_generalization/lightgbm_disjoint_seed42.txt": {
+      "path": "results/experiments/p2_coordinate_generalization/lightgbm_disjoint_seed42.txt",
+      "size_bytes": 695917,
+      "sha256": "1a7ebb93ac7bc8e92614c94252f611a5a922599d634f9618a74ed8eb73eea826"
+    },
+    "results/experiments/p2_coordinate_generalization/coordinate_disjoint_predictions.parquet": {
+      "path": "results/experiments/p2_coordinate_generalization/coordinate_disjoint_predictions.parquet",
+      "size_bytes": 19060155,
+      "sha256": "a449fb6ced16f95c9fa13bda9e4a5b607ef66514ae4c8266368f77bf10827246"
+    }
+  }
+}

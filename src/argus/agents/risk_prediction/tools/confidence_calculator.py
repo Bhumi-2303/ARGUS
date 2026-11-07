@@ -1,9 +1,11 @@
 """Confidence Calculator tool for Risk Prediction Agent."""
+
 import structlog
 
 from argus.core.base_tool import BaseTool
 from argus.core.enums import ToolCategory
 from argus.agents.risk_prediction.models.schemas import RiskAnalysisInput
+
 
 class ConfidenceCalculator(BaseTool):
     """Calculates the confidence score of the final risk prediction."""
@@ -15,7 +17,7 @@ class ConfidenceCalculator(BaseTool):
             version="1.0.0",
             category=ToolCategory.UTILITY,
             description="Computes confidence of risk estimation.",
-            required_permissions=[]
+            required_permissions=[],
         )
         self.logger = structlog.get_logger("argus.tool.confidence_calculator")
 
@@ -38,8 +40,8 @@ class ConfidenceCalculator(BaseTool):
         knowledge = input_data.knowledge_event
 
         # Evaluate completeness of knowledge
-        knowledge_score = 0.5 # Base score for having some context
-        
+        knowledge_score = 0.5  # Base score for having some context
+
         if knowledge.affected_assets:
             knowledge_score += 0.2
         if knowledge.asset_types:
@@ -50,7 +52,7 @@ class ConfidenceCalculator(BaseTool):
         # Final confidence is a weighted blend of Threat confidence and Knowledge completeness
         # Threat detection confidence weighs heavier (60%) than context (40%)
         final_conf = (threat_conf * 0.6) + (knowledge_score * 0.4)
-        
+
         final_conf = max(0.0, min(1.0, final_conf))
 
         self.logger.info("risk_confidence_calculated", score=final_conf)

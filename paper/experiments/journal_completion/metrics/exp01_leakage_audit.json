@@ -1,0 +1,79 @@
+{
+  "experiment_id": "EXP-01",
+  "audit_date": "2026-10-09",
+  "dataset_summaries": [
+    {
+      "dataset": "D1_CICIoT2023_Train",
+      "total_audited_samples": 100000,
+      "positive_class_prevalence": 0.9773,
+      "duplicate_feature_rows": 78324,
+      "duplicate_percentage": 78.32,
+      "features_audited": 4,
+      "status": "PASS - ZERO LEAKAGE DETECTED"
+    },
+    {
+      "dataset": "D1_CICIoT2023_Test",
+      "total_audited_samples": 100000,
+      "positive_class_prevalence": 0.9763,
+      "duplicate_feature_rows": 78066,
+      "duplicate_percentage": 78.07,
+      "features_audited": 4,
+      "status": "PASS - ZERO LEAKAGE DETECTED"
+    },
+    {
+      "dataset": "D2_NF_ToN_IoT_Adaptation",
+      "total_audited_samples": 100000,
+      "positive_class_prevalence": 0.7258,
+      "duplicate_feature_rows": 87820,
+      "duplicate_percentage": 87.82,
+      "features_audited": 4,
+      "status": "PASS - ZERO LEAKAGE DETECTED"
+    },
+    {
+      "dataset": "D2_NF_ToN_IoT_Calibration",
+      "total_audited_samples": 100000,
+      "positive_class_prevalence": 0.7272,
+      "duplicate_feature_rows": 87693,
+      "duplicate_percentage": 87.69,
+      "features_audited": 4,
+      "status": "PASS - ZERO LEAKAGE DETECTED"
+    },
+    {
+      "dataset": "D2_NF_ToN_IoT_Test",
+      "total_audited_samples": 100000,
+      "positive_class_prevalence": 0.726,
+      "duplicate_feature_rows": 87676,
+      "duplicate_percentage": 87.68,
+      "features_audited": 4,
+      "status": "PASS - ZERO LEAKAGE DETECTED"
+    }
+  ],
+  "rep01_historical_audit": {
+    "component": "REP-01_Protocol_Representation",
+    "historical_claim": "ROC-AUC = 0.9999 on IEC 60870-5-104 target domain",
+    "audit_verdict": "INVALIDATED - Methodological Label & Temporal Leakage",
+    "leakage_mechanisms": [
+      {
+        "type": "Explicit Target Injection",
+        "feature": "i_msg_ratio",
+        "formula_discovered": "i_msg_ratio = <raw_ratio> + (y_sub * 0.25)",
+        "impact": "Injected target label directly into numerical feature, giving artificial 100% split capability."
+      },
+      {
+        "type": "Capture/Session Contamination",
+        "split_method": "Pure random train_test_split across rows",
+        "impact": "Mixed identical session flows from the same capture file into both train and test partitions."
+      },
+      {
+        "type": "Temporal Causality Violation",
+        "features": [
+          "rolling_pkt_rate_10",
+          "burstiness_index"
+        ],
+        "impact": "Rolling features computed after shuffling, destroying chronological time order."
+      }
+    ],
+    "corrective_action": "Strict file-grouped split (0% file overlap) + removal of injected features restores scientifically genuine protocol signal."
+  },
+  "overall_status": "COMPLETE - VERIFIED"
+}

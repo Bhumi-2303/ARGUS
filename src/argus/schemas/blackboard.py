@@ -1,4 +1,5 @@
 """Blackboard schemas for shared memory."""
+
 from typing import Any, Dict, Optional
 from datetime import datetime
 from pydantic import BaseModel, Field
@@ -8,6 +9,7 @@ from argus.core.enums import BlackboardSection
 
 class BlackboardEntry(BaseModel):
     """A single entry in the blackboard."""
+
     section: BlackboardSection
     key: str
     value: Any
@@ -19,12 +21,14 @@ class BlackboardEntry(BaseModel):
 
 class SharedContext(BaseModel):
     """Snapshot of the shared context section."""
+
     context_data: Dict[str, Any] = Field(default_factory=dict)
     last_updated: datetime = Field(default_factory=datetime.utcnow)
 
 
 class SectionSnapshot(BaseModel):
     """Snapshot of an entire blackboard section."""
+
     section: BlackboardSection
     entries: Dict[str, BlackboardEntry] = Field(default_factory=dict)
     timestamp: datetime = Field(default_factory=datetime.utcnow)

@@ -18,7 +18,7 @@ class JWKSClient:
         jwks_url: str,
         cache_ttl_seconds: int = 3600,
         timeout_seconds: float = 5.0,
-        min_refresh_interval_seconds: float = 10.0
+        min_refresh_interval_seconds: float = 10.0,
     ):
         self.jwks_url = jwks_url
         self.cache_ttl_seconds = cache_ttl_seconds
@@ -49,7 +49,7 @@ class JWKSClient:
                     "jwks_refresh_rate_limited",
                     kid=kid,
                     elapsed=now - self._last_fetch_time,
-                    min_interval=self.min_refresh_interval_seconds
+                    min_interval=self.min_refresh_interval_seconds,
                 )
                 return self._keys.get(kid)
 
@@ -69,9 +69,7 @@ class JWKSClient:
                 response = await client.get(self.jwks_url)
                 if response.status_code != 200:
                     logger.error(
-                        "jwks_fetch_failed",
-                        status_code=response.status_code,
-                        url=self.jwks_url
+                        "jwks_fetch_failed", status_code=response.status_code, url=self.jwks_url
                     )
                     return
 

@@ -1,9 +1,11 @@
 """Exception hierarchy for ARGUS platform."""
+
 from typing import Any, Dict, Optional
 
 
 class ArgusError(Exception):
     """Base exception for all ARGUS errors."""
+
     def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):
         super().__init__(message)
         self.message = message

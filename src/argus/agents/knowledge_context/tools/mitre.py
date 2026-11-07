@@ -1,4 +1,5 @@
 """MitreTool — Retrieves MITRE ATT&CK Enterprise techniques from local JSON database."""
+
 import json
 import os
 from typing import Any, Dict, List
@@ -32,7 +33,9 @@ class MitreTool(BaseTool):
         if os.path.exists(path):
             with open(path, "r") as f:
                 self._db = json.load(f)
-            self.logger.info("mitre_attack_db_loaded", record_count=len(self._db.get("techniques", {})))
+            self.logger.info(
+                "mitre_attack_db_loaded", record_count=len(self._db.get("techniques", {}))
+            )
         else:
             self.logger.warning("mitre_attack_db_not_found", path=path)
 
@@ -42,7 +45,12 @@ class MitreTool(BaseTool):
     def _lookup(self, attack_type: str) -> List[Dict[str, Any]]:
         """Retrieve technique records matching *attack_type*."""
         mapping = self._db.get("attack_type_mapping", {})
-        technique_ids = mapping.get(attack_type, mapping.get("default", []) if attack_type not in ("benign", "normal", "unknown") else [])
+        technique_ids = mapping.get(
+            attack_type,
+            mapping.get("default", [])
+            if attack_type not in ("benign", "normal", "unknown")
+            else [],
+        )
         techniques = self._db.get("techniques", {})
         return [techniques[tid] for tid in technique_ids if tid in techniques]
 

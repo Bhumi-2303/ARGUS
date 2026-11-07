@@ -1,9 +1,11 @@
 """Shared enumerations for ARGUS platform."""
+
 from enum import StrEnum
 
 
 class AgentStatus(StrEnum):
     """Status of an agent."""
+
     INITIALIZING = "initializing"
     READY = "ready"
     BUSY = "busy"
@@ -13,6 +15,7 @@ class AgentStatus(StrEnum):
 
 class TaskStatus(StrEnum):
     """Lifecycle status of a task."""
+
     PENDING = "pending"
     SCHEDULED = "scheduled"
     RUNNING = "running"
@@ -24,6 +27,7 @@ class TaskStatus(StrEnum):
 
 class TaskPriority(StrEnum):
     """Priority levels for tasks."""
+
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
@@ -32,6 +36,7 @@ class TaskPriority(StrEnum):
 
 class MessageType(StrEnum):
     """Types of messages in the system."""
+
     AGENT_MESSAGE = "agent_message"
     EVENT = "event"
     RESPONSE = "response"
@@ -44,6 +49,7 @@ class MessageType(StrEnum):
 
 class SecurityRole(StrEnum):
     """RBAC security roles."""
+
     ADMIN = "admin"
     OPERATOR = "operator"
     AGENT = "agent"
@@ -53,6 +59,7 @@ class SecurityRole(StrEnum):
 
 class BlackboardSection(StrEnum):
     """Sections of the shared blackboard."""
+
     TASK_QUEUE = "task_queue"
     COMPLETED_TASKS = "completed_tasks"
     SHARED_CONTEXT = "shared_context"
@@ -65,6 +72,7 @@ class BlackboardSection(StrEnum):
 
 class ToolCategory(StrEnum):
     """Categories of tools."""
+
     LLM = "llm"
     DATABASE = "database"
     API = "api"

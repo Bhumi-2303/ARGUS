@@ -14,6 +14,7 @@ if _env_data_root:
 else:
     DATA_ROOT = PROJECT_ROOT / "data"
 
+
 # Dataset-specific paths
 class DatasetPaths:
     CICIOT2023 = DATA_ROOT / "CICIOT23"
@@ -22,12 +23,14 @@ class DatasetPaths:
     # Legacy extracted/coral data path
     CORAL_DATA = PROJECT_ROOT / "ARGUS_Cross_Domain_Results" / "argus_coral_data"
 
+
 # 3. Artifact Root Resolution
 _env_artifact_root = os.getenv("ARGUS_ARTIFACT_ROOT")
 if _env_artifact_root:
     ARTIFACT_ROOT = Path(_env_artifact_root).resolve()
 else:
     ARTIFACT_ROOT = PROJECT_ROOT / "artifacts"
+
 
 class ArtifactPaths:
     MODELS = ARTIFACT_ROOT / "models"
@@ -41,5 +44,6 @@ class ArtifactPaths:
     def create_all(cls):
         for path in [cls.MODELS, cls.PREDICTIONS, cls.METRICS, cls.FIGURES, cls.REPORTS, cls.LOGS]:
             path.mkdir(parents=True, exist_ok=True)
+
 
 # Create artifact directories lazily if accessed (or let scripts create them)

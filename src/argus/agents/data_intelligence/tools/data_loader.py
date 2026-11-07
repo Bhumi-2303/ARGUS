@@ -8,6 +8,7 @@ from argus.core.base_tool import BaseTool
 from argus.core.enums import ToolCategory
 from argus.agents.data_intelligence.schemas import RawChunk
 
+
 class DataLoaderTool(BaseTool):
     """Loads CSV or Parquet files in chunks."""
 
@@ -18,7 +19,7 @@ class DataLoaderTool(BaseTool):
             version="1.0.0",
             category=ToolCategory.FILESYSTEM,
             description="Loads large CSV or Parquet datasets in chunks.",
-            required_permissions=["data:read"]
+            required_permissions=["data:read"],
         )
 
     async def initialize(self) -> None:
@@ -36,7 +37,7 @@ class DataLoaderTool(BaseTool):
         file_path = kwargs["file_path"]
         chunk_size = kwargs.get("chunk_size", 10000)
 
-        if file_path.endswith('.parquet'):
+        if file_path.endswith(".parquet"):
             pf = await asyncio.to_thread(pq.ParquetFile, file_path)
             iterator = pf.iter_batches(batch_size=chunk_size)
             i = 0
@@ -44,12 +45,7 @@ class DataLoaderTool(BaseTool):
                 try:
                     batch = await asyncio.to_thread(next, iterator)
                     df = batch.to_pandas()
-                    yield RawChunk(
-                        file_path=file_path,
-                        chunk_index=i,
-                        data=df,
-                        row_count=len(df)
-                    )
+                    yield RawChunk(file_path=file_path, chunk_index=i, data=df, row_count=len(df))
                     i += 1
                 except StopIteration:
                     break
@@ -64,10 +60,7 @@ class DataLoaderTool(BaseTool):
                 try:
                     chunk = await asyncio.to_thread(next, iterator)
                     yield RawChunk(
-                        file_path=file_path,
-                        chunk_index=i,
-                        data=chunk,
-                        row_count=len(chunk)
+                        file_path=file_path, chunk_index=i, data=chunk, row_count=len(chunk)
                     )
                     i += 1
                 except StopIteration:
@@ -76,7 +69,6 @@ class DataLoaderTool(BaseTool):
                     self.logger.error("csv_read_error", error=str(e), exc_info=True)
                     raise e
 
-
     async def shutdown(self) -> None:
         self.logger.info("shutting_down_data_loader")
 
@@ -84,10 +76,7 @@ class DataLoaderTool(BaseTool):
         md = super().metadata()
         md["parameters_schema"] = {
             "type": "object",
-            "properties": {
-                "file_path": {"type": "string"},
-                "chunk_size": {"type": "integer"}
-            },
-            "required": ["file_path"]
+            "properties": {"file_path": {"type": "string"}, "chunk_size": {"type": "integer"}},
+            "required": ["file_path"],
         }
         return md

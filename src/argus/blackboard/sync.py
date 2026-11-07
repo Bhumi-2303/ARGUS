@@ -1,11 +1,13 @@
 """Concurrency control utilities for the blackboard."""
+
 import asyncio
 from typing import Any, Optional
-from datetime import datetime, timezone
+from datetime import datetime
 
 
 class ReadWriteLock:
     """Async Read-Write lock implementation."""
+
     def __init__(self):
         self._readers = 0
         self._writers = 0
@@ -41,12 +43,13 @@ class ReadWriteLock:
 
 class VersionedEntry:
     """Wrapper for a blackboard entry with versioning for optimistic concurrency."""
+
     def __init__(self, value: Any, version: int = 1, expires_at: Optional[datetime] = None):
         self.value = value
         self.version = version
         self.expires_at = expires_at
 
-    def update(self, new_value: Any, expected_version: Optional[int] = None) -> 'VersionedEntry':
+    def update(self, new_value: Any, expected_version: Optional[int] = None) -> "VersionedEntry":
         if expected_version is not None and self.version != expected_version:
             raise ValueError(f"Version mismatch. Expected {expected_version}, got {self.version}")
         return VersionedEntry(new_value, self.version + 1, self.expires_at)

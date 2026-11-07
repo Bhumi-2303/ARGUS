@@ -1,6 +1,5 @@
 """Integration tests for all ARGUS API v1 endpoints."""
 
-import os
 import pytest
 import pandas as pd
 from scipy.stats import ks_2samp
@@ -84,9 +83,9 @@ def test_predict_endpoint():
             "pkt_mean_to_max": 0.5,
             "tcp_flag_density": 1.0,
             "log_pkt_mean": 4.0,
-            "log_pkt_max": 4.5
+            "log_pkt_max": 4.5,
         },
-        "model_name": "model_d2_coral"
+        "model_name": "model_d2_coral",
     }
     response = client.post("/api/v1/predict", json=payload)
     assert response.status_code == 200
@@ -103,9 +102,9 @@ def test_predict_endpoint():
             "pkt_mean_to_max": 0.5,
             "tcp_flag_density": 1.0,
             "log_pkt_mean": 4.0,
-            "log_pkt_max": 4.5
+            "log_pkt_max": 4.5,
         },
-        "model_name": "dann"
+        "model_name": "dann",
     }
     dann_response = client.post("/api/v1/predict", json=dann_payload)
     assert dann_response.status_code == 501
@@ -134,7 +133,10 @@ def test_shift_endpoint():
         col = f_metric["feature"]
         assert col in HARMONIZED_FEATURES
         expected_ks = ks_2samp(df_src[col].to_numpy(), df_tgt[col].to_numpy())
-        assert pytest.approx(round(float(expected_ks.statistic), 4), abs=1e-4) == f_metric["ks_statistic"]
+        assert (
+            pytest.approx(round(float(expected_ks.statistic), 4), abs=1e-4)
+            == f_metric["ks_statistic"]
+        )
         assert pytest.approx(round(float(expected_ks.pvalue), 6), abs=1e-4) == f_metric["ks_pvalue"]
         assert f_metric["shift_detected"] is True
 
@@ -160,9 +162,9 @@ def test_explain_endpoint():
                 "pkt_mean_to_max": 0.5,
                 "tcp_flag_density": 1.0,
                 "log_pkt_mean": 4.0,
-                "log_pkt_max": 4.5
+                "log_pkt_max": 4.5,
             },
-            "model_name": "model_d2_coral"
+            "model_name": "model_d2_coral",
         }
         response = test_client.post("/api/v1/explain", json=payload)
         assert response.status_code == 200
@@ -179,7 +181,10 @@ def test_explain_endpoint():
             assert data["shap_values"][feat] != 0.0
 
         assert data["top_feature"] in HARMONIZED_FEATURES
-        assert pytest.approx(data["top_feature_impact"], abs=1e-5) == data["shap_values"][data["top_feature"]]
+        assert (
+            pytest.approx(data["top_feature_impact"], abs=1e-5)
+            == data["shap_values"][data["top_feature"]]
+        )
 
 
 def test_test_cases_endpoint():

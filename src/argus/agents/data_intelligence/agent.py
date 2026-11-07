@@ -1,19 +1,18 @@
 import os
 import math
 import time
-import uuid
 from typing import Any, Dict, List, Optional
-from datetime import datetime, timezone
 
-import numpy as np
 import pandas as pd
 
 from argus.core.base_agent import BaseAgent
 from argus.core.enums import BlackboardSection
-from argus.schemas.messages import FeatureEvent
 from argus.agents.data_intelligence.pipeline import DataPipeline
 from argus.agents.data_intelligence.schemas import (
-    PipelineConfig, FlowInput, FlowResult, FlowValidationError,
+    PipelineConfig,
+    FlowInput,
+    FlowResult,
+    FlowValidationError,
 )
 from argus.features.extractor import extract_four_features, FEATURE_NAMES
 from argus.registry.model_registry import HARMONIZED_FEATURES
@@ -22,13 +21,13 @@ from argus.registry.model_registry import HARMONIZED_FEATURES
 class DataIntelligenceAgent(BaseAgent):
     """
     Data Intelligence Agent
-    
+
     Responsibilities in production:
     - Ingests raw smart grid data (SCADA, IoT).
     - Normalizes data into a standard schema.
     - Correlates events across different sensors.
     """
-    
+
     def __init__(self, **kwargs):
         kwargs.setdefault("agent_id", "agent_data_intelligence")
         kwargs.setdefault("name", "Data Intelligence Agent")
@@ -43,7 +42,7 @@ class DataIntelligenceAgent(BaseAgent):
         self.logger.info("initializing_data_intelligence_agent")
         self.pipeline = DataPipeline(agent_id=str(self.agent_id))
         await self.pipeline.initialize()
-        
+
     async def validate(self, input_data: Any) -> bool:
         self.logger.debug("validating_input")
         if not isinstance(input_data, dict):
@@ -56,7 +55,7 @@ class DataIntelligenceAgent(BaseAgent):
         if not file_path.endswith((".csv", ".parquet")):
             return False
         return True
-        
+
     async def reason(self, context: Any) -> Any:
         self.logger.debug("reasoning")
         config_params = context.get("pipeline_config", {}) if isinstance(context, dict) else {}
@@ -67,40 +66,38 @@ class DataIntelligenceAgent(BaseAgent):
                 normalization_method=config_params.get("normalization_method", "min_max"),
                 drop_labels=config_params.get("drop_labels", True),
                 drop_ips=config_params.get("drop_ips", True),
-                max_chunks=config_params.get("max_chunks")
+                max_chunks=config_params.get("max_chunks"),
             ),
-
-            "file_path": file_path
+            "file_path": file_path,
         }
-        
+
     async def plan(self, reasoning: Any) -> Any:
         self.logger.debug("planning")
         return {
             "stages": ["load", "validate", "clean", "normalize", "extract", "publish"],
             "config": reasoning["config"],
-            "file_path": reasoning["file_path"]
+            "file_path": reasoning["file_path"],
         }
-        
+
     async def execute(self, plan: Any) -> Any:
         self.logger.debug("executing_plan")
         config: PipelineConfig = plan["config"]
         file_path: str = plan["file_path"]
-        
+
         events = []
         async for event in self.pipeline.process_file(file_path, config):
             events.append(event)
-            
+
         return events
 
-        
     async def call_tools(self, tool_requests: List[Any]) -> List[Any]:
         # Tools are orchestrated by the pipeline internally for this specific agent.
         return []
-        
+
     async def update_memory(self, result: Any) -> None:
         if self.working_memory:
             await self.working_memory.set(f"latest_result_{self.agent_id}", result)
-        
+
     async def publish(self, result: Any) -> None:
         self.logger.info("publishing_results", result_count=len(result))
         for event in result:
@@ -110,20 +107,20 @@ class DataIntelligenceAgent(BaseAgent):
                     BlackboardSection.DATA_RESULTS,
                     key=f"feature_event_{event.request_id}",
                     value=event.model_dump(),
-                    agent_id=str(self.agent_id)
+                    agent_id=str(self.agent_id),
                 )
             # Publish to message bus
             if self.message_bus:
                 await self.message_bus.publish("events.feature", event)
-        
+
     async def health(self) -> Any:
         return {
             "status": "healthy",
             "tasks_completed": self.tasks_completed,
             "tasks_failed": self.tasks_failed,
-            "avg_response_time": self.avg_response_time
+            "avg_response_time": self.avg_response_time,
         }
-        
+
     async def shutdown(self) -> None:
         self.logger.info("shutting_down_data_intelligence_agent")
         await self.pipeline.shutdown()
@@ -167,13 +164,17 @@ class DataIntelligenceAgent(BaseAgent):
                     val = float(raw_val)
                 except (TypeError, ValueError):
                     return self._flow_error(
-                        corr_id, evt_id, fields,
+                        corr_id,
+                        evt_id,
+                        fields,
                         f"Feature '{fname}' cannot be converted to float: {raw_val!r}",
                         "type_error",
                     )
                 if math.isnan(val) or math.isinf(val):
                     return self._flow_error(
-                        corr_id, evt_id, fields,
+                        corr_id,
+                        evt_id,
+                        fields,
                         f"Feature '{fname}' has non-finite value: {val}",
                         "value_error",
                     )
@@ -188,7 +189,9 @@ class DataIntelligenceAgent(BaseAgent):
                 df = pd.DataFrame([fields])
             except Exception as exc:
                 return self._flow_error(
-                    corr_id, evt_id, fields,
+                    corr_id,
+                    evt_id,
+                    fields,
                     f"Cannot construct DataFrame from input fields: {exc}",
                     "input_error",
                 )
@@ -202,7 +205,9 @@ class DataIntelligenceAgent(BaseAgent):
                 val = float(extracted_df[fname].iloc[0])
                 if math.isnan(val) or math.isinf(val):
                     return self._flow_error(
-                        corr_id, evt_id, fields,
+                        corr_id,
+                        evt_id,
+                        fields,
                         f"Extracted feature '{fname}' is non-finite ({val}). "
                         f"Check that input fields contain the required raw columns.",
                         "extraction_error",
@@ -212,13 +217,21 @@ class DataIntelligenceAgent(BaseAgent):
             # Warn if all extracted features are zero (likely missing source columns)
             if all(v == 0.0 for v in features.values()):
                 # Check which source columns were present
-                known_sources = {"Pkt Len Mean", "Pkt Len Max", "Header_Length",
-                                 "Duration", "Rate", "Size"}
+                known_sources = {
+                    "Pkt Len Mean",
+                    "Pkt Len Max",
+                    "Header_Length",
+                    "Duration",
+                    "Rate",
+                    "Size",
+                }
                 flag_cols = [c for c in df.columns if "flag" in c.lower()]
                 present = known_sources.intersection(set(df.columns))
                 if not present and not flag_cols:
                     return self._flow_error(
-                        corr_id, evt_id, fields,
+                        corr_id,
+                        evt_id,
+                        fields,
                         "No recognizable raw telemetry columns found. "
                         "Expected either the 4 harmonized features "
                         f"({HARMONIZED_FEATURES}) or raw columns like "

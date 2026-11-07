@@ -1,11 +1,14 @@
-import os, json
+import os
+import json
 from pathlib import Path
 from contextlib import asynccontextmanager
-from typing import List, Dict, Any, Optional
+from typing import List, Optional
 
 from chromadb.utils import embedding_functions
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
+from argus.services.common.base_agent import BaseAgent
+from argus.services.common.schemas import AgentMessage
 
 # Constants & Configurations
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
@@ -17,29 +20,44 @@ EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
 
 collection = None
 
+
 class ContextQueryRequest(BaseModel):
-    query: str = Field(..., description="Short text query or alert context describing the SCADA anomaly")
-    top_k: Optional[int] = Field(3, ge=1, le=10, description="Number of top MITRE ATT&CK for ICS techniques to return (default: 3)")
+    query: str = Field(
+        ..., description="Short text query or alert context describing the SCADA anomaly"
+    )
+    top_k: Optional[int] = Field(
+        3,
+        ge=1,
+        le=10,
+        description="Number of top MITRE ATT&CK for ICS techniques to return (default: 3)",
+    )
 
     model_config = {
         "json_schema_extra": {
             "example": {
                 "query": "SCADA Modbus command injection or unauthorized control message anomaly",
-                "top_k": 3
+                "top_k": 3,
             }
         }
     }
+
 
 class TechniqueItem(BaseModel):
     technique_id: str = Field(..., description="MITRE ATT&CK technique ID (e.g. T0855)")
     name: str = Field(..., description="Technique name")
     description: str = Field(..., description="Technique detailed description")
     mitigations: List[str] = Field(..., description="Recommended MITRE mitigations")
-    distance: float = Field(..., description="Vector embedding cosine/L2 distance score (lower is more relevant)")
+    distance: float = Field(
+        ..., description="Vector embedding cosine/L2 distance score (lower is more relevant)"
+    )
+
 
 class ContextResponse(BaseModel):
     query: str = Field(..., description="Original input query")
-    techniques: List[TechniqueItem] = Field(..., description="Top-k matching MITRE ATT&CK for ICS techniques")
+    techniques: List[TechniqueItem] = Field(
+        ..., description="Top-k matching MITRE ATT&CK for ICS techniques"
+    )
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -47,26 +65,30 @@ async def lifespan(app: FastAPI):
     global collection, chroma_client
     chroma_path = Path(CHROMA_DB_DIR)
     if not chroma_path.exists():
-        raise FileNotFoundError(f"Chroma DB directory not found at: {CHROMA_DB_DIR}. Please run ingest_attack.py first.")
+        raise FileNotFoundError(
+            f"Chroma DB directory not found at: {CHROMA_DB_DIR}. Please run ingest_attack.py first."
+        )
 
     print(f"[*] Connecting to local Chroma persistent DB at: {CHROMA_DB_DIR}")
-    
+
     print(f"[*] Loading embedding function: {EMBEDDING_MODEL}")
-    ef = embedding_functions.SentenceTransformerEmbeddingFunction(model_name=EMBEDDING_MODEL)
+    embedding_functions.SentenceTransformerEmbeddingFunction(model_name=EMBEDDING_MODEL)
 
     print(f"[*] Accessing collection '{COLLECTION_NAME}'...")
     print(f"[+] Knowledge collection loaded successfully with {collection.count()} techniques.")
-    
+
     yield
-    
+
     print("[*] Shutting down Knowledge Agent service.")
+
 
 app = FastAPI(
     title="ARGUS Knowledge & Context Agent (MITRE ATT&CK for ICS)",
     description="FastAPI service querying local Chroma vector DB for top-3 relevant MITRE ATT&CK for ICS techniques.",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
+
 
 @app.get("/health")
 def health_check():
@@ -77,8 +99,9 @@ def health_check():
         "chroma_db_dir": CHROMA_DB_DIR,
         "collection_name": COLLECTION_NAME,
         "indexed_techniques_count": count,
-        "embedding_model": EMBEDDING_MODEL
+        "embedding_model": EMBEDDING_MODEL,
     }
+
 
 @app.post("/context", response_model=ContextResponse)
 def get_context(req: ContextQueryRequest):
@@ -96,10 +119,7 @@ def get_context(req: ContextQueryRequest):
 
     # Query Chroma vector DB
     try:
-        results = collection.query(
-            query_texts=[req.query],
-            n_results=top_k
-        )
+        results = collection.query(query_texts=[req.query], n_results=top_k)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"ChromaDB query error: {str(e)}")
 
@@ -119,21 +139,18 @@ def get_context(req: ContextQueryRequest):
         except Exception:
             mitigations = []
 
-        techniques.append(TechniqueItem(
-            technique_id=meta.get("technique_id", ids_list[i]),
-            name=meta.get("name", "Unknown"),
-            description=meta.get("description", ""),
-            mitigations=mitigations,
-            distance=round(float(dists_list[i]), 4)
-        ))
+        techniques.append(
+            TechniqueItem(
+                technique_id=meta.get("technique_id", ids_list[i]),
+                name=meta.get("name", "Unknown"),
+                description=meta.get("description", ""),
+                mitigations=mitigations,
+                distance=round(float(dists_list[i]), 4),
+            )
+        )
 
-    return ContextResponse(
-        query=req.query,
-        techniques=techniques
-    )
+    return ContextResponse(query=req.query, techniques=techniques)
 
-from argus.services.common.base_agent import BaseAgent
-from argus.services.common.schemas import AgentMessage
 
 class KnowledgeAgent(BaseAgent):
     def __init__(self):
@@ -142,7 +159,7 @@ class KnowledgeAgent(BaseAgent):
     async def process(self, message: AgentMessage) -> AgentMessage:
         payload = message.payload
         query_str = payload.get("query", "")
-        
+
         if message.message_type == "review_request":
             # If reviewing, maybe fetch more results (e.g., top 5)
             top_k = payload.get("top_k", 5)
@@ -162,19 +179,21 @@ class KnowledgeAgent(BaseAgent):
                     mit_json = meta.get("mitigations_json", "[]")
                     try:
                         mitigations = json.loads(mit_json)
-                    except:
+                    except Exception:
                         mitigations = []
 
-                    techniques.append({
-                        "technique_id": meta.get("technique_id", ids_list[i]),
-                        "name": meta.get("name", "Unknown"),
-                        "description": meta.get("description", ""),
-                        "mitigations": mitigations,
-                        "distance": round(float(dists_list[i]), 4)
-                    })
+                    techniques.append(
+                        {
+                            "technique_id": meta.get("technique_id", ids_list[i]),
+                            "name": meta.get("name", "Unknown"),
+                            "description": meta.get("description", ""),
+                            "mitigations": mitigations,
+                            "distance": round(float(dists_list[i]), 4),
+                        }
+                    )
         except Exception as e:
             techniques = [{"error": str(e)}]
-        
+
         return AgentMessage(
             message_id=message.message_id + "-resp",
             event_id=message.event_id,
@@ -184,10 +203,12 @@ class KnowledgeAgent(BaseAgent):
             payload={"query": query_str, "techniques": techniques},
             confidence=1.0,
             evidence={"context_length": len(techniques)},
-            trace_id=message.trace_id
+            trace_id=message.trace_id,
         )
 
+
 knowledge_agent_instance = KnowledgeAgent()
+
 
 @app.post("/agent/process", response_model=AgentMessage)
 async def agent_process(message: AgentMessage):

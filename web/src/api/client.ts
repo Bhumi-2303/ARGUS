@@ -138,6 +138,53 @@ export interface OnboardResponse {
   evaluated_test_size: number;
 }
 
+export interface PCAPoint {
+  x: number;
+  y: number;
+  z: number;
+  label: number;
+}
+
+export interface ShiftPCAResponse {
+  source_domain: string;
+  target_domain: string;
+  sample_count: number;
+  source_points: PCAPoint[];
+  target_points: PCAPoint[];
+  aligned_points: PCAPoint[];
+  metrics: {
+    mean_ks_before: number;
+    mean_ks_after: number;
+    mean_psi_before: number;
+    mean_psi_after: number;
+    features_before: Record<string, { ks_statistic: number; ks_pvalue: number; psi_statistic: number }>;
+    features_after: Record<string, { ks_statistic: number; ks_pvalue: number; psi_statistic: number }>;
+  };
+  transformation: {
+    pca_components: number[][];
+    pca_mean: number[];
+    explained_variance_ratio: number[];
+    class_adapters: Record<string, { A: number[][]; source_mean: number[]; target_mean: number[] }>;
+  };
+}
+
+export interface IncidentItem {
+  incident_id: string;
+  correlation_id: string;
+  timestamp: string;
+  domain: string;
+  severity: string;
+  threat_level: string;
+  confidence: number;
+  risk_score: number;
+  top_feature: string;
+  top_feature_impact: number;
+  approval_required: boolean;
+  approval_status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'NOT_REQUIRED' | string;
+  recommended_actions: Array<{ action_id: string; description: string; priority: number }>;
+  trace?: Array<{ agent: string; status: string; duration?: number; input_summary?: string; output_summary?: string }>;
+}
+
 export interface TopologyNode {
   id: string;
   name: string;
@@ -253,6 +300,20 @@ export const api = {
   getShift: (domain = 'nfton', windowSize = 1000) =>
     fetchJson<ShiftResponse>(`/api/v1/shift?domain=${domain}&window_size=${windowSize}`),
 
+  // Shift 3D PCA Point Clouds & Real CORAL Matrices
+  getShiftPCA: (source = 'ciciot', target = 'nfton', samples = 200, seed = 42) =>
+    fetchJson<ShiftPCAResponse>(`/api/v1/shift/pca?source_domain=${source}&target_domain=${target}&samples=${samples}&seed=${seed}`),
+
+  // Incidents
+  getIncidents: () => fetchJson<any>('/api/v1/incidents'),
+
+  // Approve Incident
+  approveIncident: (id: string, reason?: string) =>
+    fetchJson<any>(`/api/v1/incidents/${id}/approve`, {
+      method: 'POST',
+      body: JSON.stringify({ reason: reason || 'Approved via 3D incident control panel' }),
+    }),
+
   // SHAP Explainability
   explain: (data: ExplainRequest) =>
     fetchJson<ExplainResponse>('/api/v1/explain', {
@@ -277,7 +338,15 @@ export const api = {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = window.location.host;
     const base = API_BASE_URL ? API_BASE_URL.replace(/^http/, 'ws') : `${protocol}//${host}`;
-    return `${base}/api/v1/agents/stream`;
+    return `${base}/api/v1/stream`;
+  },
+
+  // Verified Flow Replay WebSocket URL Helper
+  getReplayStreamWsUrl: (domain = 'nfton', speed = 5, seed = 42) => {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const host = window.location.host;
+    const base = API_BASE_URL ? API_BASE_URL.replace(/^http/, 'ws') : `${protocol}//${host}`;
+    return `${base}/api/v1/stream?domain=${domain}&speed=${speed}&seed=${seed}`;
   },
 
   // SSE Stream URL Helper

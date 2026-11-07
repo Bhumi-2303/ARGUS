@@ -1,4 +1,5 @@
 """GeminiReasoner — Synthesizes retrieval results into a structured knowledge summary."""
+
 from typing import Any, Dict, List
 
 from argus.core.base_tool import BaseTool
@@ -87,13 +88,15 @@ class GeminiReasoner(BaseTool):
     def _compute_confidence(self, ctx: EnrichmentContext) -> float:
         """Compute a simple confidence score based on retrieval coverage."""
         total_sources = 5  # mitre, mitre_ics, cve, cisa, playbook
-        hits = sum([
-            1 if ctx.mitre_results.hit_count > 0 else 0,
-            1 if ctx.mitre_ics_results.hit_count > 0 else 0,
-            1 if ctx.cve_results.hit_count > 0 else 0,
-            1 if ctx.cisa_results.hit_count > 0 else 0,
-            1 if ctx.playbook_results.hit_count > 0 else 0,
-        ])
+        hits = sum(
+            [
+                1 if ctx.mitre_results.hit_count > 0 else 0,
+                1 if ctx.mitre_ics_results.hit_count > 0 else 0,
+                1 if ctx.cve_results.hit_count > 0 else 0,
+                1 if ctx.cisa_results.hit_count > 0 else 0,
+                1 if ctx.playbook_results.hit_count > 0 else 0,
+            ]
+        )
         return round(hits / total_sources, 2)
 
     def _build_attack_context(self, ctx: EnrichmentContext) -> Dict[str, Any]:
@@ -104,8 +107,13 @@ class GeminiReasoner(BaseTool):
             "total_records_retrieved": 0,
         }
 
-        for source_result in [ctx.mitre_results, ctx.mitre_ics_results, ctx.cve_results,
-                               ctx.cisa_results, ctx.playbook_results]:
+        for source_result in [
+            ctx.mitre_results,
+            ctx.mitre_ics_results,
+            ctx.cve_results,
+            ctx.cisa_results,
+            ctx.playbook_results,
+        ]:
             if source_result.hit_count > 0:
                 context["sources_consulted"].append(source_result.source)
                 context["total_records_retrieved"] += source_result.hit_count
@@ -138,7 +146,9 @@ class GeminiReasoner(BaseTool):
         if ctx.cve_results.records:
             lines.append("## Related CVEs\n")
             for c in ctx.cve_results.records:
-                lines.append(f"- **{c['id']}** (CVSS {c.get('cvss_score', 'N/A')}) — {c.get('description', '')[:120]}...")
+                lines.append(
+                    f"- **{c['id']}** (CVSS {c.get('cvss_score', 'N/A')}) — {c.get('description', '')[:120]}..."
+                )
             lines.append("")
 
         if ctx.cisa_results.records:

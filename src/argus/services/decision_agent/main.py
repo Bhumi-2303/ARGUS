@@ -1,11 +1,16 @@
-import os, time, json
+import os
+import time
+import json
 from pathlib import Path
 from typing import List, Dict, Union, Any, Optional, Tuple
 
 import requests
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
-from argus.services.common.schemas import FlowRecord
+from argus.policy.models import PolicyContext
+from argus.policy.policy_engine import PolicyEngine
+from argus.services.common.base_agent import BaseAgent
+from argus.services.common.schemas import AgentMessage
 
 # 1. Environment & Configuration Constants
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
@@ -17,6 +22,7 @@ OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2")
 PROMPT_PATH = os.getenv("PROMPT_PATH", DEFAULT_PROMPT_PATH)
 
 system_prompt_text = ""
+
 
 def load_system_prompt() -> str:
     """Loads system prompt from separate text file without hardcoding."""
@@ -30,8 +36,10 @@ def load_system_prompt() -> str:
             system_prompt_text = f.read().strip()
     return system_prompt_text
 
+
 # Load system prompt at module initialization
 load_system_prompt()
+
 
 # 2. Pydantic Request & Response Schemas
 class AttckTechniqueContext(BaseModel):
@@ -39,29 +47,39 @@ class AttckTechniqueContext(BaseModel):
     name: str
     description: str
 
+
 class LatencyBreakdown(BaseModel):
     detector_ms: float = Field(0.0, description="Detector model inference latency in ms")
     llm_ms: float = Field(0.0, description="Ollama LLM decision support latency in ms")
     total_ms: float = Field(0.0, description="Total processing latency in ms")
+
 
 class ExplanationItem(BaseModel):
     prediction: int = Field(..., description="Binary detection label (1=Attack, 0=Benign)")
     probability: float = Field(..., description="Continuous attack probability score")
     threshold: float = Field(0.50, description="Decision threshold")
     shap_values: Dict[str, float] = Field(..., description="Per-feature SHAP contribution values")
-    explanation_text: str = Field(..., description="Plain-text human-readable decision support explanation")
-    llm_fallback_used: bool = Field(..., description="True if local Ollama LLM was offline and fallback path was executed, False if real Ollama LLM responded")
+    explanation_text: str = Field(
+        ..., description="Plain-text human-readable decision support explanation"
+    )
+    llm_fallback_used: bool = Field(
+        ...,
+        description="True if local Ollama LLM was offline and fallback path was executed, False if real Ollama LLM responded",
+    )
     latency_ms: LatencyBreakdown = Field(..., description="Detailed latency breakdown")
+
 
 class ExplanationResponse(BaseModel):
     explanations: List[ExplanationItem]
+
 
 # 3. FastAPI Service Definition
 app = FastAPI(
     title="ARGUS Decision Support & Explainability Agent",
     description="FastAPI agent wrapping local detector API and local Ollama LLM for plain-text dashboard explanations.",
-    version="1.0.0"
+    version="1.0.0",
 )
+
 
 @app.get("/health")
 def health_check():
@@ -73,8 +91,9 @@ def health_check():
         "ollama_api_url": OLLAMA_API_URL,
         "ollama_model": OLLAMA_MODEL,
         "system_prompt_loaded": prompt_loaded,
-        "prompt_path": PROMPT_PATH
+        "prompt_path": PROMPT_PATH,
     }
+
 
 def generate_llm_explanation(
     prediction: int,
@@ -82,14 +101,14 @@ def generate_llm_explanation(
     shap_values: Dict[str, float],
     risk_score: Optional[float] = None,
     risk_tier: Optional[str] = None,
-    attck_context: Optional[List[Dict[str, Any]]] = None
+    attck_context: Optional[List[Dict[str, Any]]] = None,
 ) -> Tuple[str, bool]:
     """
     Sends SHAP and grounding context to local Ollama API (http://localhost:11434/api/generate).
     Returns (explanation_text, llm_fallback_used).
     """
     pred_str = "attack" if prediction == 1 else "benign"
-    
+
     context_formatted = ""
     if attck_context:
         context_formatted = json.dumps(attck_context)
@@ -98,9 +117,9 @@ def generate_llm_explanation(
 - prediction: "{pred_str}"
 - probability: {probability:.4f}
 - shap_values: {json.dumps(shap_values)}
-- risk_score: {risk_score if risk_score is not None else 'N/A'}
-- risk_tier: "{risk_tier if risk_tier else 'N/A'}"
-- attck_context: {context_formatted if context_formatted else 'None'}
+- risk_score: {risk_score if risk_score is not None else "N/A"}
+- risk_tier: "{risk_tier if risk_tier else "N/A"}"
+- attck_context: {context_formatted if context_formatted else "None"}
 """
 
     payload = {
@@ -108,10 +127,7 @@ def generate_llm_explanation(
         "system": system_prompt_text,
         "prompt": user_prompt,
         "stream": False,
-        "options": {
-            "temperature": 0.2,
-            "max_tokens": 200
-        }
+        "options": {"temperature": 0.2, "max_tokens": 200},
     }
 
     try:
@@ -129,7 +145,11 @@ def generate_llm_explanation(
 
     # Deterministic Rule-Based Fallback path (llm_fallback_used = True)
     is_uncertain = abs(probability - 0.50) <= 0.05
-    uncertainty_sentence = " The model exhibited uncertainty as the probability score is near the decision threshold." if is_uncertain else ""
+    uncertainty_sentence = (
+        " The model exhibited uncertainty as the probability score is near the decision threshold."
+        if is_uncertain
+        else ""
+    )
 
     if prediction == 0:
         fallback_text = (
@@ -144,12 +164,20 @@ def generate_llm_explanation(
     f1_name, f1_val = sorted_features[0] if len(sorted_features) > 0 else ("Unknown", 0.0)
     f2_name, f2_val = sorted_features[1] if len(sorted_features) > 1 else ("Unknown", 0.0)
 
-    f1_desc = f"positive contribution from {f1_name} ({f1_val:+.4f})" if f1_val > 0 else f"negative contribution from {f1_name} ({f1_val:+.4f})"
-    f2_desc = f"positive contribution from {f2_name} ({f2_val:+.4f})" if f2_val > 0 else f"negative contribution from {f2_name} ({f2_val:+.4f})"
+    f1_desc = (
+        f"positive contribution from {f1_name} ({f1_val:+.4f})"
+        if f1_val > 0
+        else f"negative contribution from {f1_name} ({f1_val:+.4f})"
+    )
+    f2_desc = (
+        f"positive contribution from {f2_name} ({f2_val:+.4f})"
+        if f2_val > 0
+        else f"negative contribution from {f2_name} ({f2_val:+.4f})"
+    )
 
     sentence1 = f"The detector flagged an attack with a probability of {probability:.4f} and a risk score of {f'{risk_score:.2f}' if risk_score is not None else 'Unknown'} ({risk_tier if risk_tier else 'High'}).{uncertainty_sentence}"
     sentence2 = f"This decision is primarily driven by {f1_desc}, followed by {f2_desc}."
-    
+
     sentence3 = ""
     if attck_context and len(attck_context) > 0:
         top_tech = attck_context[0]
@@ -163,6 +191,7 @@ def generate_llm_explanation(
 
     full_text = f"{sentence1} {sentence2}{sentence3}{sentence4}"
     return full_text.strip(), True
+
 
 @app.post("/explain", response_model=ExplanationResponse)
 def explain(payload: Union[List[Dict[str, Any]], Dict[str, Any]]):
@@ -198,12 +227,14 @@ def explain(payload: Union[List[Dict[str, Any]], Dict[str, Any]]):
         if pred is None or prob is None or shap_vals is None:
             t0_det = time.perf_counter()
             try:
-                det_payload = [{
-                    "pkt_mean_to_max": float(flow_rec.get("pkt_mean_to_max", 0.0)),
-                    "tcp_flag_density": float(flow_rec.get("tcp_flag_density", 0.0)),
-                    "log_pkt_mean": float(flow_rec.get("log_pkt_mean", 0.0)),
-                    "log_pkt_max": float(flow_rec.get("log_pkt_max", 0.0))
-                }]
+                det_payload = [
+                    {
+                        "pkt_mean_to_max": float(flow_rec.get("pkt_mean_to_max", 0.0)),
+                        "tcp_flag_density": float(flow_rec.get("tcp_flag_density", 0.0)),
+                        "log_pkt_mean": float(flow_rec.get("log_pkt_mean", 0.0)),
+                        "log_pkt_max": float(flow_rec.get("log_pkt_max", 0.0)),
+                    }
+                ]
                 resp = requests.post(DETECTOR_API_URL, json=det_payload, timeout=5.0)
                 if resp.status_code == 200:
                     d_data = resp.json().get("predictions", [])[0]
@@ -215,7 +246,7 @@ def explain(payload: Union[List[Dict[str, Any]], Dict[str, Any]]):
                 if pred is None or prob is None or shap_vals is None:
                     raise HTTPException(
                         status_code=422,
-                        detail="REQUIRES VERIFICATION: Prediction metrics missing and detector API unreachable."
+                        detail="REQUIRES VERIFICATION: Prediction metrics missing and detector API unreachable.",
                     )
 
             det_ms = (time.perf_counter() - t0_det) * 1000.0
@@ -227,31 +258,29 @@ def explain(payload: Union[List[Dict[str, Any]], Dict[str, Any]]):
             shap_values=shap_vals,
             risk_score=risk_score,
             risk_tier=risk_tier,
-            attck_context=attck_ctx
+            attck_context=attck_ctx,
         )
         llm_ms = (time.perf_counter() - t0_llm) * 1000.0
         total_ms = (time.perf_counter() - t_start_total) * 1000.0
 
-        explanations.append(ExplanationItem(
-            prediction=pred,
-            probability=prob,
-            threshold=0.50,
-            shap_values=shap_vals,
-            explanation_text=exp_text,
-            llm_fallback_used=fallback_used,
-            latency_ms=LatencyBreakdown(
-                detector_ms=round(det_ms, 2),
-                llm_ms=round(llm_ms, 2),
-                total_ms=round(total_ms, 2)
+        explanations.append(
+            ExplanationItem(
+                prediction=pred,
+                probability=prob,
+                threshold=0.50,
+                shap_values=shap_vals,
+                explanation_text=exp_text,
+                llm_fallback_used=fallback_used,
+                latency_ms=LatencyBreakdown(
+                    detector_ms=round(det_ms, 2),
+                    llm_ms=round(llm_ms, 2),
+                    total_ms=round(total_ms, 2),
+                ),
             )
-        ))
+        )
 
     return ExplanationResponse(explanations=explanations)
 
-from argus.policy.policy_engine import PolicyEngine
-from argus.policy.models import PolicyContext
-from argus.services.common.base_agent import BaseAgent
-from argus.services.common.schemas import AgentMessage
 
 class DecisionAgent(BaseAgent):
     def __init__(self):
@@ -276,9 +305,9 @@ class DecisionAgent(BaseAgent):
             shap_values=shap_vals,
             risk_score=risk_score,
             risk_tier=risk_tier,
-            attck_context=attck_ctx
+            attck_context=attck_ctx,
         )
-        
+
         # Calculate decision confidence
         # Lower confidence if fallback is used or probability is near 0.5
         conf = 1.0
@@ -295,7 +324,7 @@ class DecisionAgent(BaseAgent):
             asset_type=payload.get("asset_type", "generic"),
             criticality=payload.get("asset_criticality", 1),
             confidence="high" if conf > 0.8 else "low",
-            detector_prediction=pred if pred is not None else 0
+            detector_prediction=pred if pred is not None else 0,
         )
         decision = engine.evaluate(context)
 
@@ -310,14 +339,16 @@ class DecisionAgent(BaseAgent):
                 "policy_id": decision.policy_id,
                 "requires_human_approval": decision.requires_human_approval,
                 "explanation_text": exp_text,
-                "llm_fallback_used": fallback_used
+                "llm_fallback_used": fallback_used,
             },
             confidence=max(0.1, conf),
             evidence={"explanation": exp_text, "policy_id": decision.policy_id},
-            trace_id=message.trace_id
+            trace_id=message.trace_id,
         )
 
+
 decision_agent_instance = DecisionAgent()
+
 
 @app.post("/agent/process", response_model=AgentMessage)
 async def agent_process(message: AgentMessage):

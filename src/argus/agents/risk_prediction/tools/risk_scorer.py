@@ -1,11 +1,18 @@
 """Risk Scorer tool for Risk Prediction Agent."""
+
 import structlog
 
 from argus.core.base_tool import BaseTool
 from argus.core.enums import ToolCategory
 from argus.agents.risk_prediction.models.schemas import (
-    RiskAnalysisInput, CriticalityResult, ImpactResult, EscalationResult, RiskScoreResult, AssetPriority, ImpactSeverity
+    CriticalityResult,
+    ImpactResult,
+    EscalationResult,
+    RiskScoreResult,
+    AssetPriority,
+    ImpactSeverity,
 )
+
 
 class RiskScorer(BaseTool):
     """Calculates the final numeric risk score."""
@@ -17,7 +24,7 @@ class RiskScorer(BaseTool):
             version="1.0.0",
             category=ToolCategory.UTILITY,
             description="Aggregates metrics to produce a final risk score.",
-            required_permissions=[]
+            required_permissions=[],
         )
         self.logger = structlog.get_logger("argus.tool.risk_scorer")
 
@@ -26,10 +33,7 @@ class RiskScorer(BaseTool):
         self.logger.info("risk_scorer_initialized")
 
     async def validate(
-        self,
-        criticality: CriticalityResult,
-        impact: ImpactResult,
-        escalation: EscalationResult
+        self, criticality: CriticalityResult, impact: ImpactResult, escalation: EscalationResult
     ) -> bool:
         """Validate inputs."""
         if not criticality or not impact or not escalation:
@@ -37,20 +41,17 @@ class RiskScorer(BaseTool):
         return True
 
     async def execute(
-        self,
-        criticality: CriticalityResult,
-        impact: ImpactResult,
-        escalation: EscalationResult
+        self, criticality: CriticalityResult, impact: ImpactResult, escalation: EscalationResult
     ) -> RiskScoreResult:
         """Calculate the overall risk score."""
         if not await self.validate(criticality, impact, escalation):
             raise ValueError("Invalid input for RiskScorer")
-            
+
         if impact.severity is None or criticality.asset_priority is None:
             return RiskScoreResult(
                 score=None,
                 severity=None,
-                reasoning="Risk score calculation unavailable due to missing impact or criticality data."
+                reasoning="Risk score calculation unavailable due to missing impact or criticality data.",
             )
 
         # Base score derived from Impact
@@ -59,7 +60,7 @@ class RiskScorer(BaseTool):
             ImpactSeverity.SEVERE: 60,
             ImpactSeverity.MODERATE: 40,
             ImpactSeverity.MINOR: 20,
-            ImpactSeverity.NONE: 0
+            ImpactSeverity.NONE: 0,
         }.get(impact.severity, 0)
 
         # Criticality multiplier
@@ -67,13 +68,15 @@ class RiskScorer(BaseTool):
             AssetPriority.CRITICAL: 1.2,
             AssetPriority.HIGH: 1.0,
             AssetPriority.MEDIUM: 0.8,
-            AssetPriority.LOW: 0.5
+            AssetPriority.LOW: 0.5,
         }.get(criticality.asset_priority, 1.0)
-        
-        esc_factor = escalation.escalation_factor if escalation.escalation_factor is not None else 1.0
+
+        esc_factor = (
+            escalation.escalation_factor if escalation.escalation_factor is not None else 1.0
+        )
 
         raw_score = impact_base * crit_multiplier * esc_factor
-        
+
         # Clamp between 0 and 100
         final_score = int(max(0, min(100, round(raw_score))))
 
@@ -94,11 +97,7 @@ class RiskScorer(BaseTool):
         )
 
         self.logger.info("risk_scored", score=final_score, severity=severity)
-        return RiskScoreResult(
-            score=final_score,
-            severity=severity,
-            reasoning=reasoning
-        )
+        return RiskScoreResult(score=final_score, severity=severity, reasoning=reasoning)
 
     async def shutdown(self) -> None:
         """Clean up."""

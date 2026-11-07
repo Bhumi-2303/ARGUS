@@ -1,4 +1,5 @@
 """Knowledge & Context Agent — enriches THREAT_EVENTs with cybersecurity knowledge."""
+
 import os
 from typing import Any, List
 
@@ -34,9 +35,7 @@ class KnowledgeContextAgent(BaseAgent):
         self.logger.info("initializing_knowledge_context_agent")
 
         # Determine resources directory (sibling to this file)
-        resources_dir = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "resources"
-        )
+        resources_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources")
 
         self._config = KCAPipelineConfig(resources_dir=resources_dir)
         self.pipeline = KnowledgePipeline(

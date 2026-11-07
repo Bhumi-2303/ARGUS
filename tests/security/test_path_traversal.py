@@ -18,7 +18,13 @@ def override_authenticated_user():
         sub="security-tester",
         issuer="argus-test",
         roles=["analyst", "operator", "admin"],
-        permissions={"read:data", "read:domains", "read:results", "run:prediction", "read:telemetry"}
+        permissions={
+            "read:data",
+            "read:domains",
+            "read:results",
+            "run:prediction",
+            "read:telemetry",
+        },
     )
     app.dependency_overrides[get_current_user] = lambda: user
     yield
@@ -33,7 +39,7 @@ def test_datamanager_resolve_safe_path_rejects_escape():
         "../../../etc/passwd",
         "../../configs/settings.py",
         "results/verified/../../../../etc/shadow",
-        "../../outside_repo_file"
+        "../../outside_repo_file",
     ]
     for subpath in traversal_subpaths:
         with pytest.raises(PermissionError):
@@ -49,7 +55,7 @@ def test_datamanager_get_result_table_rejects_traversal_and_unallowlisted():
         "..%2f..%2fconfigs/settings.py",
         "ciciot\x00malicious",
         "unallowlisted_secret_table",
-        "../models/model_d1_source.txt"
+        "../models/model_d1_source.txt",
     ]
     for table in malicious_tables:
         with pytest.raises(KeyError):
@@ -62,11 +68,13 @@ def test_api_results_endpoint_rejects_traversal():
         "../../etc/passwd",
         "%2e%2e%2fconfigs",
         "nonexistent_table",
-        "../../results/verified/five_model_complete_comparison"
+        "../../results/verified/five_model_complete_comparison",
     ]
     for payload in payloads:
         response = client.get(f"/api/v1/results/{payload}")
-        assert response.status_code in (400, 404), f"Unexpected status {response.status_code} for {payload}"
+        assert response.status_code in (400, 404), (
+            f"Unexpected status {response.status_code} for {payload}"
+        )
         assert "root:" not in response.text
 
 
@@ -83,7 +91,7 @@ def test_spa_fallback_blocks_directory_escape():
     payloads = [
         "/..%2f..%2fetc/passwd",
         "/static/../../configs/settings.py",
-        "/assets/../configs/settings.py"
+        "/assets/../configs/settings.py",
     ]
     for payload in payloads:
         response = client.get(payload)
